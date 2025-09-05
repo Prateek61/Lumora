@@ -1,0 +1,24 @@
+[submodule "External/bgfx/bgfx"]
+	path = External/bgfx/bgfx
+	url = https://github.com/bkaradzic/bgfx.git
+[submodule "External/bimg/bimg"]
+	path = External/bimg/bimg
+	url = https://github.com/bkaradzic/bimg.git
+[submodule "External/bx/bx"]
+	path = External/bx/bx
+	url = https://github.com/bkaradzic/bx.git
+[submodule "External/glm"]
+	path = External/glm
+	url = git@github.com:g-truc/glm.git
+[submodule "External/spdlog"]
+	path = External/spdlog
+	url = git@github.com:gabime/spdlog.git
+[submodule "External/glfw/glfw"]
+	path = External/glfw/glfw
+	url = git@github.com:glfw/glfw.git
+[submodule "External/sol"]
+	path = External/sol
+	url = git@github.com:ThePhD/sol2.git
+[submodule "External/lua/lua"]
+	path = External/lua/lua
+	url = git@github.com:lua/lua.git

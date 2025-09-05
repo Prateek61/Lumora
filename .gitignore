@@ -1,0 +1,27 @@
+# VS Code
+.vscode/
+
+# Visual studio Project files
+.vs/
+**.user
+**.sln
+**.vcxproj*
+**.csproj
+
+# Binary files
+**/bin/
+bin-int/
+Intermediates/
+
+# Log files
+**.log
+# Profile files
+**.profile.json
+
+# MakeFile
+**/MakeFile
+**.make
+
+# Asset files
+Assets/local/
+Assets/**/local
