@@ -1,10 +1,22 @@
 -- Lumora Dependencies
 
 IncludeDir = {}
+-- BGFX
 IncludeDir["BGFX"] = "%{wks.location}/External/bgfx/bgfx/include"
 IncludeDir["BX"] = "%{wks.location}/External/bx/bx/include"
 IncludeDir["BIMG"] = "%{wks.location}/External/bimg/bimg/include"
+-- Windowing
 IncludeDir["GLFW"] = "%{wks.location}/External/glfw/glfw/include"
+-- Lua
+IncludeDir["LUA"] = "%{wks.location}/External/lua/lua/"
+IncludeDir["SOL"] = "%{wks.location}/External/sol/include/"
+-- Maths
+IncludeDir["GLM"] = "%{wks.location}/External/glm/"
+-- Logging
+IncludeDir["SPDLOG"] = "%{wks.location}/External/spdlog/include"
+-- ImGui
+IncludeDir["IMGUI"] = "%{wks.location}/External/imgui/"
+
 
 -- Libraries
 Library = {}

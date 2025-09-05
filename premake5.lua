@@ -25,5 +25,8 @@ group "Dependencies"
     include "External/bgfx"
     include "External/bimg"
     include "External/bx"
+
     include "External/glfw"
+
+    include "External/imgui"
 group ""
