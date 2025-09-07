@@ -2,7 +2,8 @@
 
 #include <iostream>
 
-void hello_lumora()
-{
-    std::cout << "Hello from Lumora!" << std::endl;
-}
+// Common
+#include "Lumora/Common/UUID.h"
+#include "Lumora/Common/Log.h"
+#include "Lumora/Common/Assert.h"
+#include "Lumora/Common/Instrumentor.h"

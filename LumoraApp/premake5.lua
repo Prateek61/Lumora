@@ -22,6 +22,8 @@ project "LumoraApp"
         "%{IncludeDir.BGFX}",
         "%{IncludeDir.BX}",
         "%{IncludeDir.BIMG}",
+        -- SPDLOG
+        "%{IncludeDir.SPDLOG}"
     }
 
     links
@@ -31,6 +33,11 @@ project "LumoraApp"
         "glfw",
         "bgfx", "bimg", "bx", -- BGFX
     }
+
+    -- If VS
+    filter "action:vs*"
+        -- Enable /utf-8 flag for Visual Studio
+        buildoptions { "/utf-8" }
 
     filter "system:windows"
         systemversion "latest"
