@@ -19,11 +19,24 @@ project "Lumora"
     {
         "src/",
        
-        "%{IncludeDir.SPDLOG}"
+        -- GLFW
+        "%{IncludeDir.GLFW}",
+        -- Logger
+        "%{IncludeDir.SPDLOG}",
+        -- Lua
+        "%{IncludeDir.SOL}",
+        "%{IncludeDir.LUA}",
+        -- BGFX
+        "%{IncludeDir.BGFX}",
+        "%{IncludeDir.BX}",
+        "%{IncludeDir.BIMG}",
     }
 
     links
     {
+        "glfw",
+        "Lua",
+        "bgfx", "bimg", "bx", -- BGFX
     }
 
     -- If VS

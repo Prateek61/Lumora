@@ -7,3 +7,6 @@
 #include "Lumora/Common/Log.h"
 #include "Lumora/Common/Assert.h"
 #include "Lumora/Common/Instrumentor.h"
+
+// Scripting
+#include "Lumora/Scripting/ConfigReader.h"

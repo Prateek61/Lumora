@@ -23,7 +23,10 @@ project "LumoraApp"
         "%{IncludeDir.BX}",
         "%{IncludeDir.BIMG}",
         -- SPDLOG
-        "%{IncludeDir.SPDLOG}"
+        "%{IncludeDir.SPDLOG}",
+        -- LUA
+        "%{IncludeDir.LUA}",
+        "%{IncludeDir.SOL}",
     }
 
     links
@@ -32,6 +35,7 @@ project "LumoraApp"
 
         "glfw",
         "bgfx", "bimg", "bx", -- BGFX
+        "lua"
     }
 
     -- If VS

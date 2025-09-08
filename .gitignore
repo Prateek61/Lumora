@@ -25,6 +25,7 @@ Intermediates/
 # Asset files
 Assets/local/
 Assets/**/local
+Assets/**.local.*
 
 # Python
 __pycache__/

@@ -9,6 +9,8 @@
 #define LM_ENABLE_ASSERTS
 #define LM_ENABLE_PERFORMANCE_PROFILING
 
+#define SOL_ALL_SAFETIES_ON 1
+
 #define BIT(x) (1 << (x))
 #define PI 3.14159265359f
 
@@ -34,3 +36,6 @@
 #else
     #define LM_DEBUGBREAK()
 #endif
+
+#define LM_CONCAT_IMPL(x, y) x##y
+#define LM_CONCAT(x, y) LM_CONCAT_IMPL(x, y)

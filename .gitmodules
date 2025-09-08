@@ -22,6 +22,7 @@
 [submodule "External/lua/lua"]
 	path = External/lua/lua
 	url = git@github.com:lua/lua.git
+	branch = v5.4
 [submodule "External/imgui/imgui"]
 	path = External/imgui/imgui
 	url = git@github.com:ocornut/imgui.git

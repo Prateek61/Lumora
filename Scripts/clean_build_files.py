@@ -1,5 +1,6 @@
 import os
 import shutil
+import re
 
 # Build file types to delete
 build_files = [
@@ -17,9 +18,14 @@ build_dirs = [
     "bin",
 ]
 
+UNSAFE_EXTERNAL_PATH = re.compile(r"[\\/]External[\\/].*?[\\/]")
+
 def delete_files_and_dirs(root_dir):
     # Traverse the directory and delete the specified build files
     for dirpath, dirnames, filenames in os.walk(root_dir, topdown=False):
+        if UNSAFE_EXTERNAL_PATH.search(dirpath):
+            continue
+
         for filename in filenames:
             if any(filename.endswith(ext) for ext in build_files):
                 file_path = os.path.join(dirpath, filename)
