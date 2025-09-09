@@ -33,22 +33,11 @@ namespace Lumora::Serialize
 	}
 
 	// Scalar types
-	template <>
-	inline int FromLua<int>(const sol::object& obj)
+	template<typename T>
+		requires std::is_arithmetic_v<T> && !std::is_same_v<T, bool>
+	T FromLua(const sol::object& obj)
 	{
-		return obj.as<int>();
-	}
-
-	template <>
-	inline float FromLua<float>(const sol::object& obj)
-	{
-		return obj.as<float>();
-	}
-
-	template <>
-	inline double FromLua<double>(const sol::object& obj)
-	{
-		return obj.as<double>();
+		return obj.as<T>();
 	}
 
 	template <>
@@ -131,20 +120,9 @@ namespace Lumora::Serialize
 	}
 
 	// Scalar types
-	template <>
-	inline sol::object ToLua<int>(sol::state_view& lua, const int& value)
-	{
-		return make_object(lua, value);
-	}
-
-	template <>
-	inline sol::object ToLua<float>(sol::state_view& lua, const float& value)
-	{
-		return make_object(lua, value);
-	}
-
-	template <>
-	inline sol::object ToLua<double>(sol::state_view& lua, const double& value)
+	template<typename T>
+	sol::object ToLua(sol::state_view& lua, const T& value)
+		requires std::is_arithmetic_v<T> && !std::is_same_v<T, bool>
 	{
 		return make_object(lua, value);
 	}
@@ -219,23 +197,18 @@ namespace Lumora::Serialize
 		static_assert("ToLuaString: Unsupported type");
 	}
 
-	// Scalar types
-	template <>
-	inline void ToLuaString<int>(const int& value, std::ostream& os, int curr_indent, int indent, bool key)
+	// Scalar Types
+	template<typename T>
+		requires std::is_arithmetic_v<T> && !std::is_same_v<T, bool>
+	void ToLuaString(const T& value, std::ostream& os, int curr_indent, int indent, bool key)
 	{
 		os << value;
 	}
 
-	template <>
-	inline void ToLuaString<float>(const float& value, std::ostream& os, int curr_indent, int indent, bool key)
+	template<>
+	inline void ToLuaString<bool>(const bool& value, std::ostream& os, int curr_indent, int indent, bool key)
 	{
-		os << value;
-	}
-
-	template <>
-	inline void ToLuaString<double>(const double& value, std::ostream& os, int curr_indent, int indent, bool key)
-	{
-		os << value;
+		os << (value ? "true" : "false");
 	}
 
 	template <>
@@ -294,6 +267,7 @@ namespace Lumora::Serialize
 		requires visit_struct::traits::is_visitable<T>::value
 	void ToLuaString(const T& t, std::ostream& os, int curr_indent, int indent, bool key)
 	{
+		os << "{\n";
 		visit_struct::for_each(t, [&](const char* name, const auto& value)
 		{
 			using FieldType = std::decay_t<decltype(value)>;
@@ -302,14 +276,14 @@ namespace Lumora::Serialize
 			ToLuaString<FieldType>(value, os, curr_indent + indent, indent, false);
 			os << ",\n";
 		});
+		os << std::string(curr_indent, ' ') << "}";
 	}
 
 	template <typename T>
 	void ToLuaScript(const T& t, std::ostream& os, int indent = 2)
 	{
-		os << "return {\n";
+		os << "return ";
 		ToLuaString<T>(t, os, 0, indent, false);
-		os << "}\n";
 	}
 
 	// ============================================================

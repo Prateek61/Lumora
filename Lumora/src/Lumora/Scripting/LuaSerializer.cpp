@@ -5,6 +5,8 @@ namespace
 {
 	const Lumora::LuaSerializer::TypeInfo& GetTypeInfo(const std::string& typeName)
 	{
+		LM_PROFILE_FUNCTION();
+
 		auto itr = Lumora::LuaSerializer::GetTypeRegistry().find(typeName);
 		if ( itr == Lumora::LuaSerializer::GetTypeRegistry().end() )
 		{
@@ -19,12 +21,15 @@ namespace Lumora
 {
 	LuaSerializer::LuaSerializer()
 	{
+		LM_PROFILE_FUNCTION();
+
 		m_Lua.open_libraries(sol::lib::base, sol::lib::table, sol::lib::string);
 	}
 
 	Ref<void> LuaSerializer::DeserializeFromFile(const std::string& typeName, const std::filesystem::path& file)
 	{
-		LM_LOCK_WRITE_AUTO()
+		LM_PROFILE_FUNCTION();
+		LM_LOCK_WRITE_AUTO();
 
 		const auto& type_info = GetTypeInfo(typeName);
 
@@ -41,14 +46,15 @@ namespace Lumora
 			throw std::runtime_error("Failed to execute script: " + file.string());
 		}
 
-		sol::table tab = result;
+		sol::object obj = result;
 
-		return type_info.FromLuaFunction(tab);
+		return type_info.FromLuaFunction(obj);
 	}
 
 	Ref<void> LuaSerializer::DeserializeFromSolObject(const std::string& typeName, const sol::object& obj)
 	{
-		LM_LOCK_WRITE_AUTO()
+		LM_PROFILE_FUNCTION();
+		LM_LOCK_WRITE_AUTO();
 
 		const auto& type_info = GetTypeInfo(typeName);
 		return type_info.FromLuaFunction(obj);
@@ -56,7 +62,8 @@ namespace Lumora
 
 	Ref<void> LuaSerializer::DeserializeFromLuaScript(const std::string& typeName, const std::string& s)
 	{
-		LM_LOCK_WRITE_AUTO()
+		LM_PROFILE_FUNCTION();
+		LM_LOCK_WRITE_AUTO();
 
 		const auto& type_info = GetTypeInfo(typeName);
 
@@ -73,14 +80,15 @@ namespace Lumora
 			throw std::runtime_error("Failed to execute script: ");
 		}
 
-		sol::table tab = result;
+		sol::object obj = result;
 
-		return type_info.FromLuaFunction(tab);
+		return type_info.FromLuaFunction(obj);
 	}
 
 	std::string LuaSerializer::SerializeToLuaScript(const std::string& typeName, const void* value, int indent)
 	{
-		LM_LOCK_WRITE_AUTO()
+		LM_PROFILE_FUNCTION();
+		LM_LOCK_WRITE_AUTO();
 
 		const auto& type_info = GetTypeInfo(typeName);
 

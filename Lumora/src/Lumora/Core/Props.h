@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Lumora/Common/Base.h"
+#include "Lumora/Scripting/LuaSerializer.h"
 
 namespace Lumora
 {
@@ -33,3 +34,6 @@ namespace Lumora
 		bool Run = true; // Whether to run the application loop, for debugging or testing purposes
 	};
 }
+
+VISITABLE_STRUCT(Lumora::WindowProps, Title, Width, Height);
+VISITABLE_STRUCT(Lumora::ApplicationProps, Name, AssetsDirectory, WindowProps, Run);

@@ -84,7 +84,8 @@ namespace Lumora
 	template <typename T>
 	T LuaSerializer::DeserializeFromFile(const std::filesystem::path& file)
 	{
-		LM_LOCK_WRITE_AUTO()
+		LM_PROFILE_FUNCTION();
+		LM_LOCK_WRITE_AUTO();
 
 		sol::load_result script = m_Lua.load_file(file.string());
 		if ( !script.valid() )
@@ -98,14 +99,15 @@ namespace Lumora
 			throw std::runtime_error("Failed to execute script: " + file.string());
 		}
 
-		sol::table tab = result;
-		return Serialize::FromLua<T>(tab);
+		sol::object obj = result;
+		return Serialize::FromLua<T>(obj);
 	}
 
 	template <typename T>
 	T LuaSerializer::DeserializeFromSolObject(const sol::object& obj)
 	{
-		LM_LOCK_WRITE_AUTO()
+		LM_PROFILE_FUNCTION();
+		LM_LOCK_WRITE_AUTO();
 
 		auto tab = obj.as<sol::table>();
 		return Serialize::FromLua<T>(tab);
@@ -114,7 +116,8 @@ namespace Lumora
 	template <typename T>
 	T LuaSerializer::DeserializeFromLuaScript(const std::string& script)
 	{
-		LM_LOCK_WRITE_AUTO()
+		LM_PROFILE_FUNCTION();
+		LM_LOCK_WRITE_AUTO();
 
 		sol::load_result loadedScript = m_Lua.load(script);
 		if ( !loadedScript.valid() )
@@ -128,14 +131,15 @@ namespace Lumora
 			throw std::runtime_error("Failed to execute script");
 		}
 
-		sol::table tab = result;
-		return Serialize::FromLua<T>(tab);
+		sol::object obj = result;
+		return Serialize::FromLua<T>(obj);
 	}
 
 	template <typename T>
 	void LuaSerializer::SerializeToFile(const T& value, const std::filesystem::path& file)
 	{
-		LM_LOCK_WRITE_AUTO()
+		LM_PROFILE_FUNCTION();
+		LM_LOCK_WRITE_AUTO();
 
 		static_assert("Not Implemented");
 	}
@@ -143,7 +147,8 @@ namespace Lumora
 	template <typename T>
 	sol::object LuaSerializer::SerializeToSolObject(const T& value)
 	{
-		LM_LOCK_WRITE_AUTO()
+		LM_PROFILE_FUNCTION();
+		LM_LOCK_WRITE_AUTO();
 
 		return Serialize::ToLua<T>(m_Lua, value);
 	}
@@ -151,7 +156,8 @@ namespace Lumora
 	template <typename T>
 	std::string LuaSerializer::SerializeToLuaScript(const T& value, int indent)
 	{
-		LM_LOCK_WRITE_AUTO()
+		LM_PROFILE_FUNCTION();
+		LM_LOCK_WRITE_AUTO();
 
 		std::stringstream ss;
 		Serialize::ToLuaScript<T>(value, ss, indent);

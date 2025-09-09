@@ -20,9 +20,9 @@ namespace Lumora
 }
 
 // Macros
-#define LM_MUTEX(mutex) Lumora::RWMutex mutex;
-#define LM_LOCK_READ(mutex) Lumora::ReadLock<decltype(mutex)> LM_CONCAT(_lock_read_, __LINE__)(mutex);
-#define LM_LOCK_WRITE(mutex) Lumora::WriteLock<decltype(mutex)> LM_CONCAT(_lock_write_, __LINE__)(mutex);
+#define LM_MUTEX(mutex) Lumora::RWMutex mutex
+#define LM_LOCK_READ(mutex) Lumora::ReadLock<decltype(mutex)> LM_CONCAT(_lock_read_, __LINE__)(mutex)
+#define LM_LOCK_WRITE(mutex) Lumora::WriteLock<decltype(mutex)> LM_CONCAT(_lock_write_, __LINE__)(mutex)
 
 #define MUTEX_AUTO_NAME Mutex
 #define LM_MUTEX_AUTO() LM_MUTEX(MUTEX_AUTO_NAME)
