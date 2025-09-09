@@ -9,4 +9,4 @@
 #include "Lumora/Common/Instrumentor.h"
 
 // Scripting
-#include "Lumora/Scripting/ConfigReader.h"
+#include "Lumora/Scripting/LuaSerializer.h"

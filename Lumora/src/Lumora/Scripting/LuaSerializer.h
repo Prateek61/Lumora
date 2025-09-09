@@ -1,0 +1,174 @@
+#pragma once
+
+#include "Lumora/Common/Threading.h"
+#include "Lumora/Scripting/Lua/LuaBase.h"
+#include "Lumora/Scripting/Lua/Serialize.h"
+
+#include <unordered_map>
+
+namespace Lumora
+{
+	class LuaSerializer
+	{
+		// Class that wraps sol::state
+		// Provides an interface to read configuration files
+	public:
+		// Public for external locking
+		LM_MUTEX_AUTO()
+
+		LuaSerializer();
+
+		// Not Thread Safe
+		sol::state& GetLuaState() { return m_Lua; }
+
+		// Deserialize
+		template <typename T>
+		T DeserializeFromFile(const std::filesystem::path& file);
+		template <typename T>
+		T DeserializeFromSolObject(const sol::object& obj);
+		template <typename T>
+		T DeserializeFromLuaScript(const std::string& script);
+
+		// Serialize
+		template <typename T>
+		void SerializeToFile(const T& value, const std::filesystem::path& file);
+		template <typename T>
+		sol::object SerializeToSolObject(const T& value);
+		template <typename T>
+		std::string SerializeToLuaScript(const T& value, int indent = 2);
+
+		// Runtime Variants
+		Ref<void> DeserializeFromFile(const std::string& typeName, const std::filesystem::path& file);
+		Ref<void> DeserializeFromSolObject(const std::string& typeName, const sol::object& obj);
+		Ref<void> DeserializeFromLuaScript(const std::string& typeName, const std::string& s);
+		void SerializeToFile(const std::string& typeName, const void* value, const std::filesystem::path& file);
+		std::string SerializeToLuaScript(const std::string& typeName, const void* value, int indent = 2);
+
+	private:
+		sol::state m_Lua;
+
+	public:
+		// Type Registry
+		struct TypeInfo
+		{
+			std::string name;
+			std::function<void(const void* valuePtr, std::ostream& os, int indent)> ToLuaScriptFunction;
+			std::function<Ref<void>(const sol::object& obj)> FromLuaFunction;
+			size_t size;
+		};
+
+		using Registry = std::unordered_map<std::string, TypeInfo>;
+
+		static Registry& GetTypeRegistry()
+		{
+			static Registry registry;
+			return registry;
+		}
+	};
+
+	namespace Serialize
+	{
+		struct LuaTypeRegistrar
+		{
+			LuaTypeRegistrar(const char* name, LuaSerializer::TypeInfo info)
+			{
+				LuaSerializer::GetTypeRegistry()[name] = std::move(info);
+			}
+		};
+	}
+}
+
+// Template Implementations
+namespace Lumora
+{
+	template <typename T>
+	T LuaSerializer::DeserializeFromFile(const std::filesystem::path& file)
+	{
+		LM_LOCK_WRITE_AUTO()
+
+		sol::load_result script = m_Lua.load_file(file.string());
+		if ( !script.valid() )
+		{
+			throw std::runtime_error("Failed to load script: " + file.string());
+		}
+
+		sol::protected_function_result result = script();
+		if ( !result.valid() )
+		{
+			throw std::runtime_error("Failed to execute script: " + file.string());
+		}
+
+		sol::table tab = result;
+		return Serialize::FromLua<T>(tab);
+	}
+
+	template <typename T>
+	T LuaSerializer::DeserializeFromSolObject(const sol::object& obj)
+	{
+		LM_LOCK_WRITE_AUTO()
+
+		auto tab = obj.as<sol::table>();
+		return Serialize::FromLua<T>(tab);
+	}
+
+	template <typename T>
+	T LuaSerializer::DeserializeFromLuaScript(const std::string& script)
+	{
+		LM_LOCK_WRITE_AUTO()
+
+		sol::load_result loadedScript = m_Lua.load(script);
+		if ( !loadedScript.valid() )
+		{
+			throw std::runtime_error("Failed to load script");
+		}
+
+		sol::protected_function_result result = loadedScript();
+		if ( !result.valid() )
+		{
+			throw std::runtime_error("Failed to execute script");
+		}
+
+		sol::table tab = result;
+		return Serialize::FromLua<T>(tab);
+	}
+
+	template <typename T>
+	void LuaSerializer::SerializeToFile(const T& value, const std::filesystem::path& file)
+	{
+		LM_LOCK_WRITE_AUTO()
+
+		static_assert("Not Implemented");
+	}
+
+	template <typename T>
+	sol::object LuaSerializer::SerializeToSolObject(const T& value)
+	{
+		LM_LOCK_WRITE_AUTO()
+
+		return Serialize::ToLua<T>(m_Lua, value);
+	}
+
+	template <typename T>
+	std::string LuaSerializer::SerializeToLuaScript(const T& value, int indent)
+	{
+		LM_LOCK_WRITE_AUTO()
+
+		std::stringstream ss;
+		Serialize::ToLuaScript<T>(value, ss, indent);
+		return ss.str();
+	}
+}
+
+// Macro to register a type
+#define LM_REGISTER_FOR_SERIALIZATION_NAMED(TYPE, NAME)                                \
+	static Lumora::Serialize::LuaTypeRegistrar _auto_register_##TYPE(                  \
+		NAME,                                                                          \
+		{                                                                              \
+			NAME,                                                                      \
+			Lumora::Serialize::GetToLuaScriptFunction<TYPE>(),                         \
+			Lumora::Serialize::GetFromLuaFunction<TYPE>(),                             \
+			sizeof(TYPE)                                                               \
+		}                                                                              \
+	);
+
+#define LM_REGISTER_FOR_SERIALIZATION(TYPE) LM_REGISTER_FOR_SERIALIZATION_NAMED(TYPE, #TYPE)

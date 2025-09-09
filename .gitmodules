@@ -19,10 +19,13 @@
 [submodule "External/sol"]
 	path = External/sol
 	url = git@github.com:ThePhD/sol2.git
-[submodule "External/lua/lua"]
-	path = External/lua/lua
-	url = git@github.com:lua/lua.git
-	branch = v5.4
 [submodule "External/imgui/imgui"]
 	path = External/imgui/imgui
 	url = git@github.com:ocornut/imgui.git
+[submodule "External/lua/lua"]
+	path = External/lua/lua
+	url = https://github.com/lua/lua.git
+	branch = v5.4
+[submodule "External/visit_struct"]
+	path = External/visit_struct
+	url = https://github.com/cbeck88/visit_struct.git

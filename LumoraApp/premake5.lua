@@ -27,6 +27,8 @@ project "LumoraApp"
         -- LUA
         "%{IncludeDir.LUA}",
         "%{IncludeDir.SOL}",
+
+        "%{IncludeDir.VISITSTRUCT}",
     }
 
     links

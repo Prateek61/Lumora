@@ -16,6 +16,11 @@ project "Lua"
         "lua"
     }
 
+    defines
+    {
+        "MAKE_LIB"
+    }
+
     filter "configurations:Debug"
         defines{"_DEBUG", "LUA_USE_ASSERT"}
         optimize "Debug"

@@ -19,7 +19,7 @@ project "Lumora"
     {
         "src/",
        
-        -- GLFW
+
         "%{IncludeDir.GLFW}",
         -- Logger
         "%{IncludeDir.SPDLOG}",
@@ -30,6 +30,8 @@ project "Lumora"
         "%{IncludeDir.BGFX}",
         "%{IncludeDir.BX}",
         "%{IncludeDir.BIMG}",
+
+        "%{IncludeDir.VISITSTRUCT}",
     }
 
     links

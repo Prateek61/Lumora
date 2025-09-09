@@ -29,4 +29,6 @@ group "Dependencies"
     include "External/glfw"
 
     include "External/imgui"
+
+    include "External/lua"
 group ""
