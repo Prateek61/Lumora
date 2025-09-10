@@ -14,7 +14,7 @@ namespace Lumora
 		// Provides an interface to read configuration files
 	public:
 		// Public for external locking
-		LM_MUTEX_AUTO()
+		LM_MUTEX_AUTO();
 
 		LuaSerializer();
 
@@ -37,7 +37,7 @@ namespace Lumora
 		template <typename T>
 		std::string SerializeToLuaScript(const T& value, int indent = 2);
 
-		// Runtime Variants
+		// Non Templated Variants
 		Ref<void> DeserializeFromFile(const std::string& typeName, const std::filesystem::path& file);
 		Ref<void> DeserializeFromSolObject(const std::string& typeName, const sol::object& obj);
 		Ref<void> DeserializeFromLuaScript(const std::string& typeName, const std::string& s);

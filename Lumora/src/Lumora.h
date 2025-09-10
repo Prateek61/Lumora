@@ -8,5 +8,14 @@
 #include "Lumora/Common/Assert.h"
 #include "Lumora/Common/Instrumentor.h"
 
+// Core
+#include "Lumora/Core/Window.h"
+
+// Event
+#include "Lumora/Event/Event.h"
+#include "Lumora/Event/ApplicationEvent.h"
+#include "Lumora/Event/KeyEvent.h"
+#include "Lumora/Event/MouseEvent.h"
+
 // Scripting
 #include "Lumora/Scripting/LuaSerializer.h"

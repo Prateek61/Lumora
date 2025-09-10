@@ -7,7 +7,7 @@ namespace Lumora::Key
 	{
 		LM_PROFILE_FUNCTION();
 
-		switch (keycode)
+		switch ( keycode )
 		{
 		case Space: return "Space";
 		case Apostrophe: return "Apostrophe";
@@ -140,4 +140,5 @@ namespace Lumora::Key
 
 		default: return "Unknown";
 		}
+	}
 }
