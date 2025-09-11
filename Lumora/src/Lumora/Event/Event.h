@@ -96,5 +96,5 @@ namespace Lumora
 		return os << e.ToString();
 	}
 
-#define BIND_EVENT_FN(fn) [this](auto&&... args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...);
+#define LM_BIND_EVENT_FN(fn) [this](auto&&... args) -> decltype(auto) { return fn(std::forward<decltype(args)>(args)...); }
 }

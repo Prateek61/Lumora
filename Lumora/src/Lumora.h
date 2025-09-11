@@ -10,6 +10,8 @@
 
 // Core
 #include "Lumora/Core/Window.h"
+#include "Lumora/Core/Props.h"
+#include "Lumora/Core/Application.h"
 
 // Event
 #include "Lumora/Event/Event.h"
@@ -22,3 +24,8 @@
 
 // Renderer
 #include "Lumora/Renderer/RendererContext.h"
+
+// Utilities
+#include "Lumora/Utilities/Time.h"
+#include "Lumora/Utilities/TimeStep.h"
+#include "Lumora/Utilities/FileDialog.h"

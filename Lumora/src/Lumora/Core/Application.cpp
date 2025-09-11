@@ -1,14 +1,119 @@
 #include "LMPCH.h"
 #include "Application.h"
 
-#include "Lumora/Core/Props.h"
+#include "Lumora/Utilities/Time.h"
+
+namespace
+{
+	Lumora::Application* s_Instance = nullptr;
+}
 
 namespace Lumora
 {
-	class Application
+	Application& Application::Get()
 	{
-	public:
-		Application(ApplicationProps& props);
-		virtual ~Application();
-	};
+		return *s_Instance;
+	}
+
+	Application::Application(const std::filesystem::path& configFile, ApplicationCommandLineArgs args)
+	{
+		LM_PROFILE_FUNCTION();
+
+		auto props = m_Serializer.DeserializeFromFile<ApplicationProps>(configFile);
+		props.CommandLineArgs = args;
+
+		Init(props);
+	}
+
+	Application::Application(const ApplicationProps& props)
+	{
+		LM_PROFILE_FUNCTION();
+
+		Init(props);
+	}
+
+	Application::~Application() = default;
+
+	void Application::Init(const ApplicationProps& props)
+	{
+		LM_PROFILE_FUNCTION();
+
+		LM_CORE_ASSERT(!s_Instance, "Applciation already exists");
+		s_Instance = this;
+
+		m_Props = props;
+
+
+		// Window
+		m_Window = CreateScope<Window>(props.WindowProps);
+		m_Window->SetEventCallback(LM_BIND_EVENT_FN(Application::OnEvent));
+
+		m_Running = props.Run;
+
+		// Renderer context
+		m_RendererContext = RendererContext::Create();
+		m_RendererContext->Init(*m_Window);
+
+		// TODO: ImGui setup
+	}
+
+	void Application::OnEvent(Event& e)
+	{
+		LM_PROFILE_FUNCTION();
+
+		EventDispatcher dispatcher(e);
+
+		// Window Functions
+		dispatcher.Dispatch<WindowCloseEvent>(LM_BIND_EVENT_FN(Application::OnWindowClose));
+		dispatcher.Dispatch<WindowResizeEvent>(LM_BIND_EVENT_FN(Application::OnWindowResize));
+
+		// TODO: Dispatch events to layers
+	}
+
+	void Application::Close()
+	{
+		m_Running = false;
+	}
+
+	void Application::Run()
+	{
+		LM_PROFILE_FUNCTION();
+
+		m_LastFrameTime = Time::GetF();
+
+		while( m_Running )
+		{
+			LM_PROFILE_SCOPE("RunLoop");
+
+			const float time = Time::GetF();
+			const TimeStep time_step = time - m_LastFrameTime;
+			m_LastFrameTime = time;
+
+			m_Window->OnUpdate();
+			m_RendererContext->BeginFrame();
+
+			OnUpdate(time_step);
+
+			// TODO: Layers
+
+			m_RendererContext->EndFrame();
+		}
+	}
+
+	bool Application::OnWindowClose(WindowCloseEvent& e)
+	{
+		m_Running = false;
+		return true;
+	}
+
+	bool Application::OnWindowResize(WindowResizeEvent& e)
+	{
+		LM_PROFILE_FUNCTION();
+
+		if (e.GetWidth() == 0 || e.GetHeight() == 0)
+			return false;
+		m_RendererContext->Resize(e.GetWidth(), e.GetHeight());
+
+		return false;
+	}
 }
