@@ -22,7 +22,6 @@ namespace Lumora
 		std::string Title = "Lumora!!";
 		uint32_t Height = 1280;
 		uint32_t Width = 720;
-		bool VSync = true;
 	};
 
 	struct ApplicationProps

@@ -12,14 +12,23 @@ int main()
 
 	auto props = serializer.DeserializeFromFile<ApplicationProps>("../Assets/Config.lua");
 
+	auto context = RendererContext::Create();
+
 	auto Window = Lumora::Window(props.WindowProps);
 	bool running = true;
-	Window::EventCallbackFn callback = [&running](Event& e)
+
+	Window::EventCallbackFn callback = [&](Event& e)
 	{
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<WindowCloseEvent>([&running](WindowCloseEvent& e)
+		EventHandler close_handler = [&](WindowCloseEvent&)
 		{
 			running = false;
+			return true;
+		};
+		dispatcher.Dispatch<WindowCloseEvent>(close_handler);
+		dispatcher.Dispatch<WindowResizeEvent>([&context](WindowResizeEvent& e)
+		{
+			context->Resize(e.GetWidth(), e.GetHeight());
 			return true;
 		});
 
@@ -27,8 +36,16 @@ int main()
 	};
 	Window.SetEventCallback(callback);
 
+	
+	context->Init(Window);
+
 	while(running)
 	{
 		Window.OnUpdate();
+
+		context->BeginFrame();
+		context->EndFrame();
 	}
+
+	context->Shutdown();
 }

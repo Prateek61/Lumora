@@ -5,6 +5,7 @@
 #define LM_ENABLE_CORE_LOG
 #define LM_ENABLE_CLIENT_LOG
 #define LM_ENABLE_LUA_LOG
+#define LM_ENABLE_BGFX_LOG
 
 #define LM_ENABLE_ASSERTS
 //#define LM_ENABLE_PERFORMANCE_PROFILING
@@ -25,17 +26,28 @@
 
 // Debug Break
 #ifndef LM_DIST
-    #if defined(LM_PLATFORM_WINDOWS)
-        #define LM_DEBUGBREAK() __debugbreak()
-    #elif defined(LM_PLATFORM_LINUX)
+#if defined(LM_PLATFORM_WINDOWS)
+#define LM_DEBUGBREAK() __debugbreak()
+#elif defined(LM_PLATFORM_LINUX)
         #include <signal.h>
         #define LM_DEBUGBREAK() raise(SIGTRAP)
-    #else
+#else
         #error "Platform doesn't support debugbreak yet!"
-    #endif
+#endif
 #else
     #define LM_DEBUGBREAK()
 #endif
 
 #define LM_CONCAT_IMPL(x, y) x##y
 #define LM_CONCAT(x, y) LM_CONCAT_IMPL(x, y)
+
+// GLFW Native Access
+#ifdef LM_PLATFORM_WINDOWS
+#define GLFW_EXPOSE_NATIVE_WIN32
+#elif defined(LM_PLATFORM_LINUX)
+    #define GLFW_EXPOSE_NATIVE_X11
+#elif defined(LM_PLATFORM_MACOS)
+        #define GLFW_EXPOSE_NATIVE_COCOA
+#else
+        #error "Not implemented!"
+#endif

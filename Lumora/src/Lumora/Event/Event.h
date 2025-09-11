@@ -31,7 +31,6 @@ namespace Lumora
 								virtual const char* GetName() const override { return #type; }
 #define EVENT_CLASS_CATEGORY(category) virtual int GetCategoryFlags() const override { return category; }
 
-
 	/// Base event class
 	class Event
 	{
@@ -51,12 +50,29 @@ namespace Lumora
 		bool Handled = false;
 	};
 
+	template<typename T>
+		requires std::is_base_of_v<Event, T>
+	using EventHandler = std::function<bool(T&)>;
+
 	class EventDispatcher
 	{
 	public:
 		EventDispatcher(Event& event)
 			: m_Event(event)
 		{
+		}
+
+		template<typename T, typename F>
+		bool Dispatch(const EventHandler<F>& func)
+		{
+			LM_PROFILE_FUNCTION();
+
+			if (m_Event.GetEventType() == T::GetStaticType())
+			{
+				m_Event.Handled |= func(static_cast<T&>(m_Event));
+				return true;
+			}
+			return false;
 		}
 
 		template<typename T, typename F>
@@ -79,10 +95,6 @@ namespace Lumora
 	inline std::ostream& operator<<(std::ostream& os, const Event& e) {
 		return os << e.ToString();
 	}
-
-template<typename T>
-	requires std::is_base_of_v<Event, T>
-using EventHandler = std::function<bool(T&)>;
 
 #define BIND_EVENT_FN(fn) [this](auto&&... args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...);
 }

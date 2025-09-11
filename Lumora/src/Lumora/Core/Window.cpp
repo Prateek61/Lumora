@@ -6,6 +6,7 @@
 #include "Lumora/Event/ApplicationEvent.h"
 #include "Lumora/Event/KeyEvent.h"
 #include "Lumora/Event/MouseEvent.h"
+#include "GLFW/glfw3native.h"
 
 namespace
 {
@@ -34,24 +35,6 @@ namespace Lumora
 		LM_PROFILE_FUNCTION();
 
 		glfwPollEvents();
-		// Swap Buffers
-	}
-
-	void Window::SetVSync(const bool enabled)
-	{
-		return;
-		LM_PROFILE_FUNCTION();
-
-		if ( enabled )
-		{
-			glfwSwapInterval(1);
-		}
-		else
-		{
-			glfwSwapInterval(0);
-		}
-
-		m_Props.VSync = enabled;
 	}
 
 	void Window::Init(const WindowProps& props)
@@ -78,7 +61,7 @@ namespace Lumora
 				glfwWindowHint(GLFW_CONTEXT_DEBUG, GLFW_TRUE);
 			)
 
-			m_NativeWindow = static_cast<void*>(
+			m_GLFWWindow = static_cast<void*>(
 				glfwCreateWindow(static_cast<int>(props.Width), static_cast<int>(props.Height), m_Props.Title.c_str(),
 				                 nullptr, nullptr)
 			);
@@ -86,19 +69,27 @@ namespace Lumora
 			++s_GLFWWindowCount;
 		}
 
-		// Create and Init Graphics Context here
-
-		glfwSetWindowUserPointer(static_cast<GLFWwindow*>(m_NativeWindow), this);
-		SetVSync(m_Props.VSync);
+		glfwSetWindowUserPointer(static_cast<GLFWwindow*>(m_GLFWWindow), this);
 
 		SetGLFWCallbacks();
+
+		// Native Window
+#ifdef LM_PLATFORM_WINDOWS
+		m_NativeWindow = glfwGetWin32Window(static_cast<GLFWwindow*>(m_GLFWWindow));
+#elif defined(LM_PLATFORM_LINUX)
+		m_NativeWindow = (void*)glfwGetX11Window(static_cast<GLFWwindow*>(m_GLFWWindow));
+#elif defined(LM_PLATFORM_MACOS)
+		m_NativeWindow = glfwGetCocoaWindow(static_cast<GLFWwindow*>(m_GLFWWindow));
+#else
+#error "Not implemented! for this platform"
+#endif
 	}
 
 	void Window::SetGLFWCallbacks()
 	{
 		LM_PROFILE_FUNCTION();
 
-		auto window = static_cast<GLFWwindow*>(m_NativeWindow);
+		auto window = static_cast<GLFWwindow*>(m_GLFWWindow);
 
 		// Size Callback
 		glfwSetWindowSizeCallback(window, [](GLFWwindow* glfwWindow, int width, int height)
@@ -184,7 +175,7 @@ namespace Lumora
 			}
 			case GLFW_RELEASE:
 			{
-				MouseButtonReleasedEvent event(button);
+				MouseButtonReleasedEvent event(static_cast<uint16_t>(button));
 				window->EventCallback(event);
 				break;
 			}
@@ -218,7 +209,7 @@ namespace Lumora
 	{
 		LM_PROFILE_FUNCTION();
 
-		glfwDestroyWindow(static_cast<GLFWwindow*>(m_NativeWindow));
+		glfwDestroyWindow(static_cast<GLFWwindow*>(m_GLFWWindow));
 		--s_GLFWWindowCount;
 
 		if ( s_GLFWWindowCount == 0 )

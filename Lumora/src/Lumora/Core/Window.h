@@ -20,17 +20,16 @@ namespace Lumora
 		uint32_t GetHeight() const { return m_Props.Height; }
 		const WindowProps& GetProps() const { return m_Props; }
 
+		void* GetGLFWWindow() const { return m_GLFWWindow; }
 		void* GetNativeWindow() const { return m_NativeWindow; }
-
-		void SetVSync(bool enabled);
-		bool IsVSync() const { return m_Props.VSync; }
 
 		void SetEventCallback(const EventCallbackFn& callback) { m_EventCallback = callback; }
 		void EventCallback(Event& e) const { m_EventCallback(e); }
 
 	private:
 		WindowProps m_Props;
-		void* m_NativeWindow = nullptr;
+		void* m_GLFWWindow = nullptr;
+		void* m_NativeWindow = nullptr; // Platform specific window handle
 		EventCallbackFn m_EventCallback;
 
 	private:

@@ -19,3 +19,6 @@
 
 // Scripting
 #include "Lumora/Scripting/LuaSerializer.h"
+
+// Renderer
+#include "Lumora/Renderer/RendererContext.h"

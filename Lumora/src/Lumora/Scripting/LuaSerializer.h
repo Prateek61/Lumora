@@ -11,7 +11,7 @@ namespace Lumora
 	class LuaSerializer
 	{
 		// Class that wraps sol::state
-		// Provides an interface to read configuration files
+		// Provides an interface to serialize and deserialize structs to and from lua
 	public:
 		// Public for external locking
 		LM_MUTEX_AUTO();
