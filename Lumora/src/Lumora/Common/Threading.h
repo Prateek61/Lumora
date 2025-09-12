@@ -17,6 +17,9 @@ namespace Lumora
 
 	template<typename M>
 	using WriteLock = std::unique_lock<M>;
+
+	template<typename T>
+	using Atomic = std::atomic<T>;
 }
 
 // Macros

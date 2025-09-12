@@ -30,6 +30,7 @@ namespace Lumora
 
 		LuaSerializer& GetSerializer() { return m_Serializer; }
 		Window& GetWindow() { return *m_Window; }
+		RendererContext& GetRendererContext() { return *m_RendererContext; }
 
 	private:
 		ApplicationProps m_Props;

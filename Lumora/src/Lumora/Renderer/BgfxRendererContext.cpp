@@ -63,7 +63,7 @@ namespace Lumora
 		LM_CORE_ASSERT(status, "BGFX not initialized successfully")
 
 		bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(window.GetWidth()), static_cast<uint16_t>(window.GetHeight()));
-		bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0xffffffff, 1.0f, 0);
+		SetClearColor(0x000000ff);
 	}
 
 	void BgfxRendererContext::Shutdown()
@@ -85,5 +85,10 @@ namespace Lumora
 	{
 		bgfx::reset(width, height, BGFX_RESET_VSYNC);
 		bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(width), static_cast<uint16_t>(height));
+	}
+
+	void BgfxRendererContext::SetClearColor(uint32_t rgba)
+	{
+		bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, rgba, 1.0f, 0);
 	}
 }

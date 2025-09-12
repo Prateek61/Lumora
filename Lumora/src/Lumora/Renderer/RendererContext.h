@@ -27,6 +27,7 @@ namespace Lumora
 		virtual void BeginFrame() = 0;
 		virtual void EndFrame() = 0;
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
+		virtual void SetClearColor(uint32_t rgba) = 0;
 
 		static Scope<RendererContext> Create();
 	private:
