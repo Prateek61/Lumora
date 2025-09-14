@@ -21,8 +21,6 @@ namespace Lumora
 {
 	void AssetTypeRegistry::RegisterType(AssetTypeInfo typeInfo)
 	{
-		LM_PROFILE_FUNCTION();
-
 		DEBUG_ONLY
 		(
 			// Ensure the type isn't already registered

@@ -5,15 +5,24 @@
 
 namespace Lumora
 {
-	/// Asset Registry Class that manages asset properties and metadata
-	///	Stores AssetProps for each asset, maps asset IDs and asset type IDs to their properties
-	/// Provides methods to register, retrieve, and manage asset properties
-	///	Stores functions to load assets based on their type
-	///	Statically stores a mapping of asset type with their properties
-	///	Dynamically stores a mapping of asset IDs with their metadata
+	/// Manages asset properties
 	class AssetRegistry
 	{
 	public:
+		AssetIdT GetAssetId(const std::string& name) const;
+		Ref<AssetProps> GetAssetProps(AssetIdT id) const;
+
+		AssetIdT RegisterAsset(const Ref<AssetProps>& props);
+		void RegisterAsset(AssetIdT id, const Ref<AssetProps>& props);
+		void UnregisterAsset(AssetIdT id);
+
 	private:
+		AssetMap<std::string, AssetIdT> m_NameToIdMap;
+		AssetMap<AssetIdT, Ref<AssetProps>> m_AssetProps;
+
+		mutable LM_MUTEX(m_NameToIdMutex);
+		mutable LM_MUTEX(m_IdToPropsMutex);
+	private:
+		void RegisterAssetInternal(AssetIdT id, const Ref<AssetProps>& props);
 	};
 }

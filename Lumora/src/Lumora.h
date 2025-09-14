@@ -8,6 +8,9 @@
 #include "Lumora/Asset/AssetProps.h"
 #include "Lumora/Asset/AssetHandle.h"
 #include "Lumora/Asset/AssetTypeRegistry.h"
+#include "Lumora/Asset/AssetRegistry.h"
+#include "Lumora/Asset/AssetStorage.h"
+#include "Lumora/Asset/AssetManager.h"
 
 // Common
 #include "Lumora/Common/UUID.h"

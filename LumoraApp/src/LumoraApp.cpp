@@ -21,7 +21,8 @@ public:
 	App(const std::filesystem::path& configFile, Lumora::ApplicationCommandLineArgs args)
 		: Lumora::Application(configFile, args)
 	{
-		LM_TRACE(Lumora::AssetTypeRegistry::GetName(typeid(TestAsset)));
+		auto props = Lumora::AssetProps::DeSerialize("../Assets/TestAsset.local.lua", GetSerializer());
+		LM_TRACE(props->ToString());
 	}
 };
 

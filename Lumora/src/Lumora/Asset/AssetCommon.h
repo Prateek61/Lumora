@@ -11,6 +11,9 @@ namespace Lumora
 {
 	using AssetIdT = UUID;
 	const AssetIdT g_INVALID_ASSET_ID{};
+
+	inline AssetIdT GenerateAssetId() { return UUID::Generate(); }
+
 	using AssetVersionT = uint32_t;
 	constexpr AssetVersionT g_INVALID_ASSET_VERSION{ 0 };
 
