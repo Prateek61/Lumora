@@ -2,6 +2,13 @@
 
 #include <iostream>
 
+// Asset
+#include "Lumora/Asset/AssetCommon.h"
+#include "Lumora/Asset/Asset.h"
+#include "Lumora/Asset/AssetProps.h"
+#include "Lumora/Asset/AssetHandle.h"
+#include "Lumora/Asset/AssetTypeRegistry.h"
+
 // Common
 #include "Lumora/Common/UUID.h"
 #include "Lumora/Common/Log.h"

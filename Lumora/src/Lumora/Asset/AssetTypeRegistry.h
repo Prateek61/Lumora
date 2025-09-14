@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Asset.h"
+
 #include "Lumora/Asset/AssetCommon.h"
 #include "Lumora/Asset/AssetProps.h"
 #include "Lumora/Common/Base.h"
@@ -10,8 +12,8 @@ namespace Lumora
 	{
 		std::string Name;
 		std::string PropsSerializationName;
-		std::type_index AssetType;
-		std::type_index AssetPropsType;
+		std::type_index AssetType{ typeid(Asset) };
+		std::type_index AssetPropsType{ typeid(AssetProps) };
 		AssetLoadFunction<Asset, AssetProps> LoadFunction;
 	};
 
@@ -20,16 +22,24 @@ namespace Lumora
 	{
 	public:
 		static void RegisterType(AssetTypeInfo typeInfo);
-		static std::type_index GetCppType(const std::string& type);
-		static AssetTypeInfo* GetTypeInfo(const std::string& type);
-		static AssetTypeInfo* GetTypeInfo(std::type_index cppType);
+		static std::string GetName(std::type_index assetType);
+		static AssetTypeInfo& GetTypeInfo(const std::string& type);
+		static AssetTypeInfo& GetTypeInfo(std::type_index assetType);
+
+		template <typename T>
+			requires std::is_base_of_v<Asset, T>
+		static std::string GetName() { return GetName(typeid(T)); }
+
+		template<typename T>
+			requires std::is_base_of_v<Asset, T>
+		static AssetTypeInfo& GetTypeInfo() { return GetTypeInfo(typeid(T)); }
 	};
 
 	struct AssetTypeRegistrar
 	{
 		template <typename T, typename PT>
 			requires std::is_base_of_v<Asset, T> and std::is_base_of_v<AssetProps, PT>
-		AssetTypeRegistrar(const std::string& name, AssetLoadFunction<T, PT> loadFunction)
+		AssetTypeRegistrar(std::string name, AssetLoadFunction<T, PT> loadFunction)
 		{
 			LM_CORE_ASSERT(loadFunction, "Load function cannot be null");
 			LM_CORE_ASSERT(!name.empty(), "Asset type name cannot be empty");
@@ -39,15 +49,22 @@ namespace Lumora
 				return StaticRefCast<Asset>(loadFunction(static_cast<PT&>(props)));
 			};
 
-			LM_REGISTER_FOR_SERIALIZATION_NAMED(PT, name + "Props");
+			std::string propsSerializationName = name + "Props";
+			LM_REGISTER_FOR_SERIALIZATION_NAMED(PT, propsSerializationName);
 
 			AssetTypeRegistry::RegisterType({
-				.Name = name,
-				.PropsSerializationName = name + "Props",
-				.AssetPropsType = typeid(PT),
+				.Name = std::move(name),
+				.PropsSerializationName = propsSerializationName,
 				.AssetType = typeid(T),
+				.AssetPropsType = typeid(PT),
 				.LoadFunction = wrapperFunction
 			});
 		}
 	};
 }
+
+#define LM_REGISTER_ASSET_TYPE(Name, AssetType, AssetPropsType, LoadFunction) \
+	static Lumora::AssetTypeRegistrar _Registrar##AssetType##__LINE__(Name, static_cast<Lumora::AssetLoadFunction<AssetType, AssetPropsType>>(LoadFunction));
+
+#define LM_REGISTER_ASSET_TYPE_AUTO(AssetType, AssetPropsType, LoadFunction) \
+	LM_REGISTER_ASSET_TYPE(#AssetType, AssetType, AssetPropsType, LoadFunction)

@@ -21,3 +21,6 @@ namespace Lumora
 }
 
 VISITABLE_STRUCT(Lumora::AssetProps, Name, Type, AssetDependencies, HotReload, UpdateMetadata);
+
+#define LM_VISITABLE_ASSET_PROPS(PropsType, ...) \
+	VISITABLE_STRUCT(PropsType, Name, Type, AssetDependencies, HotReload, UpdateMetadata __VA_ARGS__);

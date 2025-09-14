@@ -2,13 +2,26 @@
 
 #include "Lumora/Entrypoint.h"
 
+class TestAssetProps : public Lumora::AssetProps
+{
+};
+LM_VISITABLE_ASSET_PROPS(TestAssetProps);
+class TestAsset : public Lumora::Asset
+{
+};
+Lumora::Ref<TestAsset> LoadTestAsset(TestAssetProps& props)
+{
+	return Lumora::CreateRef<TestAsset>();
+}
+LM_REGISTER_ASSET_TYPE("TestAsset", TestAsset, TestAssetProps, LoadTestAsset)
+
 class App : public Lumora::Application
 {
 public:
 	App(const std::filesystem::path& configFile, Lumora::ApplicationCommandLineArgs args)
 		: Lumora::Application(configFile, args)
 	{
-		
+		LM_TRACE(Lumora::AssetTypeRegistry::GetName(typeid(TestAsset)));
 	}
 };
 

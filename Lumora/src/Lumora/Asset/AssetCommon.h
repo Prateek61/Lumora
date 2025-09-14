@@ -1,6 +1,11 @@
 #pragma once
 
 #include "Lumora/Common/UUID.h"
+#include "Lumora/Common/Base.h"
+
+#include <map>
+#include <unordered_map>
+#include <functional>
 
 namespace Lumora
 {
@@ -19,6 +24,6 @@ namespace Lumora
 	using AssetMap = std::map<K, V>;
 
 	template<typename T, typename PT>
-		requires std::is_base_of_v<Asset, T> and std::is_base_of_v<AssetProps, PT>
-	using AssetLoadFunction = std::function<Ref<T>(PT& props)>;
+		requires std::is_base_of_v<Asset, T>&& std::is_base_of_v<AssetProps, PT>
+	using AssetLoadFunction = std::function<Ref<T>(PT&)>;
 }

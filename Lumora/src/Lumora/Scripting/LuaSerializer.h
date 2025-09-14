@@ -74,6 +74,11 @@ namespace Lumora
 			{
 				LuaSerializer::GetTypeRegistry()[name] = std::move(info);
 			}
+
+			LuaTypeRegistrar(const std::string& name, LuaSerializer::TypeInfo info)
+			{
+				LuaSerializer::GetTypeRegistry()[name] = std::move(info);
+			}
 		};
 	}
 }
