@@ -14,8 +14,8 @@ namespace Lumora
 		~AssetStorage() = default;
 
 		// Assets
-		bool HasAsset(AssetIdT assetId);
-		bool IsLoaded(AssetIdT assetId);
+		bool HasAsset(AssetIdT assetId) const;
+		bool IsLoaded(AssetIdT assetId) const;
 		Ref<AssetRecord> GetAssetRecord(AssetIdT assetId);
 		void AddAssetRecord(Ref<AssetRecord> assetRecord);
 		void RemoveAssetRecord(AssetIdT assetId);
@@ -31,8 +31,8 @@ namespace Lumora
 		AssetMap<AssetIdT, Ref<AssetRecord>> m_AssetRecords;
 		AssetMap<std::type_index, Ref<AssetRecord>> m_DefaultAssets;
 
-		Lumora::RWMutex m_AssetRecordsMutex;
-		Lumora::RWMutex m_DefaultAssetsMutex; 
+		mutable Lumora::RWMutex m_AssetRecordsMutex;
+		mutable Lumora::RWMutex m_DefaultAssetsMutex; 
 
 	private:
 		void UnloadAll(); // Unload all assets but keep the records

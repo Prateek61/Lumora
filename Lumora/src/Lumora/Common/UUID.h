@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <ostream>
 
 namespace Lumora
 {
@@ -20,6 +21,7 @@ namespace Lumora
 		UUID(const UUID&) = default;
 
 		operator uint64_t() const { return m_UUID; }
+		operator std::string() const { return std::to_string(m_UUID); }
 
 		static UUID Generate();
 
@@ -41,4 +43,11 @@ namespace std
 			return uuid;
 		}
 	};
+}
+
+// Operator overload for cout
+inline std::ostream& operator<<(std::ostream& os, const Lumora::UUID& uuid)
+{
+	os << static_cast<uint64_t>(uuid);
+	return os;
 }

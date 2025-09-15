@@ -37,13 +37,15 @@ namespace Lumora
 		sol::load_result script = m_Lua.load_file(file.string());
 		if ( !script.valid() )
 		{
-			throw std::runtime_error("Failed to load script: " + file.string());
+			LM_CORE_WARN("[LuaSerializer] Failed to load script: {}", file.string());
+			return nullptr;
 		}
 
 		sol::protected_function_result result = script();
 		if ( !result.valid() )
 		{
-			throw std::runtime_error("Failed to execute script: " + file.string());
+			LM_CORE_WARN("[LuaSerializer] Failed to execute script: {}", file.string());
+			return nullptr;
 		}
 
 		sol::object obj = result;

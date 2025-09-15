@@ -23,6 +23,10 @@ namespace Lumora
 	class AssetManager;
 	struct AssetProps;
 
+	template<typename T>
+		requires std::is_base_of_v<Asset, T>
+	class AssetHandle;
+
 	template<typename K, typename V>
 	using AssetMap = std::map<K, V>;
 

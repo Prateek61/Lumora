@@ -4,7 +4,7 @@
 
 namespace Lumora
 {
-	bool AssetStorage::HasAsset(AssetIdT assetId)
+	bool AssetStorage::HasAsset(AssetIdT assetId) const
 	{
 		LM_PROFILE_FUNCTION();
 		LM_LOCK_READ(m_AssetRecordsMutex);
@@ -17,16 +17,16 @@ namespace Lumora
 		return false;
 	}
 
-	bool AssetStorage::IsLoaded(AssetIdT assetId)
+	bool AssetStorage::IsLoaded(AssetIdT assetId) const
 	{
 		LM_PROFILE_FUNCTION();
 		LM_LOCK_READ(m_AssetRecordsMutex);
 
 		auto it = m_AssetRecords.find(assetId);
-		LM_ASSERT(it != m_AssetRecords.end(), "Asset Record not Found")
+		LM_CORE_ASSERT(it != m_AssetRecords.end(), "Asset Record not Found")
 
 		auto& assetRecord = it->second;
-		return assetRecord->IsValid();
+		return assetRecord->IsLoaded();
 	}
 
 	Ref<AssetRecord> AssetStorage::GetAssetRecord(AssetIdT assetId)
@@ -35,7 +35,7 @@ namespace Lumora
 		LM_LOCK_READ(m_AssetRecordsMutex);
 
 		auto it = m_AssetRecords.find(assetId);
-		LM_ASSERT(it != m_AssetRecords.end(), "Asset Record not Found")
+		LM_CORE_ASSERT(it != m_AssetRecords.end(), "Asset Record not Found")
 
 		return it->second;
 	}
@@ -54,7 +54,7 @@ namespace Lumora
 		LM_LOCK_WRITE(m_AssetRecordsMutex);
 
 		auto it = m_AssetRecords.find(assetId);
-		LM_ASSERT(it != m_AssetRecords.end(), "Asset Record not Found")
+		LM_CORE_ASSERT(it != m_AssetRecords.end(), "Asset Record not Found")
 
 		m_AssetRecords.erase(it);
 	}
@@ -65,7 +65,7 @@ namespace Lumora
 		LM_LOCK_READ(m_AssetRecordsMutex);
 
 		auto it = m_AssetRecords.find(assetId);
-		LM_ASSERT(it != m_AssetRecords.end(), "Asset Record not Found")
+		LM_CORE_ASSERT(it != m_AssetRecords.end(), "Asset Record not Found")
 
 		it->second->Unload();
 	}
@@ -89,7 +89,7 @@ namespace Lumora
 		LM_LOCK_READ(m_DefaultAssetsMutex);
 	
 		auto it = m_DefaultAssets.find(type);
-		LM_ASSERT(it != m_DefaultAssets.end(), "Default Asset Record not Found")
+		LM_CORE_ASSERT(it != m_DefaultAssets.end(), "Default Asset Record not Found")
 	
 		return it->second;
 	}
@@ -108,7 +108,7 @@ namespace Lumora
 		LM_LOCK_WRITE(m_DefaultAssetsMutex);
 	
 		auto it = m_DefaultAssets.find(type);
-		LM_ASSERT(it != m_DefaultAssets.end(), "Default Asset Record not Found")
+		LM_CORE_ASSERT(it != m_DefaultAssets.end(), "Default Asset Record not Found")
 	
 		m_DefaultAssets.erase(it);
 	}

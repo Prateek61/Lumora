@@ -20,7 +20,7 @@ namespace Lumora
 		Ref<Asset> Get() const { return m_AssetPtr.load(std::memory_order_relaxed); }
 		AssetVersionT GetVersion() const { return m_AssetVersion.load(std::memory_order_relaxed); }
 		AssetIdT GetAssetId() const { return m_AssetId; }
-		bool IsValid() const { return m_AssetPtr.load(std::memory_order_relaxed) != nullptr; }
+		bool IsLoaded() const { return m_AssetPtr.load(std::memory_order_relaxed) != nullptr; }
 
 	private:
 		Atomic<Ref<Asset>> m_AssetPtr{ nullptr };

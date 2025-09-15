@@ -7,6 +7,7 @@
 #include "Lumora/Scripting/LuaSerializer.h"
 #include "Lumora/Event/ApplicationEvent.h"
 #include "Lumora/Utilities/TimeStep.h"
+#include "Lumora/Asset/AssetManager.h"
 
 // Forward declaration of main
 int main(int argc, char** argv);
@@ -31,11 +32,13 @@ namespace Lumora
 		LuaSerializer& GetSerializer() { return m_Serializer; }
 		Window& GetWindow() { return *m_Window; }
 		RendererContext& GetRendererContext() { return *m_RendererContext; }
+		AssetManager& GetAssetManager() { return *m_AssetManager; }
 
 	private:
 		ApplicationProps m_Props;
 		Scope<Window> m_Window;
 		Scope<RendererContext> m_RendererContext;
+		Scope<AssetManager> m_AssetManager;
 
 		LuaSerializer m_Serializer = {};
 		bool m_Running = true;

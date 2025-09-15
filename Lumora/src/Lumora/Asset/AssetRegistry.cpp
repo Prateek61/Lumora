@@ -1,6 +1,7 @@
 #include "LMPCH.h"
 #include "AssetRegistry.h"
 #include "AssetTypeRegistry.h"
+#include "AssetManager.h"
 
 
 struct AssetTypeSerialization
