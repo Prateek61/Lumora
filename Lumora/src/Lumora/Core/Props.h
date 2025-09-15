@@ -32,6 +32,14 @@ namespace Lumora
 		WindowProps WindowProps;
 
 		bool Run = true; // Whether to run the application loop, for debugging or testing purposes
+
+		static ApplicationProps Get(const std::filesystem::path& configFile, LuaSerializer& serializer)
+		{
+			LM_PROFILE_FUNCTION();
+			auto props = serializer.DeserializeFromFile<ApplicationProps>(configFile);
+			props.AssetsDirectory = configFile.parent_path() / props.AssetsDirectory;
+			return props;
+		}
 	};
 }
 

@@ -19,8 +19,7 @@ namespace Lumora
 	{
 		LM_PROFILE_FUNCTION();
 
-		auto props = m_Serializer.DeserializeFromFile<ApplicationProps>(configFile);
-		props.CommandLineArgs = args;
+		auto props = ApplicationProps::Get(configFile, m_Serializer);
 
 		Init(props);
 	}
@@ -55,6 +54,9 @@ namespace Lumora
 		m_RendererContext->Init(*m_Window);
 
 		// TODO: ImGui setup
+
+		// Asset Manager
+		m_AssetManager = CreateScope<AssetManager>(props.AssetsDirectory, m_Serializer);
 	}
 
 	void Application::OnEvent(Event& e)

@@ -14,10 +14,11 @@ namespace Lumora
 	{
 		LM_PROFILE_FUNCTION();
 
-		Ref<AssetProps> props = AssetProps::DeSerialize(assetPropsFile, *m_Serializer);
+		auto fullPath = GetFullAssetPath(assetPropsFile);
+		Ref<AssetProps> props = AssetProps::DeSerialize(fullPath, *m_Serializer);
 		if (!props)
 		{
-			LM_CORE_ERROR("Error in deserializing asset props: {}", assetPropsFile.string());
+			LM_CORE_ERROR("Error in deserializing asset props: {}", GetFullAssetPath(assetPropsFile).string());
 			return g_INVALID_ASSET_ID;
 		}
 

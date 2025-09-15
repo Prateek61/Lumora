@@ -12,13 +12,13 @@ namespace Lumora
 	{
 	public:
 		explicit AssetHandle(Ref<AssetRecord> assetRecord, AssetManager* assetManager)
-			: m_AssetRecord(std::move(assetRecord)),
-			  m_AssetVersion(assetRecord->GetVersion()),
+			: m_AssetVersion(assetRecord->GetVersion()),
 			  m_CachedAsset(StaticRefCast<T>(assetRecord->Get())),
 			  m_AssetId(assetRecord->GetAssetId()),
-			  m_AssetManager(assetManager)
+			  m_AssetManager(assetManager),
+			  m_AssetRecord(std::move(assetRecord))
 		{
-			LM_CORE_ASSERT(m_AssetRecord, "AssetRecord is null");
+			LM_CORE_ASSERT(m_AssetRecord, "AssetRecord is null")
 		}
 
 		bool Reload();
@@ -29,7 +29,6 @@ namespace Lumora
 		bool IsLoaded();
 
 		Ref<T> Get();
-		Ref<T> GetCached();
 
 		// Accessors
 		AssetIdT GetAssetId() const { return m_AssetId; }
@@ -39,12 +38,13 @@ namespace Lumora
 		operator bool() const { return IsValid(); }
 		Ref<T> operator->() { return Get(); }
 		Ref<T> operator*() { return Get(); }
+
 	private:
-		Ref<AssetRecord> m_AssetRecord;
 		AssetVersionT m_AssetVersion;
 		Ref<T> m_CachedAsset;
 		AssetIdT m_AssetId;
 		AssetManager* m_AssetManager;
+		Ref<AssetRecord> m_AssetRecord;
 	};
 }
 
@@ -53,7 +53,7 @@ namespace Lumora
 // Template Implementations
 namespace Lumora
 {
-	template<typename T>
+	template <typename T>
 		requires std::is_base_of_v<Asset, T>
 	bool AssetHandle<T>::Reload()
 	{
@@ -64,41 +64,39 @@ namespace Lumora
 		return IsLoaded();
 	}
 
-	template<typename T>
+	template <typename T>
 		requires std::is_base_of_v<Asset, T>
 	bool AssetHandle<T>::Load()
 	{
 		LM_PROFILE_FUNCTION();
 		LM_CORE_ASSERT(IsValid(), "Invalid Asset Handle");
 
-		if (IsLoaded())
-			return true;
+		if ( IsLoaded() ) return true;
 		m_AssetManager->Load(*m_AssetRecord);
 		return IsLoaded();
 	}
 
-	template<typename T>
+	template <typename T>
 		requires std::is_base_of_v<Asset, T>
 	void AssetHandle<T>::Unload()
 	{
 		LM_PROFILE_FUNCTION();
 		LM_CORE_ASSERT(IsValid(), "Invalid Asset Handle");
 
-		if (!IsLoaded())
-			return;
+		if ( !IsLoaded() ) return;
 		m_AssetManager->Unload(*m_AssetRecord);
 		m_CachedAsset = nullptr;
 		m_AssetVersion = g_INVALID_ASSET_VERSION;
 	}
 
-	template<typename T>
+	template <typename T>
 		requires std::is_base_of_v<Asset, T>
 	bool AssetHandle<T>::Update()
 	{
 		LM_PROFILE_FUNCTION();
 		LM_CORE_ASSERT(IsValid(), "Invalid Asset Handle");
 
-		if (m_AssetVersion != m_AssetRecord->GetVersion())
+		if ( m_AssetVersion != m_AssetRecord->GetVersion() )
 		{
 			m_AssetVersion = m_AssetRecord->GetVersion();
 			m_CachedAsset = StaticRefCast<T>(m_AssetRecord->Get());
@@ -107,18 +105,17 @@ namespace Lumora
 		return false;
 	}
 
-	template<typename T>
+	template <typename T>
 		requires std::is_base_of_v<Asset, T>
 	bool AssetHandle<T>::IsValid()
 	{
 		LM_PROFILE_FUNCTION();
 
-		if (m_AssetRecord && m_AssetManager && m_AssetManager->IsValid(m_AssetId))
-			return true;
+		if ( m_AssetRecord && m_AssetManager && m_AssetManager->IsValid(m_AssetId) ) return true;
 		return false;
 	}
 
-	template<typename T>
+	template <typename T>
 		requires std::is_base_of_v<Asset, T>
 	bool AssetHandle<T>::IsLoaded()
 	{
@@ -126,10 +123,10 @@ namespace Lumora
 		LM_CORE_ASSERT(IsValid(), "Invalid Asset Handle")
 
 		Update();
-		return m_CachedAsset;
+		return static_cast<bool>(m_CachedAsset);
 	}
 
-	template<typename T>
+	template <typename T>
 		requires std::is_base_of_v<Asset, T>
 	Ref<T> AssetHandle<T>::Get()
 	{
@@ -137,22 +134,12 @@ namespace Lumora
 		LM_CORE_ASSERT(IsValid(), "Invalid Asset Handle");
 
 		Update();
-		if (!m_CachedAsset)
+		if ( !m_CachedAsset )
 		{
 			Load();
 		}
 
 		LM_CORE_ASSERT(m_CachedAsset, "Asset is not loaded");
 		return m_CachedAsset;
-	}
-
-	template<typename T>
-		requires std::is_base_of_v<Asset, T>
-	Ref<T> AssetHandle<T>::GetCached()
-	{
-		LM_PROFILE_FUNCTION();
-
-		if (m_CachedAsset)	return m_CachedAsset;
-		return Get();
 	}
 }

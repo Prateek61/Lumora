@@ -66,6 +66,8 @@ namespace Lumora
 		auto id = GetAssetId(name);
 		LM_CORE_ASSERT(IsValid(id), "Invalid Asset ID");
 
-		return AssetHandle<T>(m_Storage.GetAssetRecord(id), this);
+		auto record = m_Storage.GetAssetRecord(id);
+		LM_CORE_ASSERT(record, "Asset Record not found");
+		return AssetHandle<T>(record, this);
 	}
 }
