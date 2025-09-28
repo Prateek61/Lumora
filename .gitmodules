@@ -9,19 +9,19 @@
 	url = https://github.com/bkaradzic/bx.git
 [submodule "External/glm"]
 	path = External/glm
-	url = git@github.com:g-truc/glm.git
+	url = https://github.com/g-truc/glm.git
 [submodule "External/spdlog"]
 	path = External/spdlog
-	url = git@github.com:gabime/spdlog.git
+	url = https://github.com/gabime/spdlog.git
 [submodule "External/glfw/glfw"]
 	path = External/glfw/glfw
-	url = git@github.com:glfw/glfw.git
+	url = https://github.com/glfw/glfw.git
 [submodule "External/sol"]
 	path = External/sol
-	url = git@github.com:ThePhD/sol2.git
+	url = https://github.com/ThePhD/sol2.git
 [submodule "External/imgui/imgui"]
 	path = External/imgui/imgui
-	url = git@github.com:ocornut/imgui.git
+	url = https://github.com/ocornut/imgui.git
 [submodule "External/lua/lua"]
 	path = External/lua/lua
 	url = https://github.com/lua/lua.git
