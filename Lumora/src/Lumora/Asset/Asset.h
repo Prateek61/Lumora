@@ -8,9 +8,6 @@ namespace Lumora
 	class Asset
 	{
 	public:
-		AssetIdT AssetId = g_INVALID_ASSET_ID;
-
-	public:
 		virtual ~Asset() = default;
 	};
 }

@@ -17,25 +17,16 @@ namespace Lumora
 		return false;
 	}
 
-	bool AssetStorage::IsLoaded(AssetIdT assetId) const
-	{
-		LM_PROFILE_FUNCTION();
-		LM_LOCK_READ(m_AssetRecordsMutex);
-
-		auto it = m_AssetRecords.find(assetId);
-		LM_CORE_ASSERT(it != m_AssetRecords.end(), "Asset Record not Found")
-
-		auto& assetRecord = it->second;
-		return assetRecord->IsLoaded();
-	}
-
 	Ref<AssetRecord> AssetStorage::GetAssetRecord(AssetIdT assetId)
 	{
 		LM_PROFILE_FUNCTION();
 		LM_LOCK_READ(m_AssetRecordsMutex);
 
 		auto it = m_AssetRecords.find(assetId);
-		LM_CORE_ASSERT(it != m_AssetRecords.end(), "Asset Record not Found")
+		if (it == m_AssetRecords.end())
+		{
+			return nullptr;
+		}
 
 		return it->second;
 	}
@@ -54,20 +45,14 @@ namespace Lumora
 		LM_LOCK_WRITE(m_AssetRecordsMutex);
 
 		auto it = m_AssetRecords.find(assetId);
-		LM_CORE_ASSERT(it != m_AssetRecords.end(), "Asset Record not Found")
+
+		if (it == m_AssetRecords.end())
+		{
+			LM_CORE_WARN("Trying to remove non-existing Asset Record with ID: {}", static_cast<std::string>(assetId));
+			return;
+		}
 
 		m_AssetRecords.erase(it);
-	}
-
-	void AssetStorage::Unload(AssetIdT assetId)
-	{
-		LM_PROFILE_FUNCTION();
-		LM_LOCK_READ(m_AssetRecordsMutex);
-
-		auto it = m_AssetRecords.find(assetId);
-		LM_CORE_ASSERT(it != m_AssetRecords.end(), "Asset Record not Found")
-
-		it->second->Unload();
 	}
 
 	bool AssetStorage::HasDefaultAsset(std::type_index type)
@@ -89,7 +74,10 @@ namespace Lumora
 		LM_LOCK_READ(m_DefaultAssetsMutex);
 	
 		auto it = m_DefaultAssets.find(type);
-		LM_CORE_ASSERT(it != m_DefaultAssets.end(), "Default Asset Record not Found")
+		if (it == m_DefaultAssets.end())
+		{
+			return nullptr;
+		}
 	
 		return it->second;
 	}
@@ -108,7 +96,11 @@ namespace Lumora
 		LM_LOCK_WRITE(m_DefaultAssetsMutex);
 	
 		auto it = m_DefaultAssets.find(type);
-		LM_CORE_ASSERT(it != m_DefaultAssets.end(), "Default Asset Record not Found")
+		if (it == m_DefaultAssets.end())
+		{
+			LM_CORE_WARN("Trying to remove non-existing Default Asset Record of type: {}", type.name());
+			return;
+		}
 	
 		m_DefaultAssets.erase(it);
 	}

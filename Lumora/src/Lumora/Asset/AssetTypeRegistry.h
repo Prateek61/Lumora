@@ -50,7 +50,7 @@ namespace Lumora
 			};
 
 			std::string propsSerializationName = name + "Props";
-			LM_REGISTER_FOR_SERIALIZATION_NAMED(PT, propsSerializationName);
+			LM_REGISTER_FOR_SERIALIZATION_NAMED_VAR(PT, propsSerializationName);
 
 			AssetTypeRegistry::RegisterType({
 				.Name = std::move(name),

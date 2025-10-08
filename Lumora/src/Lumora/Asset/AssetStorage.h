@@ -15,11 +15,9 @@ namespace Lumora
 
 		// Assets
 		bool HasAsset(AssetIdT assetId) const;
-		bool IsLoaded(AssetIdT assetId) const;
 		Ref<AssetRecord> GetAssetRecord(AssetIdT assetId);
 		void AddAssetRecord(Ref<AssetRecord> assetRecord);
 		void RemoveAssetRecord(AssetIdT assetId);
-		void Unload(AssetIdT assetId); // Unload asset but keep the record
 
 		// Default Assets
 		bool HasDefaultAsset(std::type_index type);

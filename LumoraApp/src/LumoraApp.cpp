@@ -12,7 +12,10 @@ public:
 		auto id = Lumora::Assets::Register("Example.local.asset.lua");
 
 		auto handle = Lumora::Assets::Get<ExampleAsset>("JustExample");
-		LM_CORE_TRACE("Data: {}", handle->Data);
+		if (handle)
+		{
+			LM_INFO("Data: {}", handle->Data);
+		}
 	}
 };
 

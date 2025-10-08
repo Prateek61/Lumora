@@ -20,7 +20,6 @@ namespace Lumora
 		std::string Type; // Type of the asset
 		std::vector<std::filesystem::path> AssetDependencies; // List of asset dependencies
 		bool HotReload = false; // Enable hot reloading for this asset
-		bool UpdateMetadata = false; // Update metadata if necessary
 		AssetIdT AssetId = g_INVALID_ASSET_ID; // Asset ID, assigned by the AssetRegistry
 
 		std::string ToString() const;
@@ -28,6 +27,6 @@ namespace Lumora
 	};
 }
 
-VISITABLE_STRUCT(Lumora::AssetProps, Name, Type, AssetDependencies, HotReload, UpdateMetadata);
+VISITABLE_STRUCT(Lumora::AssetProps, Name, Type, AssetDependencies, HotReload);
 
-#define LM_VISITABLE_ASSET_PROPS(PropsType, ...) EXPAND_MACRO(VISITABLE_STRUCT(PropsType, Name, Type, AssetDependencies, HotReload, UpdateMetadata, __VA_ARGS__))
+#define LM_VISITABLE_ASSET_PROPS(PropsType, ...) EXPAND_MACRO(VISITABLE_STRUCT(PropsType, Name, Type, AssetDependencies, HotReload, __VA_ARGS__))

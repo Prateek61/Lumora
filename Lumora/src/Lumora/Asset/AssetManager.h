@@ -20,17 +20,21 @@ namespace Lumora
 		template<typename T>
 			requires std::is_base_of_v<Asset, T>
 		AssetHandle<T> GetAssetHandle(const std::string& name);
+
 		AssetIdT RegisterAsset(const std::filesystem::path& assetPropsFile);
 		AssetIdT RegisterAsset(const Ref<AssetProps>& props);
-		void Load(AssetIdT assetId);
-		void Reload(AssetIdT assetId);
-		void Unload(AssetIdT assetId);
-		void Remove(AssetIdT assetId);
-		void Load(AssetRecord& record);
-		void Reload(AssetRecord& record);
-		void Unload(AssetRecord& record);
+
+		bool Load(AssetIdT assetId);
+		bool Unload(AssetIdT assetId);
+		bool Remove(AssetIdT assetId);
+
+		bool Load(AssetRecord& record);
+		bool Unload(AssetRecord& record);
+		bool Remove(AssetRecord& record);
+
 		bool IsValid(AssetIdT assetId) const;
 		bool IsValid(const std::string& name) const;
+
 		AssetIdT GetAssetId(const std::string& name) const;
 
 		std::filesystem::path GetAssetRoot() const { return m_AssetRoot; }

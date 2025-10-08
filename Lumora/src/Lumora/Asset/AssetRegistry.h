@@ -13,7 +13,7 @@ namespace Lumora
 		Ref<AssetProps> GetAssetProps(AssetIdT id) const;
 
 		AssetIdT RegisterAsset(const Ref<AssetProps>& props);
-		void RegisterAsset(AssetIdT id, const Ref<AssetProps>& props);
+		void RegisterAsset(const Ref<AssetProps>& props, AssetIdT id);
 		void UnregisterAsset(AssetIdT id);
 
 	private:
@@ -22,6 +22,7 @@ namespace Lumora
 
 		mutable LM_MUTEX(m_NameToIdMutex);
 		mutable LM_MUTEX(m_IdToPropsMutex);
+
 	private:
 		void RegisterAssetInternal(AssetIdT id, const Ref<AssetProps>& props);
 	};

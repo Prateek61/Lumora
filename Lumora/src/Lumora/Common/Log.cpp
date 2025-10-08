@@ -10,6 +10,7 @@ namespace Lumora
 	Ref<spdlog::logger> Log::s_CoreLogger;
 	Ref<spdlog::logger> Log::s_ClientLogger;
 	Ref<spdlog::logger> Log::s_LuaLogger;
+	Ref<spdlog::logger> Log::s_BgfxLogger;
 
 
 	void Log::Init(const std::filesystem::path& logFilePath)
@@ -35,6 +36,11 @@ namespace Lumora
 		register_logger(s_LuaLogger);
 		s_LuaLogger->set_level(spdlog::level::trace);
 		s_LuaLogger->flush_on(spdlog::level::trace);
+
+		s_BgfxLogger = std::make_shared<spdlog::logger>("BGFX", begin(log_sinks), end(log_sinks));
+		register_logger(s_BgfxLogger);
+		s_BgfxLogger->set_level(spdlog::level::trace);
+		s_BgfxLogger->flush_on(spdlog::level::trace);
 	}
 
 }

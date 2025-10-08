@@ -39,66 +39,73 @@ namespace Lumora
 		}
 
 		auto newId = UUID::Generate();
-		m_Registry.RegisterAsset(newId, props);
+		m_Registry.RegisterAsset(props, newId);
 		auto assetRecord = CreateRef<AssetRecord>(newId, props->Name, nullptr);
 		m_Storage.AddAssetRecord(assetRecord);
 		return newId;
 	}
 
-	void AssetManager::Load(AssetIdT assetId)
+	bool AssetManager::Load(AssetIdT assetId)
 	{
 		LM_PROFILE_FUNCTION();
 		LM_CORE_ASSERT(IsValid(assetId), "Invalid Asset ID")
 
 		auto record = m_Storage.GetAssetRecord(assetId);
-		Load(*record);
+		if (!record)	return false;
+		return Load(*record);
 	}
 
-	void AssetManager::Reload(AssetIdT assetId)
+	bool AssetManager::Unload(AssetIdT assetId)
 	{
 		LM_PROFILE_FUNCTION();
 		LM_CORE_ASSERT(IsValid(assetId), "Invalid Asset ID")
 
 		auto record = m_Storage.GetAssetRecord(assetId);
-		Reload(*record);
+		if (!record)	return false;
+		return Unload(*record);
 	}
 
-	void AssetManager::Unload(AssetIdT assetId)
-	{
-		LM_PROFILE_FUNCTION();
-		LM_CORE_ASSERT(IsValid(assetId), "Invalid Asset ID")
-		auto record = m_Storage.GetAssetRecord(assetId);
-		Unload(*record);
-	}
-
-	void AssetManager::Remove(AssetIdT assetId)
+	bool AssetManager::Remove(AssetIdT assetId)
 	{
 		LM_PROFILE_FUNCTION();
 		LM_CORE_ASSERT(IsValid(assetId), "Invalid Asset ID")
 
 		m_Storage.RemoveAssetRecord(assetId);
 		m_Registry.UnregisterAsset(assetId);
+		return true;
 	}
 
-	void AssetManager::Load(AssetRecord& record)
+	bool AssetManager::Load(AssetRecord& record)
 	{
 		LM_PROFILE_FUNCTION();
 
 		auto props = m_Registry.GetAssetProps(record.GetAssetId());
+		if (!props)
+		{
+			return false;
+		}
+
 		auto ass = AssetLoader::Load(*props);
+		if (!ass)
+		{
+			return false;
+		}
+
 		record.UpdateAsset(ass);
+		return true;
 	}
 
-	void AssetManager::Reload(AssetRecord& record)
-	{
-		Load(record);
-	}
-
-	void AssetManager::Unload(AssetRecord& record)
+	bool AssetManager::Unload(AssetRecord& record)
 	{
 		LM_PROFILE_FUNCTION();
 
 		record.UpdateAsset(nullptr);
+		return true;
+	}
+
+	bool AssetManager::Remove(AssetRecord& record)
+	{
+		return Remove(record.GetAssetId());
 	}
 
 	bool AssetManager::IsValid(AssetIdT assetId) const

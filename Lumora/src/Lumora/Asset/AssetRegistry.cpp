@@ -3,13 +3,6 @@
 #include "AssetTypeRegistry.h"
 #include "AssetManager.h"
 
-
-struct AssetTypeSerialization
-{
-	std::string Type;
-};
-VISITABLE_STRUCT(AssetTypeSerialization, Type);
-
 namespace Lumora
 {
 	void AssetRegistry::RegisterAssetInternal(AssetIdT id, const Ref<AssetProps>& props)
@@ -64,7 +57,8 @@ namespace Lumora
 		RegisterAssetInternal(id, props);
 		return id;
 	}
-	void AssetRegistry::RegisterAsset(AssetIdT id, const Ref<AssetProps>& props)
+
+	void AssetRegistry::RegisterAsset(const Ref<AssetProps>& props, AssetIdT id)
 	{
 		LM_PROFILE_FUNCTION();
 

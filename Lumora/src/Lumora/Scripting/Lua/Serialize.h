@@ -33,8 +33,8 @@ namespace Lumora::Serialize
 	}
 
 	// Scalar types
-	template<typename T>
-		requires std::is_arithmetic_v<T> && !std::is_same_v<T, bool>
+	template <typename T>
+		requires (std::is_arithmetic_v<T> && !std::is_same_v<T, bool>)
 	T FromLua(const sol::object& obj)
 	{
 		return obj.as<T>();
@@ -63,10 +63,10 @@ namespace Lumora::Serialize
 		requires is_specialization_of_v<Vec, std::vector>
 	Vec FromLua(const sol::object& obj)
 	{
-		using T = typename Vec::value_type;
+		using T = Vec::value_type;
 		auto tbl = obj.as<sol::table>();
 		std::vector<T> vec;
-		for ( auto& pair : tbl )
+		for (auto& pair : tbl)
 		{
 			vec.push_back(FromLua<T>(pair.second));
 		}
@@ -78,11 +78,11 @@ namespace Lumora::Serialize
 		requires is_specialization_of_v<Map, std::map>
 	Map FromLua(const sol::object& obj)
 	{
-		using K = typename Map::key_type;
-		using T = typename Map::mapped_type;
+		using K = Map::key_type;
+		using T = Map::mapped_type;
 		auto tbl = obj.as<sol::table>();
 		std::map<K, T> map;
-		for ( auto& pair : tbl )
+		for (auto& pair : tbl)
 		{
 			map[pair.first.as<K>()] = FromLua<T>(pair.second);
 		}
@@ -98,7 +98,7 @@ namespace Lumora::Serialize
 		T t{};
 		visit_struct::for_each(t, [&](const char* name, auto& value)
 		{
-			if ( tbl[name].valid() )
+			if (tbl[name].valid())
 			{
 				using FieldType = std::decay_t<decltype(value)>;
 				value = FromLua<FieldType>(tbl[name]);
@@ -120,9 +120,9 @@ namespace Lumora::Serialize
 	}
 
 	// Scalar types
-	template<typename T>
+	template <typename T>
 	sol::object ToLua(sol::state_view& lua, const T& value)
-		requires std::is_arithmetic_v<T> && !std::is_same_v<T, bool>
+		requires (std::is_arithmetic_v<T> && !std::is_same_v<T, bool>)
 	{
 		return make_object(lua, value);
 	}
@@ -150,9 +150,9 @@ namespace Lumora::Serialize
 		requires is_specialization_of_v<Vec, std::vector>
 	sol::object ToLua(sol::state_view& lua, const Vec& vec)
 	{
-		using T = typename Vec::value_type;
+		using T = Vec::value_type;
 		sol::table tbl = lua.create_table();
-		for ( size_t i = 0; i < vec.size(); ++i )
+		for (size_t i = 0; i < vec.size(); ++i)
 		{
 			tbl[i + 1] = ToLua<T>(lua, vec[i]);
 		}
@@ -165,7 +165,7 @@ namespace Lumora::Serialize
 	sol::object ToLua(sol::state_view& lua, const std::map<std::string, T>& map)
 	{
 		sol::table tbl = lua.create_table();
-		for ( const auto& [k, v] : map )
+		for (const auto& [k, v] : map)
 		{
 			tbl[k] = ToLua<T>(lua, v);
 		}
@@ -198,14 +198,14 @@ namespace Lumora::Serialize
 	}
 
 	// Scalar Types
-	template<typename T>
-		requires std::is_arithmetic_v<T> && !std::is_same_v<T, bool>
+	template <typename T>
+		requires (std::is_arithmetic_v<T> && !std::is_same_v<T, bool>)
 	void ToLuaString(const T& value, std::ostream& os, int curr_indent, int indent, bool key)
 	{
 		os << value;
 	}
 
-	template<>
+	template <>
 	inline void ToLuaString<bool>(const bool& value, std::ostream& os, int curr_indent, int indent, bool key)
 	{
 		os << (value ? "true" : "false");
@@ -222,7 +222,7 @@ namespace Lumora::Serialize
 	inline void ToLuaString<std::filesystem::path>(const std::filesystem::path& value, std::ostream& os,
 	                                               int curr_indent, int indent, bool key)
 	{
-		if ( !key ) os << "\"" << value.string() << "\"";
+		if (!key) os << "\"" << value.string() << "\"";
 		else os << value.string();
 	}
 
@@ -231,13 +231,13 @@ namespace Lumora::Serialize
 		requires is_specialization_of_v<Vec, std::vector>
 	void ToLuaString(const Vec& vec, std::ostream& os, int curr_indent, int indent, bool key)
 	{
-		using T = typename Vec::value_type;
+		using T = Vec::value_type;
 		os << "{\n";
-		for ( size_t i = 0; i < vec.size(); ++i )
+		for (size_t i = 0; i < vec.size(); ++i)
 		{
 			os << std::string(curr_indent + indent, ' ');
 			ToLuaString<T>(vec[i], os, curr_indent + indent, indent, false);
-			if ( i < vec.size() - 1 ) os << ",";
+			if (i < vec.size() - 1) os << ",";
 			os << "\n";
 		}
 		os << std::string(curr_indent, ' ') << "}";
@@ -248,10 +248,10 @@ namespace Lumora::Serialize
 		requires is_specialization_of_v<Map, std::map>
 	void ToLuaString(const Map& map, std::ostream& os, int curr_indent, int indent, bool key)
 	{
-		using K = typename Map::key_type;
-		using T = typename Map::mapped_type;
+		using K = Map::key_type;
+		using T = Map::mapped_type;
 		os << "{\n";
-		for ( auto& [k, v] : map )
+		for (auto& [k, v] : map)
 		{
 			os << std::string(curr_indent + indent, ' ');
 			os << ToLuaString<K>(k, os, curr_indent + indent, indent, true);
@@ -293,13 +293,14 @@ namespace Lumora::Serialize
 	template <typename T>
 	std::function<Ref<void>(const sol::object& obj)> GetFromLuaFunction()
 	{
-		return [](const sol::object& obj) -> Ref<void> {
+		return [](const sol::object& obj) -> Ref<void>
+		{
 			auto tbl = obj.as<sol::table>();
-			Ref<T> t = CreateScope<T>();
+			Ref<T> t = CreateRef<T>();
 
 			visit_struct::for_each(*t, [&](const char* name, auto& value)
 			{
-				if ( tbl[name].valid() )
+				if (tbl[name].valid())
 				{
 					using FieldType = std::decay_t<decltype(value)>;
 					value = FromLua<FieldType>(tbl[name]);
@@ -317,6 +318,16 @@ namespace Lumora::Serialize
 		{
 			const T& value = *static_cast<const T*>(valuePtr);
 			ToLuaScript<T>(value, os, indent);
+		};
+	}
+
+	template <typename T>
+	std::function<sol::object(sol::state_view& lua, const void* valuePtr)> GetToLuaFunction()
+	{
+		return [](sol::state_view& lua, const void* valuePtr) -> sol::object
+		{
+			const T& value = *static_cast<const T*>(valuePtr);
+			return ToLua<T>(lua, value);
 		};
 	}
 }

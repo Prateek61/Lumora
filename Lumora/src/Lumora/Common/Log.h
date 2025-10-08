@@ -19,12 +19,14 @@ namespace Lumora
 
 		static Ref<spdlog::logger>& GetCoreLogger() { return s_CoreLogger; }
 		static Ref<spdlog::logger>& GetClientLogger() { return s_ClientLogger; }
-		static Ref<spdlog::logger>& GetFileLogger() { return s_LuaLogger; }
+		static Ref<spdlog::logger>& GetLuaLogger() { return s_LuaLogger; }
+		static Ref<spdlog::logger>& GetBgfxLogger() { return s_BgfxLogger; }
 
 	private:
 		static Ref<spdlog::logger> s_CoreLogger;
 		static Ref<spdlog::logger> s_ClientLogger;
 		static Ref<spdlog::logger> s_LuaLogger;
+		static Ref<spdlog::logger> s_BgfxLogger;
 	};
 }
 

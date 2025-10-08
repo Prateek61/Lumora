@@ -3,6 +3,7 @@
 
 #include "Lumora/Scripting/LuaSerializer.h"
 #include "Lumora/Asset/AssetTypeRegistry.h"
+#include "visit_struct/visit_struct.hpp"
 
 struct JustAssetType
 {
@@ -17,7 +18,7 @@ namespace Lumora
 		LM_PROFILE_FUNCTION();
 		std::stringstream ss;
 		ss << "AssetProps { Name: " << Name << ", Type: " << Type << ", HotReload: " << (HotReload ? "true" : "false");
-		ss << ", UpdateMetadata: " << (UpdateMetadata ? "true" : "false") << ", AssetId: " << AssetId;
+		ss <<  ", AssetId: " << AssetId;
 		return ss.str();
 	}
 

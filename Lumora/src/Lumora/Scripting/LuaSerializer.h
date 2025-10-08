@@ -95,13 +95,15 @@ namespace Lumora
 		sol::load_result script = m_Lua.load_file(file.string());
 		if ( !script.valid() )
 		{
-			throw std::runtime_error("Failed to load script: " + file.string());
+			sol::error sol_err = script;
+			throw Lua::LuaError("Failed to load script: " + std::string(sol_err.what()));
 		}
 
 		sol::protected_function_result result = script();
 		if ( !result.valid() )
 		{
-			throw std::runtime_error("Failed to execute script: " + file.string());
+			sol::error sol_err = result;
+			throw Lua::LuaError("Failed to execute script: " + std::string(sol_err.what()));
 		}
 
 		sol::object obj = result;
@@ -127,13 +129,15 @@ namespace Lumora
 		sol::load_result loadedScript = m_Lua.load(script);
 		if ( !loadedScript.valid() )
 		{
-			throw std::runtime_error("Failed to load script");
+			sol::error sol_err = loadedScript;
+			throw Lua::LuaError("Failed to load script: " + std::string(sol_err.what()));
 		}
 
 		sol::protected_function_result result = loadedScript();
 		if ( !result.valid() )
 		{
-			throw std::runtime_error("Failed to execute script");
+			sol::error sol_err = result;
+			throw Lua::LuaError("Failed to execute script: " + std::string(sol_err.what()));
 		}
 
 		sol::object obj = result;
@@ -171,15 +175,27 @@ namespace Lumora
 }
 
 // Macro to register a type
-#define LM_REGISTER_FOR_SERIALIZATION_NAMED(TYPE, NAME)                                \
-	static Lumora::Serialize::LuaTypeRegistrar _auto_register_##TYPE(                  \
-		NAME,                                                                          \
-		{                                                                              \
-			NAME,                                                                      \
-			Lumora::Serialize::GetToLuaScriptFunction<TYPE>(),                         \
-			Lumora::Serialize::GetFromLuaFunction<TYPE>(),                             \
-			sizeof(TYPE)                                                               \
-		}                                                                              \
-	);
+#define LM_REGISTER_FOR_SERIALIZATION_NAMED(TYPE, NAME)								 \
+	namespace {																		 \
+		Lumora::Serialize::LuaTypeRegistrar _auto_register_##TYPE(				     \
+			NAME,																     \
+			{																	     \
+				NAME,															     \
+				Lumora::Serialize::GetToLuaScriptFunction<TYPE>(),				     \
+				Lumora::Serialize::GetFromLuaFunction<TYPE>(),					     \
+				sizeof(TYPE)													     \
+			}																	     \
+		);																		     \
+	}
+
+#define LM_REGISTER_FOR_SERIALIZATION_NAMED_VAR(TYPE, NAME)			                 \
+	Lumora::Serialize::LuaTypeRegistrar _auto_register_##TYPE(                       \
+		NAME,                                                                        \
+		{                                                                            \
+			NAME,                                                                    \
+			Lumora::Serialize::GetToLuaScriptFunction<TYPE>(),                       \
+			Lumora::Serialize::GetFromLuaFunction<TYPE>(),                           \
+			sizeof(TYPE)                                                             \
+		});
 
 #define LM_REGISTER_FOR_SERIALIZATION(TYPE) LM_REGISTER_FOR_SERIALIZATION_NAMED(TYPE, #TYPE)
