@@ -12,6 +12,7 @@
 #include "Lumora/Asset/AssetStorage.h"
 #include "Lumora/Asset/AssetManager.h"
 #include "Lumora/Asset/Assets.h"
+#include "Lumora/Asset/AssetReloader.h"
 
 // Common
 #include "Lumora/Common/UUID.h"

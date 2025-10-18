@@ -32,6 +32,7 @@ project "Lumora"
         "%{IncludeDir.BIMG}",
 
         "%{IncludeDir.VISITSTRUCT}",
+        "%{IncludeDir.FILEWATCH}",
     }
 
     links

@@ -20,6 +20,8 @@ namespace Lumora
 
 	template<typename T>
 	using Atomic = std::atomic<T>;
+
+	using ConditionVariable = std::condition_variable;
 }
 
 // Macros

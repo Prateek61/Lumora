@@ -17,6 +17,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <ranges>
+#include <optional>
 
 #include <thread>
 #include <condition_variable>

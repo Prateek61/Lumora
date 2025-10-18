@@ -29,6 +29,7 @@ project "LumoraApp"
         "%{IncludeDir.SOL}",
 
         "%{IncludeDir.VISITSTRUCT}",
+        "%{IncludeDir.FILEWATCH}",
     }
 
     links

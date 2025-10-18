@@ -10,7 +10,7 @@
 namespace Lumora
 {
 	using AssetIdT = UUID;
-	const AssetIdT g_INVALID_ASSET_ID{};
+	const AssetIdT g_INVALID_ASSET_ID{0};
 
 	inline AssetIdT GenerateAssetId() { return UUID::Generate(); }
 

@@ -29,3 +29,6 @@
 [submodule "External/visit_struct"]
 	path = External/visit_struct
 	url = https://github.com/cbeck88/visit_struct.git
+[submodule "External/filewatch"]
+	path = External/filewatch
+	url = https://github.com/ThomasMonkman/filewatch.git
