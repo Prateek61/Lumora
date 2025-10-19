@@ -21,10 +21,10 @@ namespace Lumora
 	class AssetTypeRegistry
 	{
 	public:
-		static void RegisterType(AssetTypeInfo typeInfo);
+		static void RegisterType(Ref<AssetTypeInfo> typeInfo);
 		static std::string GetName(std::type_index assetType);
-		static AssetTypeInfo& GetTypeInfo(const std::string& type);
-		static AssetTypeInfo& GetTypeInfo(std::type_index assetType);
+		static Ref<AssetTypeInfo> GetTypeInfo(const std::string& type);
+		static Ref<AssetTypeInfo> GetTypeInfo(std::type_index assetType);
 
 		template <typename T>
 			requires std::is_base_of_v<Asset, T>
@@ -32,7 +32,7 @@ namespace Lumora
 
 		template<typename T>
 			requires std::is_base_of_v<Asset, T>
-		static AssetTypeInfo& GetTypeInfo() { return GetTypeInfo(typeid(T)); }
+		static Ref<AssetTypeInfo> GetTypeInfo() { return GetTypeInfo(typeid(T)); }
 	};
 
 	struct AssetTypeRegistrar
@@ -52,13 +52,13 @@ namespace Lumora
 			std::string propsSerializationName = name + "Props";
 			LM_REGISTER_FOR_SERIALIZATION_NAMED_VAR(PT, propsSerializationName);
 
-			AssetTypeRegistry::RegisterType({
-				.Name = std::move(name),
-				.PropsSerializationName = propsSerializationName,
-				.AssetType = typeid(T),
-				.AssetPropsType = typeid(PT),
-				.LoadFunction = wrapperFunction
-			});
+			AssetTypeRegistry::RegisterType(CreateRef<AssetTypeInfo>(
+				std::move(name),
+				propsSerializationName,
+				typeid(T),
+				typeid(PT),
+				wrapperFunction
+			));
 		}
 	};
 }

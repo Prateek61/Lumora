@@ -27,8 +27,22 @@ namespace Lumora
 		LM_PROFILE_FUNCTION();
 
 		auto type = serializer.DeserializeFromFile<JustAssetType>(propsPath).Type;
+
+		if (type.empty())
+		{
+			LM_CORE_ASSETS_ERROR("Failed to deserialize AssetProps. 'Type' field is missing or empty in file: {}", propsPath.string());
+			return nullptr;
+		}
+
 		auto type_info = AssetTypeRegistry::GetTypeInfo(type);
-		Ref<AssetProps> props = StaticRefCast<AssetProps>(serializer.DeserializeFromFile(type_info.PropsSerializationName, propsPath));
+
+		if (!type_info)
+		{
+			LM_CORE_ASSETS_ERROR("Failed to deserialize AssetProps. Asset type not registered: {} in file: {}", type, propsPath.string());
+			return nullptr;
+		}
+
+		Ref<AssetProps> props = StaticRefCast<AssetProps>(serializer.DeserializeFromFile(type_info->PropsSerializationName, propsPath));
 		return props;
 	}
 

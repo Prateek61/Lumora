@@ -85,6 +85,18 @@ namespace Lumora
 		}
 	}
 
+	void AssetReloader::AddToReloadQueue(AssetIdT id)
+	{
+		LM_PROFILE_FUNCTION();
+		{
+			LM_LOCK_WRITE(m_QueueMutex);
+			m_ReloadQueue.Push(id);
+		}
+
+		// Notify the reload thread
+		m_CV.notify_one();
+	}
+
 	void AssetReloader::StartWatching()
 	{
 		LM_PROFILE_FUNCTION();

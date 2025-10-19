@@ -156,7 +156,32 @@ namespace Lumora
 	{
 		LM_PROFILE_FUNCTION();
 
-		LM_CORE_TRACE("Meta file changed: {}", path.string());
+		LM_CORE_ASSETS_TRACE("Metadata changed for asset props file: {}", path.string());
+
+		auto props = AssetProps::DeSerialize(GetFullAssetPath(path), *m_Serializer);
+		if (!props)
+		{
+			LM_CORE_ASSETS_WARN("Failed to deserialize asset props from file: {}", path.string());
+			return;
+		}
+
+		auto id = GetAssetId(props->Name);
+		if (id != g_INVALID_ASSET_ID)
+		{
+			LM_CORE_ASSETS_TRACE("Updating metadata for asset: {}", props->Name);
+			props->AssetId = id;
+			m_Registry.RegisterAsset(props, id);
+
+			auto record = m_Storage.GetAssetRecord(id);
+			if (record && record->IsLoaded())
+			{
+				LM_CORE_ASSETS_TRACE("Adding Asset to Reload Queue Due to Metadata Change: {}", props->Name);
+				m_AssetReloader.AddToReloadQueue(id);
+			}
+			return;
+		}
+
+		m_Registry.RegisterAsset(props);
 	}
 
 }

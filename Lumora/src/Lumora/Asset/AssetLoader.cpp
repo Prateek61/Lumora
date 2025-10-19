@@ -8,6 +8,13 @@ namespace Lumora
 	{
 		// First Get the AssetTypeInfo from the AssetTypeRegistry
 		auto type_info = AssetTypeRegistry::GetTypeInfo(props.Type);
-		return type_info.LoadFunction(props);
+
+		if (!type_info)
+		{
+			LM_CORE_ASSETS_ERROR("Failed to load asset. Asset type not registered: {}", props.Type);
+			return nullptr;
+		}
+
+		return type_info->LoadFunction(props);
 	}
 }

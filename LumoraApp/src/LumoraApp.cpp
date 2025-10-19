@@ -3,19 +3,6 @@
 #include "Lumora/Entrypoint.h"
 #include "ExampleAsset.h"
 
-namespace
-{
-	void assetReloadCallback(Lumora::AssetIdT id)
-	{
-		LM_TRACE("Reloading Asset: {0}", static_cast<uint64_t>(id));
-	}
-
-	void metadataCallback(const std::filesystem::path& path)
-	{
-		LM_TRACE("Meta file changed: {0}", path.string());
-	}
-}
-
 class App : public Lumora::Application
 {
 public:

@@ -40,6 +40,8 @@ namespace Lumora
 		void UnwatchFile(const std::filesystem::path& path);
 		void UnwatchAsset(AssetIdT id);
 
+		void AddToReloadQueue(AssetIdT id);
+
 		void StartWatching();
 		void StopWatching();
 
