@@ -25,12 +25,16 @@ public:
 		: Lumora::Application(props), reloader(props.AssetsDirectory, assetReloadCallback, metadataCallback)
 	{
 		reloader.StartWatching();
+		reloader.RunReloadThread();
 
 		reloader.WatchFile("test.local.lua", 1);
+
+		GetRendererContext().SetClearColor(0x9a9a9aff);
 	}
 
 	~App() override
 	{
+		reloader.StopReloadThread();
 		reloader.StopWatching();
 	}
 };

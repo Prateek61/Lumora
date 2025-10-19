@@ -10,6 +10,7 @@ namespace
 		auto itr = Lumora::LuaSerializer::GetTypeRegistry().find(typeName);
 		if ( itr == Lumora::LuaSerializer::GetTypeRegistry().end() )
 		{
+			LM_CORE_SERIALIZER_ERROR("Type not registered: {}", typeName);
 			throw std::runtime_error("Type not registered: " + typeName);
 		}
 
@@ -31,20 +32,24 @@ namespace Lumora
 		LM_PROFILE_FUNCTION();
 		LM_LOCK_WRITE_AUTO();
 
+		LM_CORE_SERIALIZER_TRACE("Deserializing from Lua file: {}", file.string());
+
 		const auto& type_info = GetTypeInfo(typeName);
 
 		// Load the script
 		sol::load_result script = m_Lua.load_file(file.string());
 		if ( !script.valid() )
 		{
-			LM_CORE_WARN("[LuaSerializer] Failed to load script: {}", file.string());
+			sol::error err = script;
+			LM_CORE_SERIALIZER_ERROR("Failed to load script from file '{}': {}", file.string(), err.what());
 			return nullptr;
 		}
 
 		sol::protected_function_result result = script();
 		if ( !result.valid() )
 		{
-			LM_CORE_WARN("[LuaSerializer] Failed to execute script: {}", file.string());
+			sol::error err = result;
+			LM_CORE_SERIALIZER_ERROR("Failed to execute script from file '{}': {}", file.string(), err.what());
 			return nullptr;
 		}
 
@@ -73,13 +78,17 @@ namespace Lumora
 		sol::load_result script = m_Lua.load(s);
 		if ( !script.valid() )
 		{
-			throw std::runtime_error("Failed to load script: ");
+			sol::error err = script;
+			LM_CORE_SERIALIZER_ERROR("Failed to load script: {}", err.what());
+			return nullptr;
 		}
 
 		sol::protected_function_result result = script();
 		if ( !result.valid() )
 		{
-			throw std::runtime_error("Failed to execute script: ");
+			sol::error err = result;
+			LM_CORE_SERIALIZER_ERROR("Failed to execute script: {}", err.what());
+			return nullptr;
 		}
 
 		sol::object obj = result;

@@ -92,10 +92,13 @@ namespace Lumora
 		LM_PROFILE_FUNCTION();
 		LM_LOCK_WRITE_AUTO();
 
+		LM_CORE_SERIALIZER_TRACE("Deserializing from Lua file: {}", file.string());
+
 		sol::load_result script = m_Lua.load_file(file.string());
 		if ( !script.valid() )
 		{
 			sol::error sol_err = script;
+			LM_CORE_SERIALIZER_ERROR("Failed to load script from file '{}': {}", file.string(), sol_err.what());
 			throw Lua::LuaError("Failed to load script: " + std::string(sol_err.what()));
 		}
 
@@ -103,6 +106,7 @@ namespace Lumora
 		if ( !result.valid() )
 		{
 			sol::error sol_err = result;
+			LM_CORE_SERIALIZER_ERROR("Failed to execute script: {}", sol_err.what());
 			throw Lua::LuaError("Failed to execute script: " + std::string(sol_err.what()));
 		}
 
@@ -130,6 +134,7 @@ namespace Lumora
 		if ( !loadedScript.valid() )
 		{
 			sol::error sol_err = loadedScript;
+			LM_CORE_SERIALIZER_ERROR("Failed to load script: {}", sol_err.what());
 			throw Lua::LuaError("Failed to load script: " + std::string(sol_err.what()));
 		}
 
@@ -137,6 +142,7 @@ namespace Lumora
 		if ( !result.valid() )
 		{
 			sol::error sol_err = result;
+			LM_CORE_SERIALIZER_ERROR("Failed to execute script: {}", sol_err.what());
 			throw Lua::LuaError("Failed to execute script: " + std::string(sol_err.what()));
 		}
 

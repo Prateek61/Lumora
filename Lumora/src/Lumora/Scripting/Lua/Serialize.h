@@ -37,24 +37,44 @@ namespace Lumora::Serialize
 		requires (std::is_arithmetic_v<T> && !std::is_same_v<T, bool>)
 	T FromLua(const sol::object& obj)
 	{
+		if (!obj.is<T>())
+		{
+			throw Lua::LuaError("Type mismatch in FromLua: expected " + std::string(typeid(T).name()));
+		}
+
 		return obj.as<T>();
 	}
 
 	template <>
 	inline std::string FromLua<std::string>(const sol::object& obj)
 	{
+		if (!obj.is<std::string>())
+		{
+			throw Lua::LuaError("Type mismatch in FromLua: expected std::string");
+		}
+
 		return obj.as<std::string>();
 	}
 
 	template <>
 	inline std::filesystem::path FromLua<std::filesystem::path>(const sol::object& obj)
 	{
+		if (!obj.is<std::string>())
+		{
+			throw Lua::LuaError("Type mismatch in FromLua: expected std::string for std::filesystem::path");
+		}
+
 		return {obj.as<std::string>()};
 	}
 
 	template <>
 	inline bool FromLua<bool>(const sol::object& obj)
 	{
+		if (!obj.is<bool>())
+		{
+			throw Lua::LuaError("Type mismatch in FromLua: expected bool");
+		}
+
 		return obj.as<bool>();
 	}
 
@@ -101,7 +121,16 @@ namespace Lumora::Serialize
 			if (tbl[name].valid())
 			{
 				using FieldType = std::decay_t<decltype(value)>;
-				value = FromLua<FieldType>(tbl[name]);
+				try
+				{
+					value = FromLua<FieldType>(tbl[name]);
+				}
+				catch (const Lua::LuaError& err)
+				{
+					LM_CORE_SERIALIZER_ERROR("Error deserializing field '{}' : {}", name, err.what());
+					throw;
+				}
+				
 			}
 		});
 		return t;
@@ -297,16 +326,30 @@ namespace Lumora::Serialize
 		{
 			auto tbl = obj.as<sol::table>();
 			Ref<T> t = CreateRef<T>();
+			bool err = false;
 
 			visit_struct::for_each(*t, [&](const char* name, auto& value)
 			{
 				if (tbl[name].valid())
 				{
 					using FieldType = std::decay_t<decltype(value)>;
-					value = FromLua<FieldType>(tbl[name]);
+					try
+					{
+						value = FromLua<FieldType>(tbl[name]);
+					}
+					catch (const Lua::LuaError& e)
+					{
+						LM_CORE_SERIALIZER_ERROR("Error deserializing field '{}' : {}", name, e.what());
+						err = true;
+					}
+					
 				}
 			});
 
+			if (err)
+			{
+				return nullptr;
+			}
 			return StaticRefCast<void>(t);
 		};
 	}

@@ -153,7 +153,8 @@ namespace Lumora
 	{
 		LM_PROFILE_FUNCTION();
 
-		return weakly_canonical(path).lexically_normal();
+		auto p = weakly_canonical(path).lexically_normal();
+		return p;
 	}
 
 	void AssetReloader::OnFileEvent(const std::filesystem::path& path, filewatch::Event changeType)
@@ -195,7 +196,28 @@ namespace Lumora
 
 	void AssetReloader::InternalUpdate()
 	{
-		LM_CORE_ASSERT(false, "Not Implemented")
+		LM_PROFILE_FUNCTION();
+
+		AssetIdT id = g_INVALID_ASSET_ID;
+
+		{
+			auto lock = WriteLock(m_QueueMutex);
+			if (m_ReloadQueue.Empty())
+			{
+				// Wait until notified
+				m_CV.wait(lock);
+				return;
+			}
+			else
+			{
+				id = m_ReloadQueue.Pop();
+			}
+		}
+
+		if (id != g_INVALID_ASSET_ID && m_ReloadCallback)
+		{
+			m_ReloadCallback(id);
+		}
 	}
 
 }
