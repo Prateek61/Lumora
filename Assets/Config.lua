@@ -14,6 +14,7 @@ return {
         ConsolePattern = "[%T] %^[%s:%#] %n: %v%$";
         Core = { Level = "trace" }, -- levels: [trace, debug, info, warn, error, fatal, off]
         Client = { Level = "trace" },
-        CoreSerializer = { Level = "trace" }
+        CoreSerializer = { Level = "info" },
+        CoreAssets = { Level = "trace" },
     }
 }

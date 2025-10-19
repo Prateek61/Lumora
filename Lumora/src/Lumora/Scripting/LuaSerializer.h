@@ -90,9 +90,10 @@ namespace Lumora
 	T LuaSerializer::DeserializeFromFile(const std::filesystem::path& file)
 	{
 		LM_PROFILE_FUNCTION();
-		LM_LOCK_WRITE_AUTO();
 
 		LM_CORE_SERIALIZER_TRACE("Deserializing from Lua file: {}", file.string());
+
+		LM_LOCK_WRITE_AUTO();
 
 		sol::load_result script = m_Lua.load_file(file.string());
 		if ( !script.valid() )

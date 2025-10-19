@@ -45,7 +45,8 @@ namespace Lumora
 
 		if (existingId != g_INVALID_ASSET_ID)
 		{
-			LM_CORE_WARN("Asset with name '{}' already registered with ID {}. Returning existing ID.", props->Name, static_cast<std::string>(existingId));
+			LM_CORE_TRACE("Asset with name '{}' already registered with ID {}. Rewriting.", props->Name, static_cast<std::string>(existingId));
+			m_Registry.RegisterAsset(props, existingId);
 			return existingId;
 		}
 
@@ -54,8 +55,7 @@ namespace Lumora
 		auto assetRecord = CreateRef<AssetRecord>(newId, props->Name, nullptr);
 		m_Storage.AddAssetRecord(assetRecord);
 
-		LM_CORE_TRACE("Registered Asset: {} with ID {}", props->Name, static_cast<std::string>(newId));
-
+		LM_CORE_ASSETS_INFO("Registered Asset: {} with ID {}", props->Name, static_cast<std::string>(newId));
 		return newId;
 	}
 
@@ -150,6 +150,15 @@ namespace Lumora
 		LM_PROFILE_FUNCTION();
 
 		LM_CORE_TRACE("Reloading Asset: {}", GetAssetName(id));
+
+		auto record = m_Storage.GetAssetRecord(id);
+		if (!record)
+		{
+			LM_CORE_ASSETS_ERROR("No AssetRecord found for Asset ID: {}", static_cast<std::string>(id));
+			return;
+		}
+
+		Load(*record);
 	}
 
 	void AssetManager::MetadataCallback(const std::filesystem::path& path)
@@ -181,7 +190,7 @@ namespace Lumora
 			return;
 		}
 
-		m_Registry.RegisterAsset(props);
+		RegisterAsset(props);
 	}
 
 }

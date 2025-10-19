@@ -133,6 +133,7 @@ namespace Lumora
 		m_Running = true;
 		auto fn = [this]()
 		{
+			LM_CORE_ASSETS_TRACE("Asset Reloader Thread Started");
 			while (m_Running)
 			{
 				// Sleep for 1 ms because VSCode wants to do 2 file events for a single save operation
@@ -205,6 +206,7 @@ namespace Lumora
 		}
 
 		{
+			LM_CORE_ASSETS_TRACE("File change detected: {}, Adding Asset Name: {} to Reload Queue", canonical_path.string(), static_cast<std::string>(id));
 			LM_LOCK_WRITE(m_QueueMutex);
 			m_ReloadQueue.Push(id);
 		}

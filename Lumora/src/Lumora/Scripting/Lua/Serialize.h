@@ -114,7 +114,12 @@ namespace Lumora::Serialize
 		requires visit_struct::traits::is_visitable<T>::value
 	T FromLua(const sol::object& obj)
 	{
+		if (!obj.is<sol::table>())
+		{
+			throw Lua::LuaError("Type mismatch in FromLua: expected table for struct deserialization");
+		}
 		auto tbl = obj.as<sol::table>();
+
 		T t{};
 		visit_struct::for_each(t, [&](const char* name, auto& value)
 		{
@@ -324,7 +329,13 @@ namespace Lumora::Serialize
 	{
 		return [](const sol::object& obj) -> Ref<void>
 		{
+			if (!obj.is<sol::table>())
+			{
+				LM_CORE_SERIALIZER_ERROR("Type mismatch in FromLua: expected table for struct deserialization");
+				return nullptr;
+			}
 			auto tbl = obj.as<sol::table>();
+			
 			Ref<T> t = CreateRef<T>();
 			bool err = false;
 

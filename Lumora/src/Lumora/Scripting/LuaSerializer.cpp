@@ -30,9 +30,10 @@ namespace Lumora
 	Ref<void> LuaSerializer::DeserializeFromFile(const std::string& typeName, const std::filesystem::path& file)
 	{
 		LM_PROFILE_FUNCTION();
-		LM_LOCK_WRITE_AUTO();
 
 		LM_CORE_SERIALIZER_TRACE("Deserializing from Lua file: {}", file.string());
+
+		LM_LOCK_WRITE_AUTO();
 
 		const auto& type_info = GetTypeInfo(typeName);
 

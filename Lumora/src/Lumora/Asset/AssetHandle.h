@@ -6,116 +6,189 @@
 
 namespace Lumora
 {
-	template <typename T>
+	template<typename T>
 		requires std::is_base_of_v<Asset, T>
 	class AssetHandle
 	{
 	public:
-		explicit AssetHandle(Ref<AssetRecord> assetRecord, AssetManager* assetManager)
-			: m_AssetVersion(assetRecord->GetVersion()),
-			  m_CachedAsset(StaticRefCast<T>(assetRecord->Get())),
-			  m_AssetId(assetRecord->GetAssetId()),
-			  m_AssetManager(assetManager),
-			  m_AssetRecord(std::move(assetRecord))
-		{
-			LM_CORE_ASSERT(m_AssetRecord, "AssetRecord is null")
-		}
+		AssetHandle();
+		AssetHandle(Ref<AssetRecord> assetRecord, AssetManager* assetManager);
 
-		bool Update();
 		Ref<T> Get();
-		bool EnsureReady();
+		AssetIdT GetId() const;
+		bool Updated(bool updateVersion = true);
 
-		// Accessors
-		AssetIdT GetAssetId() const { return m_AssetId; }
-		AssetManager& GetAssetManager() const { return *m_AssetManager; }
+		bool Load();
+		void Reload();
 
-		// Operators
-		operator bool() { return EnsureReady(); }
-		Ref<T> operator->() { return Get(); }
-		Ref<T> operator*() { return Get(); }
+		bool Cache();
+		void Uncache();
+		bool IsCached() const { return m_Cached; }
 
+		bool IsHandleValid() const;
+		operator bool() const { return IsHandleValid(); }
 	private:
 		AssetVersionT m_AssetVersion;
 		Ref<T> m_CachedAsset;
-		AssetIdT m_AssetId;
-		AssetManager* m_AssetManager;
 		Ref<AssetRecord> m_AssetRecord;
+		AssetManager* m_AssetManager;
+		bool m_Cached = false;
 
 	private:
-		bool Load();
+		void UpdateVersion();
 	};
 }
 
-#include "Lumora/Asset/AssetManager.h"
-
 // Template Implementations
+
+#include "Lumora/Asset/AssetManager.h"
 namespace Lumora
 {
-	template <typename T>
+	template<typename T>
 		requires std::is_base_of_v<Asset, T>
-	bool AssetHandle<T>::Load()
+	AssetHandle<T>::AssetHandle()
+		: m_AssetVersion(0),
+		  m_CachedAsset(nullptr),
+		  m_AssetRecord(nullptr),
+		  m_AssetManager(nullptr)
 	{
-		LM_PROFILE_FUNCTION();
-		LM_CORE_ASSERT(m_AssetManager->IsValid(m_AssetId), "Invalid Asset Handle");
-
-		return m_AssetManager->Load(*m_AssetRecord);
-	}
-
-	template <typename T>
-		requires std::is_base_of_v<Asset, T>
-	bool AssetHandle<T>::Update()
-	{
-		LM_PROFILE_FUNCTION();
-		LM_CORE_ASSERT(m_AssetManager->IsValid(m_AssetId), "Invalid Asset Handle");
-
-		auto latest_ver = m_AssetRecord->GetVersion();
-		if ( m_AssetVersion != latest_ver )
-		{
-			Ref<T> asset = StaticRefCast<T>(m_AssetRecord->Get());
-
-			if (!asset)
-			{
-				return false;
-			}
-
-			m_AssetVersion = latest_ver;
-			m_CachedAsset = std::move(asset);
-			return true;
-		}
-		return false;
-	}
-
-	template <typename T>
-		requires std::is_base_of_v<Asset, T>
-	Ref<T> AssetHandle<T>::Get()
-	{
-		LM_PROFILE_FUNCTION();
-		LM_CORE_ASSERT(m_AssetManager->IsValid(m_AssetId), "Invalid Asset Handle");
-
-		Update();
-		if ( !m_CachedAsset )
-		{
-			Load();
-			Update();
-		}
-
-		LM_CORE_ASSERT(m_CachedAsset, "Asset is not loaded")
-		return m_CachedAsset;
 	}
 
 	template<typename T>
 		requires std::is_base_of_v<Asset, T>
-	bool AssetHandle<T>::EnsureReady()
+	AssetHandle<T>::AssetHandle(Ref<AssetRecord> assetRecord, AssetManager* assetManager)
+		: m_AssetVersion(assetRecord->GetVersion()),
+		  m_CachedAsset(StaticRefCast<T>(assetRecord->Get())),
+		  m_AssetRecord(std::move(assetRecord)),
+		  m_AssetManager(assetManager)
+	{
+	}
+
+	template<typename T>
+		requires std::is_base_of_v<Asset, T>
+	Ref<T> AssetHandle<T>::Get()
 	{
 		LM_PROFILE_FUNCTION();
-
-		if (m_CachedAsset)
+		if (!IsHandleValid())
 		{
+			return nullptr;
+		}
+
+		if (m_Cached)	return m_CachedAsset;
+
+		UpdateVersion();
+		auto ref = m_AssetRecord->Get();
+		if (!ref && Load())
+		{
+			ref = m_AssetRecord->Get();
+		}
+
+		return StaticRefCast<T>(ref);
+	}
+
+	template<typename T>
+		requires std::is_base_of_v<Asset, T>
+	AssetIdT AssetHandle<T>::GetId() const
+	{
+		LM_CORE_ASSERT(IsHandleValid(), "Invalid Asset Handle")
+
+		return m_AssetRecord->GetAssetId();
+	}
+
+	template<typename T>
+		requires std::is_base_of_v<Asset, T>
+	bool AssetHandle<T>::Updated(bool updateVersion)
+	{
+		LM_PROFILE_FUNCTION();
+		LM_CORE_ASSERT(IsHandleValid(), "Invalid Asset Handle")
+
+		auto latest_ver = m_AssetRecord->GetVersion();
+		if (m_AssetVersion == latest_ver)
+		{
+			return false;
+		}
+
+		if (updateVersion)
+		{
+			m_AssetVersion = latest_ver;
+		}
+		return true;
+	}
+
+	template<typename T>
+		requires std::is_base_of_v<Asset, T>
+	bool AssetHandle<T>::Load()
+	{
+		LM_PROFILE_FUNCTION();
+		LM_CORE_ASSERT(IsHandleValid(), "Invalid Asset Handle")
+
+		if (m_Cached && m_CachedAsset)	return true;
+		if (m_AssetRecord->IsLoaded())
+		{
+			if (m_Cached)
+			{
+				UpdateVersion();
+				m_CachedAsset = StaticRefCast<T>(m_AssetRecord->Get());
+			}
 			return true;
 		}
 
+		m_AssetManager->Load(*m_AssetRecord);
+		UpdateVersion();
+		if (m_Cached)	m_CachedAsset = StaticRefCast<T>(m_AssetRecord->Get());
+		return m_AssetRecord->IsLoaded();
+	}
+
+	template<typename T>
+		requires std::is_base_of_v<Asset, T>
+	void AssetHandle<T>::Reload()
+	{
+		LM_PROFILE_FUNCTION();
+		LM_CORE_ASSERT(IsHandleValid(), "Invalid Asset Handle")
+
+		m_AssetManager->Load(*m_AssetRecord);
+		if (m_Cached)
+		{
+			if (m_AssetRecord->IsLoaded())
+			{
+				UpdateVersion();
+				m_CachedAsset = StaticRefCast<T>(m_AssetRecord->Get());
+			}
+		}
+	}
+
+	template <typename T>
+		requires std::is_base_of_v<Asset, T>
+	bool AssetHandle<T>::Cache()
+	{
+		LM_PROFILE_FUNCTION();
+
+		if (m_Cached) return true;
+		m_Cached = true;
 		Load();
-		Update();
-		return static_cast<bool>(m_CachedAsset);
+		return true;
+	}
+
+	template<typename T>
+		requires std::is_base_of_v<Asset, T>
+	void AssetHandle<T>::Uncache()
+	{
+		LM_PROFILE_FUNCTION();
+		m_Cached = false;
+		m_CachedAsset = nullptr;
+	}
+
+	template <typename T>
+		requires std::is_base_of_v<Asset, T>
+	bool AssetHandle<T>::IsHandleValid() const
+	{
+		return m_AssetManager && m_AssetRecord && m_AssetRecord->GetAssetId() != g_INVALID_ASSET_ID;
+	}
+
+	template <typename T>
+		requires std::is_base_of_v<Asset, T>
+	void AssetHandle<T>::UpdateVersion()
+	{
+		m_AssetVersion = m_AssetRecord->GetVersion();
 	}
 }

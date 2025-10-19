@@ -19,4 +19,14 @@ namespace Lumora
 		return GetAssetManager().RegisterAsset(props);
 	}
 
+	bool Assets::Valid(AssetIdT id)
+	{
+		return GetAssetManager().IsValid(id);
+	}
+
+	AssetIdT Assets::GetId(std::string name)
+	{
+		return GetAssetManager().GetAssetId(name);
+	}
+
 }

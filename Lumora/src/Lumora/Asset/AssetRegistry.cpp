@@ -21,8 +21,6 @@ namespace Lumora
 
 			m_AssetProps[id] = props;
 		}
-
-		LM_CORE_ASSETS_INFO("Registered Asset: {} with ID {}", props->Name, static_cast<std::string>(id));
 	}
 
 	AssetIdT AssetRegistry::GetAssetId(const std::string& name) const

@@ -26,7 +26,14 @@ namespace Lumora
 	{
 		LM_PROFILE_FUNCTION();
 
-		auto type = serializer.DeserializeFromFile<JustAssetType>(propsPath).Type;
+		std::string type;
+		try
+		{
+			type = serializer.DeserializeFromFile<JustAssetType>(propsPath).Type;
+		} catch (const Lua::LuaError& err)
+		{
+			LM_CORE_ASSETS_ERROR("Failed to deserialize AssetProps: {}", err.what());
+		}
 
 		if (type.empty())
 		{
