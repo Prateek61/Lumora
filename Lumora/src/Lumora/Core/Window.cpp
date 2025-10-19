@@ -54,7 +54,7 @@ namespace Lumora
 		}
 
 		{
-			LM_PROFILE_SCOPE("Window::Init glfwCreateWindow")
+			LM_PROFILE_SCOPE("Window::Init glfwCreateWindow");
 
 			DEBUG_ONLY
 			(
@@ -214,7 +214,7 @@ namespace Lumora
 
 		if ( s_GLFWWindowCount == 0 )
 		{
-			LM_PROFILE_SCOPE("Window::Shutdown glfwTerminate")
+			LM_PROFILE_SCOPE("Window::Shutdown glfwTerminate");
 			glfwTerminate();
 		}
 	}

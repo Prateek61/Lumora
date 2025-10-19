@@ -44,6 +44,12 @@ namespace Lumora
 	{
 	}
 
+	AssetReloader::~AssetReloader()
+	{
+		StopReloadThread();
+		StopWatching();
+	}
+
 	void AssetReloader::WatchFile(const std::filesystem::path& path, AssetIdT id)
 	{
 		LM_PROFILE_FUNCTION();

@@ -2,6 +2,7 @@
 
 #include "Lumora/Common/Base.h"
 #include "sol/sol.hpp"
+#include <filesystem>
 
 #include <exception>
 

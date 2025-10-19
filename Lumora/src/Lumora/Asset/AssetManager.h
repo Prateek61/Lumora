@@ -6,13 +6,14 @@
 #include "Lumora/Asset/AssetRecord.h"
 #include "Lumora/Asset/AssetRegistry.h"
 #include "Lumora/Asset/AssetStorage.h"
+#include "Lumora/Asset/AssetReloader.h"
 
 namespace Lumora
 {
 	class AssetManager
 	{
 	public:
-		AssetManager(std::filesystem::path assetRoot, LuaSerializer& serializer);
+		AssetManager(const std::filesystem::path& assetRoot, LuaSerializer& serializer);
 
 		template<typename T>
 			requires std::is_base_of_v<Asset, T>
@@ -20,6 +21,7 @@ namespace Lumora
 		template<typename T>
 			requires std::is_base_of_v<Asset, T>
 		AssetHandle<T> GetAssetHandle(const std::string& name);
+		std::string GetAssetName(AssetIdT id);
 
 		AssetIdT RegisterAsset(const std::filesystem::path& assetPropsFile);
 		AssetIdT RegisterAsset(const Ref<AssetProps>& props);
@@ -45,6 +47,11 @@ namespace Lumora
 		AssetRegistry m_Registry;
 		std::filesystem::path m_AssetRoot;
 		LuaSerializer* m_Serializer;
+		AssetReloader m_AssetReloader;
+
+	private:
+		void ReloadCallback(AssetIdT id);
+		void MetadataCallback(const std::filesystem::path& path);
 	};
 }
 
@@ -56,7 +63,7 @@ namespace Lumora
 	AssetHandle<T> AssetManager::GetAssetHandle(AssetIdT assetId)
 	{
 		LM_PROFILE_FUNCTION();
-		LM_CORE_ASSERT(IsValid(assetId), "Invalid Asset ID");
+		LM_CORE_ASSERT(IsValid(assetId), "Invalid Asset ID")
 
 		return AssetHandle<T>(m_Storage.GetAssetRecord(assetId), this);
 	}

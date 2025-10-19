@@ -27,11 +27,13 @@ namespace Lumora
 	struct ApplicationProps
 	{
 		std::string Name = "Lumora Application";
-		std::filesystem::path AssetsDirectory;
+		std::filesystem::path AssetsDirectory = ".";
 		ApplicationCommandLineArgs CommandLineArgs;
 		WindowProps WindowProps;
 
 		bool Run = true; // Whether to run the application loop, for debugging or testing purposes
+
+		Internal::LoggerConfig LoggerConfig = {};
 
 		static ApplicationProps Get(const std::filesystem::path& configFile, LuaSerializer& serializer)
 		{
@@ -44,4 +46,4 @@ namespace Lumora
 }
 
 VISITABLE_STRUCT(Lumora::WindowProps, Title, Width, Height);
-VISITABLE_STRUCT(Lumora::ApplicationProps, Name, AssetsDirectory, WindowProps, Run);
+VISITABLE_STRUCT(Lumora::ApplicationProps, Name, AssetsDirectory, WindowProps, Run, LoggerConfig);

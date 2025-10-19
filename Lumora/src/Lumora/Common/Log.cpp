@@ -5,42 +5,101 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/basic_file_sink.h>
 
+namespace
+{
+	spdlog::level::level_enum StringToLevel(const std::string& levelStr)
+	{
+		if (levelStr == "trace") return spdlog::level::trace;
+		if (levelStr == "debug") return spdlog::level::debug;
+		if (levelStr == "info") return spdlog::level::info;
+		if (levelStr == "warn") return spdlog::level::warn;
+		if (levelStr == "error") return spdlog::level::err;
+		if (levelStr == "fatal") return spdlog::level::critical;
+		if (levelStr == "off") return spdlog::level::off;
+		return spdlog::level::info; // Default level
+	}
+
+	Lumora::Ref<spdlog::logger>& GetDefaultLogger()
+	{
+		static Lumora::Ref<spdlog::logger> default_logger = spdlog::default_logger();
+		return default_logger;
+	}
+}
+
 namespace Lumora
 {
 	Ref<spdlog::logger> Log::s_CoreLogger;
 	Ref<spdlog::logger> Log::s_ClientLogger;
-	Ref<spdlog::logger> Log::s_LuaLogger;
-	Ref<spdlog::logger> Log::s_BgfxLogger;
+	Ref<spdlog::logger> Log::s_CoreLuaLogger;
+	Ref<spdlog::logger> Log::s_CoreBgfxLogger;
+	Ref<spdlog::logger> Log::s_CoreSerializerLogger;
+	Ref<spdlog::logger> Log::s_CoreAssetsLogger;
 
-
-	void Log::Init(const std::filesystem::path& logFilePath)
+	void Log::Init(const Internal::LoggerConfig& config)
 	{
+		LM_PROFILE_FUNCTION();
+
 		std::vector<spdlog::sink_ptr> log_sinks;
 		log_sinks.emplace_back(CreateRef<spdlog::sinks::stdout_color_sink_mt>());
-		log_sinks.emplace_back(CreateRef<spdlog::sinks::basic_file_sink_mt>(logFilePath.string(), true));
+		log_sinks.emplace_back(CreateRef<spdlog::sinks::basic_file_sink_mt>(config.File.string()));
 
-		log_sinks[0]->set_pattern("%^[%T] %n: %v%$");
-		log_sinks[1]->set_pattern("[%T] [%l] %n: %v");
+		log_sinks[0]->set_pattern(config.ConsolePattern);
+		log_sinks[1]->set_pattern(config.FilePattern);
 
-		s_CoreLogger = std::make_shared<spdlog::logger>("ENGINE", begin(log_sinks), end(log_sinks));
-		register_logger(s_CoreLogger);
-		s_CoreLogger->set_level(spdlog::level::trace);
-		s_CoreLogger->flush_on(spdlog::level::trace);
+		auto create_logger = [&](const Internal::SingleLoggerConfig& logConfig, const std::string& name)
+		{
+			auto begin = std::begin(log_sinks);
+			auto end = std::end(log_sinks);
+			if (!logConfig.EnableConsoleLog) ++begin;
+			if (!logConfig.EnableFileLog) --end;
+			auto logger = std::make_shared<spdlog::logger>(name, begin, end);
+			register_logger(logger);
+			auto level = StringToLevel(logConfig.Level);
+			logger->set_level(level);
+			logger->flush_on(level);
+			return logger;
+		};
 
-		s_ClientLogger = std::make_shared<spdlog::logger>("APP", begin(log_sinks), end(log_sinks));
-		register_logger(s_ClientLogger);
-		s_ClientLogger->set_level(spdlog::level::trace);
-		s_ClientLogger->flush_on(spdlog::level::trace);
-
-		s_LuaLogger = std::make_shared<spdlog::logger>("LUA", begin(log_sinks), end(log_sinks));
-		register_logger(s_LuaLogger);
-		s_LuaLogger->set_level(spdlog::level::trace);
-		s_LuaLogger->flush_on(spdlog::level::trace);
-
-		s_BgfxLogger = std::make_shared<spdlog::logger>("BGFX", begin(log_sinks), end(log_sinks));
-		register_logger(s_BgfxLogger);
-		s_BgfxLogger->set_level(spdlog::level::trace);
-		s_BgfxLogger->flush_on(spdlog::level::trace);
+		s_CoreLogger = create_logger(config.Core, "CORE");
+		s_ClientLogger = create_logger(config.Client, "APP");
+		s_CoreBgfxLogger = create_logger(config.CoreBgfx, "CORE::BGFX");
+		s_CoreLuaLogger = create_logger(config.CoreLua, "CORE::LUA");
+		s_CoreSerializerLogger = create_logger(config.CoreSerializer, "CORE::SERIALIZER");
+		s_CoreAssetsLogger = create_logger(config.CoreAssets, "CORE::ASSETS");
 	}
 
+	Ref<spdlog::logger>& Log::GetCoreLogger()
+	{
+		LM_CORE_ASSERT(s_CoreLogger, "Core Logger not initialized!")
+		return s_CoreLogger;
+	}
+
+	Ref<spdlog::logger>& Log::GetClientLogger()
+	{
+		LM_CORE_ASSERT(s_ClientLogger, "Client Logger not initialized!")
+		return s_ClientLogger;
+	}
+
+	Ref<spdlog::logger>& Log::GetLuaLogger()
+	{
+		LM_CORE_ASSERT(s_CoreLuaLogger, "Lua Logger not initialized!")
+		return s_CoreLuaLogger;
+	}
+
+	Ref<spdlog::logger>& Log::GetBgfxLogger()
+	{
+		LM_CORE_ASSERT(s_CoreBgfxLogger, "Bgfx Logger not initialized!")
+		return s_CoreBgfxLogger;
+	}
+
+	Ref<spdlog::logger>& Log::GetCoreSerializerLogger()
+	{
+		if (!s_CoreSerializerLogger)	return GetDefaultLogger();
+		return s_CoreSerializerLogger;
+	}
+	Ref<spdlog::logger>& Log::GetCoreAssetsLogger()
+	{
+		LM_CORE_ASSERT(s_CoreAssetsLogger, "Assets Logger not initialized!")
+		return s_CoreAssetsLogger;
+	}
 }

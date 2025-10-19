@@ -5,9 +5,20 @@
 
 namespace Lumora
 {
-	AssetManager::AssetManager(std::filesystem::path assetRoot, LuaSerializer& serializer)
-		: m_AssetRoot(std::move(assetRoot)), m_Serializer(&serializer)
+	AssetManager::AssetManager(const std::filesystem::path& assetRoot, LuaSerializer& serializer)
+		: m_AssetRoot(assetRoot), m_Serializer(&serializer), m_AssetReloader(assetRoot, [this](AssetIdT id) {this->ReloadCallback(id); }, [this](const std::filesystem::path& path) {this->MetadataCallback(path); })
 	{
+		m_AssetReloader.StartWatching();
+		m_AssetReloader.RunReloadThread();
+	}
+
+	std::string AssetManager::GetAssetName(AssetIdT id)
+	{
+		if (auto props = m_Registry.GetAssetProps(id))
+		{
+			return props->Name;
+		}
+		return "INVALID ASSET";
 	}
 
 	AssetIdT AssetManager::RegisterAsset(const std::filesystem::path& assetPropsFile)
@@ -42,6 +53,9 @@ namespace Lumora
 		m_Registry.RegisterAsset(props, newId);
 		auto assetRecord = CreateRef<AssetRecord>(newId, props->Name, nullptr);
 		m_Storage.AddAssetRecord(assetRecord);
+
+		LM_CORE_TRACE("Registered Asset: {} with ID {}", props->Name, static_cast<std::string>(newId));
+
 		return newId;
 	}
 
@@ -129,6 +143,20 @@ namespace Lumora
 		LM_PROFILE_FUNCTION();
 
 		return m_Registry.GetAssetId(name);
+	}
+
+	void AssetManager::ReloadCallback(AssetIdT id)
+	{
+		LM_PROFILE_FUNCTION();
+
+		LM_CORE_TRACE("Reloading Asset: {}", GetAssetName(id));
+	}
+
+	void AssetManager::MetadataCallback(const std::filesystem::path& path)
+	{
+		LM_PROFILE_FUNCTION();
+
+		LM_CORE_TRACE("Meta file changed: {}", path.string());
 	}
 
 }

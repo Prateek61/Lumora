@@ -10,10 +10,10 @@ namespace Lumora
 
 int main(int argc, char** argv)
 {
-	Lumora::Log::Init();
+	spdlog::set_pattern("%^[%T] %v%$");
 
 	LM_PROFILE_BEGIN_SESSION("Startup", "Startup.profile.json");
-	Lumora::ApplicationCommandLineArgs args = { argc, argv };
+	Lumora::ApplicationCommandLineArgs args{.Count = argc, .Args = argv};
 	auto app = Lumora::CreateApplication(args);
 	LM_PROFILE_END_SESSION();
 

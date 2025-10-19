@@ -34,6 +34,7 @@ namespace Lumora
 	{
 	public:
 		AssetReloader(std::filesystem::path basePath, std::function<void(AssetIdT id)> reloadCallback, std::function<void(const std::filesystem::path&)> metadataCallback);
+		~AssetReloader();
 
 		void WatchFile(const std::filesystem::path& path, AssetIdT id);
 		void UnwatchFile(const std::filesystem::path& path);
