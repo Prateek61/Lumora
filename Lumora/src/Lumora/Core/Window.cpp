@@ -60,7 +60,7 @@ namespace Lumora
 			(
 				glfwWindowHint(GLFW_CONTEXT_DEBUG, GLFW_TRUE);
 			)
-
+			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 			m_GLFWWindow = static_cast<void*>(
 				glfwCreateWindow(static_cast<int>(props.Width), static_cast<int>(props.Height), m_Props.Title.c_str(),
 				                 nullptr, nullptr)

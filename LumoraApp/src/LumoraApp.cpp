@@ -12,7 +12,6 @@ public:
 		: Lumora::Application(props)
 	{
 		Handle = Lumora::Assets::Get<ExampleAsset>("JustExample");
-		LM_LOG_INFO("ExampleAsset Data: {}", Handle.Get()->Data);
 		bgfx::setDebug(BGFX_DEBUG_TEXT);
 
 		GetRendererContext().SetClearColor(0x9a9a9aff);

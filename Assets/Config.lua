@@ -6,7 +6,7 @@ return {
         Width = 1280,
         Height = 720,
     },
-    API = "DirectX12", -- Options: [Default, OpenGL, DirectX11, DirectX12, Vulkan]
+    API = "Vulkan", -- Options: [Default, OpenGL, DirectX11, DirectX12, Vulkan]
     Run = true, -- Setting this to false doesn't run the application loop
 
     LoggerConfig = {
