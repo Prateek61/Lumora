@@ -24,6 +24,14 @@ namespace
 		static Lumora::Ref<spdlog::logger> default_logger = spdlog::default_logger();
 		return default_logger;
 	}
+
+	// Pads the string with spaces in the front to reach the total length
+	std::string PadString(const std::string& str, size_t totalLength)
+	{
+		if (str.length() >= totalLength)
+			return str;
+		return str + std::string(totalLength - str.length(), ' ');
+	}
 }
 
 namespace Lumora
@@ -34,6 +42,7 @@ namespace Lumora
 	Ref<spdlog::logger> Log::s_CoreBgfxLogger;
 	Ref<spdlog::logger> Log::s_CoreSerializerLogger;
 	Ref<spdlog::logger> Log::s_CoreAssetsLogger;
+	Ref<spdlog::logger> Log::s_CoreRendererLogger;
 
 	void Log::Init(const Internal::LoggerConfig& config)
 	{
@@ -46,26 +55,25 @@ namespace Lumora
 		log_sinks[0]->set_pattern(config.ConsolePattern);
 		log_sinks[1]->set_pattern(config.FilePattern);
 
-		auto create_logger = [&](const Internal::SingleLoggerConfig& logConfig, const std::string& name)
+		auto create_logger = [&](const std::string& levelStr, const std::string& name)
 		{
 			auto begin = std::begin(log_sinks);
 			auto end = std::end(log_sinks);
-			if (!logConfig.EnableConsoleLog) ++begin;
-			if (!logConfig.EnableFileLog) --end;
 			auto logger = std::make_shared<spdlog::logger>(name, begin, end);
 			register_logger(logger);
-			auto level = StringToLevel(logConfig.Level);
+			auto level = StringToLevel(levelStr);
 			logger->set_level(level);
 			logger->flush_on(level);
 			return logger;
 		};
 
-		s_CoreLogger = create_logger(config.Core, "CORE");
-		s_ClientLogger = create_logger(config.Client, "APP");
-		s_CoreBgfxLogger = create_logger(config.CoreBgfx, "CORE::BGFX");
-		s_CoreLuaLogger = create_logger(config.CoreLua, "CORE::LUA");
-		s_CoreSerializerLogger = create_logger(config.CoreSerializer, "CORE::SERIALIZER");
-		s_CoreAssetsLogger = create_logger(config.CoreAssets, "CORE::ASSETS");
+		s_CoreLogger = create_logger(config.Core, PadString("ENGINE", 10));
+		s_ClientLogger = create_logger(config.Client, PadString("APP", 10));
+		s_CoreBgfxLogger = create_logger(config.CoreBgfx, PadString("BGFX", 10));
+		s_CoreLuaLogger = create_logger(config.CoreLua, PadString("LUA", 10));
+		s_CoreSerializerLogger = create_logger(config.CoreSerializer, PadString("SERIALIZER", 10));
+		s_CoreAssetsLogger = create_logger(config.CoreAssets, PadString("ASSETS", 10));
+		s_CoreRendererLogger = create_logger(config.CoreRenderer, PadString("RENDERER", 10));
 	}
 
 	Ref<spdlog::logger>& Log::GetCoreLogger()
@@ -73,25 +81,21 @@ namespace Lumora
 		LM_CORE_ASSERT(s_CoreLogger, "Core Logger not initialized!")
 		return s_CoreLogger;
 	}
-
 	Ref<spdlog::logger>& Log::GetClientLogger()
 	{
 		LM_CORE_ASSERT(s_ClientLogger, "Client Logger not initialized!")
 		return s_ClientLogger;
 	}
-
 	Ref<spdlog::logger>& Log::GetLuaLogger()
 	{
 		LM_CORE_ASSERT(s_CoreLuaLogger, "Lua Logger not initialized!")
 		return s_CoreLuaLogger;
 	}
-
 	Ref<spdlog::logger>& Log::GetBgfxLogger()
 	{
 		LM_CORE_ASSERT(s_CoreBgfxLogger, "Bgfx Logger not initialized!")
 		return s_CoreBgfxLogger;
 	}
-
 	Ref<spdlog::logger>& Log::GetCoreSerializerLogger()
 	{
 		if (!s_CoreSerializerLogger)	return GetDefaultLogger();
@@ -101,5 +105,10 @@ namespace Lumora
 	{
 		LM_CORE_ASSERT(s_CoreAssetsLogger, "Assets Logger not initialized!")
 		return s_CoreAssetsLogger;
+	}
+	Ref<spdlog::logger>& Log::GetCoreRendererLogger()
+	{
+		LM_CORE_ASSERT(s_CoreRendererLogger, "Renderer Logger not initialized!")
+		return s_CoreRendererLogger;
 	}
 }

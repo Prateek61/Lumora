@@ -107,6 +107,8 @@ project "LumoraApp"
         runtime "Release"
         optimize "Full"
 
+    setBxCompat()
+
     -- Clear the filters
     filter {}
 

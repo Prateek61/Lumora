@@ -30,6 +30,7 @@ namespace Lumora
 		std::filesystem::path AssetsDirectory = ".";
 		ApplicationCommandLineArgs CommandLineArgs;
 		WindowProps WindowProps;
+		std::string API = "Default"; // Renderer API to use: Default, OpenGL, DirectX11, DirectX12, Vulkan
 
 		bool Run = true; // Whether to run the application loop, for debugging or testing purposes
 
@@ -46,4 +47,4 @@ namespace Lumora
 }
 
 VISITABLE_STRUCT(Lumora::WindowProps, Title, Width, Height);
-VISITABLE_STRUCT(Lumora::ApplicationProps, Name, AssetsDirectory, WindowProps, Run, LoggerConfig);
+VISITABLE_STRUCT(Lumora::ApplicationProps, Name, AssetsDirectory, WindowProps, API, Run, LoggerConfig);

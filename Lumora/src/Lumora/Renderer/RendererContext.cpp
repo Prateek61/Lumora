@@ -18,8 +18,10 @@ namespace Lumora
 			return RendererContext::API::DIRECTX12;
 		if (api == "Default")
 			return RendererContext::API::DEFAULT;
-		LM_CORE_ASSERT(false, "Unknown Renderer API!")
-		return RendererContext::API::OPENGL;
+
+		LM_CORE_RENDERER_WARN("Unknown Renderer API string ({}). Falling back to Default.", api);
+
+		return RendererContext::API::DEFAULT;
 	}
 
 	const char* RendererContext::APIToString(RendererContext::API api)
@@ -32,7 +34,9 @@ namespace Lumora
 		case RendererContext::API::DIRECTX12: return "DirectX12";
 		case RendererContext::API::DEFAULT:   return "Default";
 		}
-		LM_CORE_ASSERT(false, "Unknown Renderer API!")
+
+		LM_CORE_RENDERER_WARN("Unknown Renderer API enum. Returning 'Unknown' string.");
+
 		return "Unknown";
 	}
 

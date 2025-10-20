@@ -3,6 +3,7 @@
 #include "Lumora/Common/Defines.h"
 #include "Lumora/Common/SmartPointers.h"
 #include <visit_struct/visit_struct.hpp>
+#include "Lumora/Common/Instrumentor.h"
 
 #include <filesystem>
 
@@ -15,24 +16,18 @@ namespace Lumora
 {
 	namespace Internal
 	{
-		struct SingleLoggerConfig
-		{
-			std::string Level = "info";
-			bool EnableConsoleLog = true;
-			bool EnableFileLog = true;
-		};
-
 		struct LoggerConfig
 		{
 			std::string ConsolePattern = "[%T] %^%n: %v%$";
 			std::string FilePattern = "[%T] %^[%s:%#] [%l] %n: %v%$";
 			std::filesystem::path File = "Lumora.log";
-			SingleLoggerConfig Core;
-			SingleLoggerConfig CoreLua;
-			SingleLoggerConfig CoreBgfx;
-			SingleLoggerConfig CoreAssets;
-			SingleLoggerConfig CoreSerializer;
-			SingleLoggerConfig Client;
+			std::string Core = "info";
+			std::string CoreLua = "info";
+			std::string CoreBgfx = "info";
+			std::string CoreAssets = "info";
+			std::string CoreSerializer = "info";
+			std::string CoreRenderer = "info";
+			std::string Client = "info";
 		};
 	}
 
@@ -47,6 +42,7 @@ namespace Lumora
 		static Ref<spdlog::logger>& GetBgfxLogger();
 		static Ref<spdlog::logger>& GetCoreSerializerLogger();
 		static Ref<spdlog::logger>& GetCoreAssetsLogger();
+		static Ref<spdlog::logger>& GetCoreRendererLogger();
 
 	private:
 		static Ref<spdlog::logger> s_CoreLogger;
@@ -55,17 +51,16 @@ namespace Lumora
 		static Ref<spdlog::logger> s_CoreBgfxLogger;
 		static Ref<spdlog::logger> s_CoreSerializerLogger;
 		static Ref<spdlog::logger> s_CoreAssetsLogger;
+		static Ref<spdlog::logger> s_CoreRendererLogger;
 	};
 }
 
-VISITABLE_STRUCT(Lumora::Internal::SingleLoggerConfig, Level, EnableConsoleLog, EnableFileLog);
-VISITABLE_STRUCT(Lumora::Internal::LoggerConfig, ConsolePattern, FilePattern, File ,Core, CoreLua, CoreBgfx, CoreAssets, CoreSerializer, Client);
-
+VISITABLE_STRUCT(Lumora::Internal::LoggerConfig, ConsolePattern, FilePattern, File ,Core, CoreLua, CoreBgfx, CoreAssets, CoreSerializer, CoreRenderer, Client);
 
 /// Logging Macros
 /// Log levels: 0 = Off, 1 = Fatal, 2 = Error, 3 = Warn, 4 = Info, 5 = Trace, 6 = Debug
 
-#define LM_IMPL_SPDLOG_SOURCE_LOC() spdlog::source_loc(__FILE__, __LINE__, "")
+#define LM_IMPL_SPDLOG_SOURCE_LOC() spdlog::source_loc(__FILE__, __LINE__, Lumora::InstrumentorUtils::CleanupOutputString(LM_FUNC_SIG, "__cdecl ").Data)
 
 #if LM_LOG_LEVEL >= 1
 #define LM_IMPL_LOG_FATAL(Type, ...)   ::Lumora::Log::Get##Type##Logger()->log(LM_IMPL_SPDLOG_SOURCE_LOC(), spdlog::level::critical, __VA_ARGS__)
@@ -106,12 +101,12 @@ VISITABLE_STRUCT(Lumora::Internal::LoggerConfig, ConsolePattern, FilePattern, Fi
 #define LM_CORE_TRACE(...)     LM_IMPL_LOG_TRACE(Core, __VA_ARGS__)
 #define LM_CORE_DEBUG(...)     LM_IMPL_LOG_DEBUG(Core, __VA_ARGS__)
 // Client log macros
-#define LM_FATAL(...)          LM_IMPL_LOG_FATAL(Client, __VA_ARGS__)
-#define LM_ERROR(...)          LM_IMPL_LOG_ERROR(Client, __VA_ARGS__)
-#define LM_WARN(...)           LM_IMPL_LOG_WARN(Client, __VA_ARGS__)
-#define LM_INFO(...)           LM_IMPL_LOG_INFO(Client, __VA_ARGS__)
-#define LM_TRACE(...)          LM_IMPL_LOG_TRACE(Client, __VA_ARGS__)
-#define LM_DEBUG(...)          LM_IMPL_LOG_DEBUG(Client, __VA_ARGS__)
+#define LM_LOG_FATAL(...)          LM_IMPL_LOG_FATAL(Client, __VA_ARGS__)
+#define LM_LOG_ERROR(...)          LM_IMPL_LOG_ERROR(Client, __VA_ARGS__)
+#define LM_LOG_WARN(...)           LM_IMPL_LOG_WARN(Client, __VA_ARGS__)
+#define LM_LOG_INFO(...)           LM_IMPL_LOG_INFO(Client, __VA_ARGS__)
+#define LM_LOG_TRACE(...)          LM_IMPL_LOG_TRACE(Client, __VA_ARGS__)
+#define LM_LOG_DEBUG(...)          LM_IMPL_LOG_DEBUG(Client, __VA_ARGS__)
 // Serializer Log macros
 #define LM_CORE_SERIALIZER_FATAL(...)     LM_IMPL_LOG_FATAL(CoreSerializer, __VA_ARGS__)
 #define LM_CORE_SERIALIZER_ERROR(...)     LM_IMPL_LOG_ERROR(CoreSerializer, __VA_ARGS__)
@@ -126,3 +121,10 @@ VISITABLE_STRUCT(Lumora::Internal::LoggerConfig, ConsolePattern, FilePattern, Fi
 #define LM_CORE_ASSETS_INFO(...)      LM_IMPL_LOG_INFO(CoreAssets, __VA_ARGS__)
 #define LM_CORE_ASSETS_TRACE(...)     LM_IMPL_LOG_TRACE(CoreAssets, __VA_ARGS__)
 #define LM_CORE_ASSETS_DEBUG(...)     LM_IMPL_LOG_DEBUG(CoreAssets, __VA_ARGS__)
+// Renderer Log macros
+#define LM_CORE_RENDERER_FATAL(...)     LM_IMPL_LOG_FATAL(CoreRenderer, __VA_ARGS__)
+#define LM_CORE_RENDERER_ERROR(...)     LM_IMPL_LOG_ERROR(CoreRenderer, __VA_ARGS__)
+#define LM_CORE_RENDERER_WARN(...)      LM_IMPL_LOG_WARN(CoreRenderer, __VA_ARGS__)
+#define LM_CORE_RENDERER_INFO(...)      LM_IMPL_LOG_INFO(CoreRenderer, __VA_ARGS__)
+#define LM_CORE_RENDERER_TRACE(...)     LM_IMPL_LOG_TRACE(CoreRenderer, __VA_ARGS__)
+#define LM_CORE_RENDERER_DEBUG(...)     LM_IMPL_LOG_DEBUG(CoreRenderer, __VA_ARGS__)

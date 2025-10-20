@@ -37,7 +37,7 @@ namespace Lumora
 	{
 		LM_PROFILE_FUNCTION();
 
-		LM_CORE_ASSERT(!s_Instance, "Applciation already exists");
+		LM_CORE_ASSERT(!s_Instance, "Applciation already exists")
 		s_Instance = this;
 
 		m_Props = props;
@@ -50,6 +50,7 @@ namespace Lumora
 		m_Running = props.Run;
 
 		// Renderer context
+		RendererContext::SetAPI(RendererContext::StringToAPI(props.API));
 		m_RendererContext = RendererContext::Create();
 		m_RendererContext->Init(*m_Window);
 

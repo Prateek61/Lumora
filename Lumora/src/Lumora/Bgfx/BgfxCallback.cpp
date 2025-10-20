@@ -6,7 +6,7 @@ namespace Lumora
 	void BgfxCallback::fatal(const char* filepath, uint16_t line, bgfx::Fatal::Enum code, const char* str)
 	{
 		auto logger = Log::GetBgfxLogger();
-		logger->critical("BGFX Fatal Error ({}:{}): {} ({})", filepath, line, str, static_cast<int>(code));
+		logger->log(spdlog::source_loc(filepath, line, ""), spdlog::level::critical, "{} ({})", str, static_cast<int>(code));
 
 		LM_CORE_ASSERT(code == bgfx::Fatal::DebugCheck, "BGFX Fatal Error")
 	}
@@ -34,7 +34,7 @@ namespace Lumora
 			formatted.pop_back();
 		}
 
-		logger->trace("BGFX Trace ({}:{}): {}", filepath, line, formatted);
+		logger->log(spdlog::source_loc(filepath, line, ""), spdlog::level::trace, "{}", formatted);
 #endif
 	}
 

@@ -38,6 +38,8 @@ namespace Lumora
 	{
 		LM_PROFILE_FUNCTION();
 
+		LM_CORE_RENDERER_DEBUG("Initializing BGFX with API ({})", APIToString(GetAPI()));
+
 		m_PlatformData = {};
 		m_PlatformData.nwh = window.GetNativeWindow();
 		m_PlatformData.ndt = nullptr;
@@ -61,6 +63,7 @@ namespace Lumora
 		auto status = bgfx::init(init);
 
 		LM_CORE_ASSERT(status, "BGFX not initialized successfully")
+		LM_CORE_RENDERER_INFO("Initialized BGFX with renderer type: {}", bgfx::getRendererName(bgfx::getRendererType()));
 
 		bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(window.GetWidth()), static_cast<uint16_t>(window.GetHeight()));
 		SetClearColor(0x000000ff);
