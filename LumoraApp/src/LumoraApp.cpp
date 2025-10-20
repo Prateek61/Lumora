@@ -9,36 +9,19 @@ public:
 	App(const Lumora::ApplicationProps& props)
 		: Lumora::Application(props)
 	{
-		auto id = Lumora::Assets::Register("Testing.local.meta.lua");
-		if (Lumora::Assets::Valid(id))
-		{
-			Handle = Lumora::Assets::Get<ExampleAsset>(id);
-			if (!Handle.Load())
-			{
-				LM_ERROR("Failed to load ExampleAsset");
-			}
-		}
+		Handle = Lumora::Assets::Get<ExampleAsset>("JustExample");
+		LM_INFO("ExampleAsset Data: {}", Handle.Get()->Data);
 
 		GetRendererContext().SetClearColor(0x9a9a9aff);
 	}
 
-	~App() override
-	{
-	}
+	~App() override = default;
 
 	void OnUpdate(Lumora::TimeStep ts) override
 	{
-		if (Handle.Updated())
+		if (Handle && Handle.Updated())
 		{
-			auto ref = Handle.Get();
-			if (ref)
-			{
-				LM_INFO("ExampleAsset Updated! New Data: {}", ref->Data);
-			}
-			else
-			{
-				LM_ERROR("Failed to get ExampleAsset after update!");
-			}
+			LM_INFO("ExampleAsset Updated!, New Data: {}", Handle.Get()->Data);
 		}
 	}
 

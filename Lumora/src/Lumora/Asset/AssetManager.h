@@ -41,6 +41,7 @@ namespace Lumora
 
 		std::filesystem::path GetAssetRoot() const { return m_AssetRoot; }
 		std::filesystem::path GetFullAssetPath(const std::filesystem::path& relativePath) const { return m_AssetRoot / relativePath; }
+		static bool IsMetaFile(const std::filesystem::path& path) { return path.extension() == ".lua" && path.stem().extension() == ".meta"; }
 
 	private:
 		AssetStorage m_Storage;
@@ -52,6 +53,7 @@ namespace Lumora
 	private:
 		void ReloadCallback(AssetIdT id);
 		void MetadataCallback(const std::filesystem::path& path);
+		void ScanFolder(const std::filesystem::path& path);
 	};
 }
 
@@ -75,7 +77,7 @@ namespace Lumora
 		LM_PROFILE_FUNCTION();
 
 		auto id = GetAssetId(name);
-		LM_CORE_ASSERT(IsValid(id), "Invalid Asset ID");
+		LM_CORE_ASSERT(IsValid(id), "Invalid Asset ID")
 
 		auto record = m_Storage.GetAssetRecord(id);
 		LM_CORE_ASSERT(record, "Asset Record not found");

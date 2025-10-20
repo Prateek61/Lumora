@@ -15,6 +15,6 @@ return {
         Core = { Level = "trace" }, -- levels: [trace, debug, info, warn, error, fatal, off]
         Client = { Level = "trace" },
         CoreSerializer = { Level = "info" },
-        CoreAssets = { Level = "trace" },
+        CoreAssets = { Level = "info" },
     }
 }

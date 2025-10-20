@@ -24,6 +24,11 @@ namespace Lumora
 
 		std::string ToString() const;
 		static Ref<AssetProps> DeSerialize(const std::filesystem::path& propsPath, LuaSerializer& serializer);
+
+		virtual bool IsValid()
+		{
+			return !Name.empty() && !Type.empty();
+		}
 	};
 }
 

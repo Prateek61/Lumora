@@ -1,14 +1,6 @@
 #include "LMPCH.h"
 #include "AssetReloader.h"
-
-namespace
-{
-	bool IsMetaFile(const std::filesystem::path& path)
-	{
-		// Check if the file has a .meta.lua extension
-		return path.extension() == ".lua" && path.stem().extension() == ".meta";
-	}
-}
+#include "Lumora/Asset/AssetManager.h"
 
 namespace Lumora
 {
@@ -195,7 +187,7 @@ namespace Lumora
 		// File is not in the watch list
 		if (id == g_INVALID_ASSET_ID)
 		{
-			if ((changeType == filewatch::Event::added || changeType == filewatch::Event::modified) && IsMetaFile(canonical_path))
+			if ((changeType == filewatch::Event::added || changeType == filewatch::Event::modified) && AssetManager::IsMetaFile(canonical_path))
 			{
 				if (m_MetadataCallback)
 				{

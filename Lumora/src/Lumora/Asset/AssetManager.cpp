@@ -10,6 +10,8 @@ namespace Lumora
 	{
 		m_AssetReloader.StartWatching();
 		m_AssetReloader.RunReloadThread();
+
+		ScanFolder(m_AssetRoot);
 	}
 
 	std::string AssetManager::GetAssetName(AssetIdT id)
@@ -40,7 +42,13 @@ namespace Lumora
 	{
 		LM_PROFILE_FUNCTION();
 		LM_CORE_ASSERT(props, "AssetProps is null")
-		LM_CORE_ASSERT(!props->Name.empty(), "Asset name cannot be empty")
+
+		if (!props->IsValid())
+		{
+			LM_CORE_ERROR("Invalid AssetProps for asset: {}", props->Name);
+			return g_INVALID_ASSET_ID;
+		}
+
 		auto existingId = m_Registry.GetAssetId(props->Name);
 
 		if (existingId != g_INVALID_ASSET_ID)
@@ -55,7 +63,7 @@ namespace Lumora
 		auto assetRecord = CreateRef<AssetRecord>(newId, props->Name, nullptr);
 		m_Storage.AddAssetRecord(assetRecord);
 
-		LM_CORE_ASSETS_INFO("Registered Asset: {} with ID {}", props->Name, static_cast<std::string>(newId));
+		LM_CORE_ASSETS_INFO("Registered Asset ({}) of Type ({}) with ID ({})", props->Name, props->Type, static_cast<std::string>(newId));
 		return newId;
 	}
 
@@ -193,4 +201,19 @@ namespace Lumora
 		RegisterAsset(props);
 	}
 
+	void AssetManager::ScanFolder(const std::filesystem::path& path)
+	{
+		LM_PROFILE_FUNCTION();
+		for (const auto& entry : std::filesystem::directory_iterator(path))
+		{
+			if (entry.is_directory())
+			{
+				ScanFolder(entry.path());
+			}
+			else if (IsMetaFile(entry))
+			{
+				RegisterAsset(std::filesystem::relative(entry.path(), m_AssetRoot));
+			}
+		}
+	}
 }

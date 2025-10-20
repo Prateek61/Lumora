@@ -76,11 +76,10 @@ namespace Lumora
 
 		if (m_Cached)	return m_CachedAsset;
 
-		UpdateVersion();
-		auto ref = m_AssetRecord->Get();
+		auto ref = m_AssetRecord->Get(m_AssetVersion);
 		if (!ref && Load())
 		{
-			ref = m_AssetRecord->Get();
+			ref = m_AssetRecord->Get(m_AssetVersion);
 		}
 
 		return StaticRefCast<T>(ref);
@@ -127,16 +126,15 @@ namespace Lumora
 		{
 			if (m_Cached)
 			{
-				UpdateVersion();
-				m_CachedAsset = StaticRefCast<T>(m_AssetRecord->Get());
+				m_CachedAsset = StaticRefCast<T>(m_AssetRecord->Get(m_AssetVersion));
 			}
 			return true;
 		}
 
 		m_AssetManager->Load(*m_AssetRecord);
-		UpdateVersion();
-		if (m_Cached)	m_CachedAsset = StaticRefCast<T>(m_AssetRecord->Get());
-		return m_AssetRecord->IsLoaded();
+		auto ref = m_AssetRecord->Get(m_AssetVersion);
+		if (m_Cached) m_CachedAsset = StaticRefCast<T>(ref);
+		return ref != nullptr;
 	}
 
 	template<typename T>
@@ -151,8 +149,7 @@ namespace Lumora
 		{
 			if (m_AssetRecord->IsLoaded())
 			{
-				UpdateVersion();
-				m_CachedAsset = StaticRefCast<T>(m_AssetRecord->Get());
+				m_CachedAsset = StaticRefCast<T>(m_AssetRecord->Get(m_CachedAsset));
 			}
 		}
 	}

@@ -5,42 +5,33 @@
 
 namespace Lumora
 {
-	// Stable container owned by AssetManager
 	class AssetRecord
 	{
 	public:
-		AssetRecord(AssetIdT assetId, std::string name, Ref<Asset> assetPtr)
-			: m_AssetPtr(std::move(assetPtr)),
-			  m_AssetId(assetId),
-			  m_Name(std::move(name))
-		{
-		}
+		AssetRecord(AssetIdT assetId, std::string name, Ref<Asset> assetPtr);
 
 		// Accessors
-		Ref<Asset> Get() const { return m_AssetPtr.load(std::memory_order_relaxed); }
-		AssetVersionT GetVersion() const { return m_AssetVersion.load(std::memory_order_relaxed); }
+		Ref<Asset> Get(AssetVersionT& outVersion) const;
+		Ref<Asset> Get() const;
+		AssetVersionT GetVersion() const;
 		AssetIdT GetAssetId() const { return m_AssetId; }
-		bool IsLoaded() const { return m_AssetPtr.load(std::memory_order_relaxed) != nullptr; }
+		const std::string& GetName() const { return m_Name; }
+		bool IsLoaded(AssetVersionT& outVersion) const;
+		bool IsLoaded() const;
 
 	private:
-		Atomic<Ref<Asset>> m_AssetPtr{ nullptr };
+		Ref<Asset> m_AssetPtr{ nullptr };
 		const AssetIdT m_AssetId;
-		std::string m_Name;
-		Atomic<AssetVersionT> m_AssetVersion{0};
+		const std::string m_Name;
+		AssetVersionT m_AssetVersion{ 0 };
 
+		mutable RWMutex m_Mutex;
 
+	private:
 		friend class AssetManager;
 		friend class AssetStorage;
-
-		void UpdateAsset(Ref<Asset> newAsset)
-		{
-			m_AssetPtr.store(std::move(newAsset), std::memory_order_relaxed);
-			m_AssetVersion.fetch_add(1, std::memory_order_relaxed);
-		}
-
-		void Unload()
-		{
-			UpdateAsset(nullptr);
-		}
+		void UpdateAsset(Ref<Asset> newAsset, AssetVersionT& outVersion);
+		void UpdateAsset(Ref<Asset> newAsset);
+		void Unload();
 	};
 }
