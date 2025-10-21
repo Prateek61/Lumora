@@ -63,8 +63,11 @@ namespace Lumora
 	};
 }
 
-#define LM_REGISTER_ASSET_TYPE(Name, AssetType, AssetPropsType, LoadFunction) \
-	static Lumora::AssetTypeRegistrar _Registrar##AssetType##__LINE__(Name, static_cast<Lumora::AssetLoadFunction<AssetType, AssetPropsType>>(LoadFunction));
+#define LM_REGISTER_ASSET_TYPE(Name, AssetType, AssetPropsType, LoadFunction)                                                                   \
+    class _Registrar##AssetType##__LINE__                                                                                                       \
+    {                                                                                                                                           \
+        inline static Lumora::AssetTypeRegistrar reg = {Name, static_cast<Lumora::AssetLoadFunction<AssetType, AssetPropsType>>(LoadFunction)}; \
+    };
 
 #define LM_REGISTER_ASSET_TYPE_AUTO(AssetType, AssetPropsType, LoadFunction) \
 	LM_REGISTER_ASSET_TYPE(#AssetType, AssetType, AssetPropsType, LoadFunction)

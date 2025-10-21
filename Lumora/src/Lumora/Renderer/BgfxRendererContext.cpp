@@ -7,6 +7,22 @@
 namespace
 {
 	Lumora::BgfxCallback s_BgfxCallback = {};
+
+	std::string GetVendorName(uint16_t vendorId)
+	{
+		switch (vendorId)
+		{
+		case BGFX_PCI_ID_AMD: return "AMD";
+		case BGFX_PCI_ID_APPLE: return "APPLE";
+		case BGFX_PCI_ID_ARM: return "ARM";
+		case BGFX_PCI_ID_INTEL: return "INTEL";
+		case BGFX_PCI_ID_MICROSOFT: return "MICROSOFT";
+		case BGFX_PCI_ID_NVIDIA: return "NVIDIA";
+		case BGFX_PCI_ID_SOFTWARE_RASTERIZER: return "SOFTWARE_RASTERIZER";
+		case BGFX_PCI_ID_NONE: return "NONE";
+		default: return "UNKNOWN";
+		}
+	}
 }
 
 namespace
@@ -60,10 +76,20 @@ namespace Lumora
 
 		init.callback = &s_BgfxCallback;
 
-		auto status = bgfx::init(init);
+		bool status;
+
+		{
+			LM_PROFILE_SCOPE("bgfx::init()");
+			status = bgfx::init(init);
+		}
 
 		LM_CORE_ASSERT(status, "BGFX not initialized successfully")
-		LM_CORE_RENDERER_INFO("Initialized BGFX with renderer type: {}", bgfx::getRendererName(bgfx::getRendererType()));
+
+		auto caps = bgfx::getCaps();
+		auto vendorName = GetVendorName(caps->vendorId);
+
+		//LM_CORE_RENDERER_INFO("Initialized BGFX with API-({}) DEVICE_ID-({}) VENDOR_ID-({})", bgfx::getRendererName(bgfx::getRendererType()), bgfx::);
+		LM_CORE_RENDERER_INFO("Initialized BGFX with API({}), VENDOR({}), DEVICE-ID({:X}), VENDOR-ID({:X})", bgfx::getRendererName(bgfx::getRendererType()), vendorName, caps->deviceId, caps->vendorId);
 
 		bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(window.GetWidth()), static_cast<uint16_t>(window.GetHeight()));
 		SetClearColor(0x000000ff);

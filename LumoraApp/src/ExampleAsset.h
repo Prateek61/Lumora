@@ -11,8 +11,8 @@ LM_VISITABLE_ASSET_PROPS(ExampleAssetProps, Data);
 class ExampleAsset : public Lumora::Asset
 {
 public:
-	ExampleAsset(const std::string& data)
-		: Data(data)
+	ExampleAsset(std::string data)
+		: Data(std::move(data))
 	{
 	}
 
@@ -22,3 +22,4 @@ inline Lumora::Ref<ExampleAsset> LoadExampleAsset(ExampleAssetProps& props)
 {
 	return Lumora::CreateRef<ExampleAsset>(props.Data);
 }
+LM_REGISTER_ASSET_TYPE("ExampleAsset", ExampleAsset, ExampleAssetProps, LoadExampleAsset);

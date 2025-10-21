@@ -130,6 +130,9 @@ namespace Lumora
 	void Application::PushLayer(Layer* layer)
 	{
 		LM_PROFILE_FUNCTION();
+		LM_CORE_ASSERT(layer, "Layer is nullptr!")
+
+		LM_CORE_TRACE("Pushing Layer ({})", layer->GetName());
 
 		m_LayerStack.PushLayer(layer);
 		layer->OnAttach();
@@ -139,6 +142,9 @@ namespace Lumora
 	void Application::PushOverlay(Layer* overlay)
 	{
 		LM_PROFILE_FUNCTION();
+		LM_CORE_ASSERT(overlay, "Overlay is nullptr!")
+
+		LM_CORE_TRACE("Pushing Overlay ({})", overlay->GetName());
 
 		m_LayerStack.PushOverlay(overlay);
 		overlay->OnAttach();
