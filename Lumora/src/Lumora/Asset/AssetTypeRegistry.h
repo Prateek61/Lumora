@@ -69,5 +69,5 @@ namespace Lumora
         inline static Lumora::AssetTypeRegistrar reg = {Name, static_cast<Lumora::AssetLoadFunction<AssetType, AssetPropsType>>(LoadFunction)}; \
     };
 
-#define LM_REGISTER_ASSET_TYPE_AUTO(AssetType, AssetPropsType, LoadFunction) \
+#define LM_REGISTER_ASSET_TYPE_AUTO(AssetType, AssetPropsType, LoadFunction)    \
 	LM_REGISTER_ASSET_TYPE(#AssetType, AssetType, AssetPropsType, LoadFunction)

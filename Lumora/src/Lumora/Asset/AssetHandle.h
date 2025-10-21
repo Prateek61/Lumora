@@ -25,6 +25,9 @@ namespace Lumora
 		void Uncache();
 		bool IsCached() const { return m_Cached; }
 
+		template<typename F>
+		void operator &&(const F& func);
+
 		bool IsHandleValid() const;
 		operator bool() const { return IsHandleValid(); }
 	private:
@@ -187,5 +190,19 @@ namespace Lumora
 	void AssetHandle<T>::UpdateVersion()
 	{
 		m_AssetVersion = m_AssetRecord->GetVersion();
+	}
+
+	template<typename T>
+		requires std::is_base_of_v<Asset, T>
+	template<typename F>
+	void AssetHandle<T>::operator&&(const F& func)
+	{
+		LM_PROFILE_FUNCTION();
+
+		if (!IsHandleValid()) return;
+		if (auto asset = Get())
+		{
+			func(asset);
+		}
 	}
 }

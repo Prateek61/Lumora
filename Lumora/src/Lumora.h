@@ -41,3 +41,5 @@
 #include "Lumora/Utilities/Time.h"
 #include "Lumora/Utilities/TimeStep.h"
 #include "Lumora/Utilities/FileDialog.h"
+
+namespace Lm = Lumora;

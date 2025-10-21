@@ -6,7 +6,7 @@ class LumoraLayer : public Lumora::Layer
 {
 public:
 	LumoraLayer()
-		: Lumora::Layer("LumoraLayer")
+		: Lm::Layer("LumoraLayer")
 	{
 		Handle = Lumora::Assets::Get<ExampleAsset>("JustExample");
 	}
@@ -22,10 +22,10 @@ public:
 		LM_LOG_INFO("LumoraLayer Detached");
 	}
 
-	void OnUpdate(Lumora::TimeStep ts) override;
+	void OnUpdate(Lm::TimeStep ts) override;
 	void OnRender() override;
 
 private:
-	Lumora::AssetHandle<ExampleAsset> Handle;
+	Lm::AssetHandle<ExampleAsset> Handle;
 	float m_FPS = 0.0f;
 };

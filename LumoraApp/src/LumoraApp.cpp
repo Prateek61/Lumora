@@ -6,11 +6,11 @@
 #include "bgfx/bgfx.h"
 #include "bx/math.h"
 
-class App : public Lumora::Application
+class App : public Lm::Application
 {
 public:
-	App(const Lumora::ApplicationProps& props)
-		: Lumora::Application(props)
+	App(const Lm::ApplicationProps& props)
+		: Lm::Application(props)
 	{
 		PushLayer(new LumoraLayer());
 
@@ -19,19 +19,19 @@ public:
 
 	~App() override = default;
 
-	void OnUpdate(Lumora::TimeStep ts) override
+	void OnUpdate(Lm::TimeStep ts) override
 	{
 	}
 };
 
-Lumora::Application* Lumora::CreateApplication(ApplicationCommandLineArgs args)
+Lm::Application* Lm::CreateApplication(ApplicationCommandLineArgs args)
 {
-	Lumora::LuaSerializer serializer;
+	Lm::LuaSerializer serializer;
 	auto props = ApplicationProps::Get("..\\Assets\\Config.lua", serializer);
 	props.CommandLineArgs = args;
 
 	// Make sure to Initialize the Logger
-	Log::Init(props.LoggerConfig);
+	Lm::Log::Init(props.LoggerConfig);
 
 	return new App(props);
 }
