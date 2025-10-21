@@ -1,4 +1,5 @@
 #pragma once
+
 #include "Lumora.h"
 
 struct ExampleAssetProps : Lumora::AssetProps
@@ -21,5 +22,3 @@ inline Lumora::Ref<ExampleAsset> LoadExampleAsset(ExampleAssetProps& props)
 {
 	return Lumora::CreateRef<ExampleAsset>(props.Data);
 }
-
-LM_REGISTER_ASSET_TYPE("ExampleAsset", ExampleAsset, ExampleAssetProps, LoadExampleAsset);

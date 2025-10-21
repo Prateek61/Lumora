@@ -25,7 +25,7 @@ namespace Lumora
 		(
 			// Ensure the type isn't already registered
 			auto itType = GetTypeToNameMap().find(typeInfo->AssetType);
-			LM_CORE_ASSERT(itType == GetTypeToNameMap().end(), "Asset type already registered");
+			LM_CORE_ASSERT(itType == GetTypeToNameMap().end(), "Asset type already registered: (" + typeInfo->Name + ")");
 			auto itName = GetNameToTypeInfoMap().find(typeInfo->Name);
 			LM_CORE_ASSERT(itName == GetNameToTypeInfoMap().end(), "Duplicate Asset Name or already registered: (" + typeInfo->
 				Name + ")");

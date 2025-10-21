@@ -33,6 +33,8 @@ project "Lumora"
 
         "%{IncludeDir.VISITSTRUCT}",
         "%{IncludeDir.FILEWATCH}",
+
+        "%{IncludeDir.IMGUI}"
     }
 
     links
@@ -40,6 +42,7 @@ project "Lumora"
         "glfw",
         "Lua",
         "bgfx", "bimg", "bx", -- BGFX
+        "ImGui"
     }
 
     -- If VS

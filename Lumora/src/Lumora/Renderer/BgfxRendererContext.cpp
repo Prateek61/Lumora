@@ -48,7 +48,7 @@ namespace Lumora
 		m_PlatformData.ndt = glfwGetX11Display();
 #endif
 
-		//bgfx::setPlatformData(m_PlatformData);
+		// bgfx::setPlatformData(m_PlatformData);
 
 		// Init bgfx
 		bgfx::Init init;
@@ -67,6 +67,8 @@ namespace Lumora
 
 		bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(window.GetWidth()), static_cast<uint16_t>(window.GetHeight()));
 		SetClearColor(0x000000ff);
+
+		bgfx::setDebug(BGFX_DEBUG_TEXT);
 	}
 
 	void BgfxRendererContext::Shutdown()

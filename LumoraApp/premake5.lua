@@ -30,6 +30,8 @@ project "LumoraApp"
 
         "%{IncludeDir.VISITSTRUCT}",
         "%{IncludeDir.FILEWATCH}",
+
+        "%{IncludeDir.IMGUI}"
     }
 
     links
@@ -38,7 +40,8 @@ project "LumoraApp"
 
         "glfw",
         "bgfx", "bimg", "bx", -- BGFX
-        "lua"
+        "lua",
+        "ImGui"
     }
 
     -- If VS

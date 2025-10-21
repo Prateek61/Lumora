@@ -8,6 +8,7 @@
 #include "Lumora/Event/ApplicationEvent.h"
 #include "Lumora/Utilities/TimeStep.h"
 #include "Lumora/Asset/AssetManager.h"
+#include "Lumora/Core/LayerStack.h"
 
 // Forward declaration of main
 int main(int argc, char** argv);
@@ -27,6 +28,9 @@ namespace Lumora
 		void Close();
 		void Run();
 
+		void PushLayer(Layer* layer);
+		void PushOverlay(Layer* overlay);
+
 		virtual void OnUpdate(TimeStep ts) {} // If user doesn't want to use Layer system
 
 		LuaSerializer& GetSerializer() { return m_Serializer; }
@@ -39,6 +43,7 @@ namespace Lumora
 		Scope<Window> m_Window;
 		Scope<RendererContext> m_RendererContext;
 		Scope<AssetManager> m_AssetManager;
+		LayerStack m_LayerStack;
 
 		LuaSerializer m_Serializer = {};
 		bool m_Running = true;

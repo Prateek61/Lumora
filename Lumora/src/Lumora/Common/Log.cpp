@@ -78,7 +78,7 @@ namespace Lumora
 
 	Ref<spdlog::logger>& Log::GetCoreLogger()
 	{
-		LM_CORE_ASSERT(s_CoreLogger, "Core Logger not initialized!")
+		if (!s_CoreLogger)	return GetDefaultLogger();
 		return s_CoreLogger;
 	}
 	Ref<spdlog::logger>& Log::GetClientLogger()

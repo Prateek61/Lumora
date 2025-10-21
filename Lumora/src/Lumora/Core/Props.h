@@ -13,7 +13,7 @@ namespace Lumora
 		const char* operator[](int index) const
 		{
 			LM_CORE_ASSERT(index < Count, "Command line Args Index out of range")
-				return Args[index];
+			return Args[index];
 		}
 	};
 

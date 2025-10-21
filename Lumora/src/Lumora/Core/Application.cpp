@@ -37,6 +37,8 @@ namespace Lumora
 	{
 		LM_PROFILE_FUNCTION();
 
+		LM_CORE_DEBUG("Initializing Application with props\n {}", m_Serializer.SerializeToLuaScript<ApplicationProps>(props));
+
 		LM_CORE_ASSERT(!s_Instance, "Applciation already exists")
 		s_Instance = this;
 
@@ -92,16 +94,56 @@ namespace Lumora
 			const TimeStep time_step = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 
+			
+
+			{
+				LM_PROFILE_SCOPE("LayerStack OnUpdate");
+
+				for (Layer* layer : m_LayerStack)
+					layer->OnUpdate(time_step);
+			}
+
+			{
+				LM_PROFILE_SCOPE("LayerStack OnRender");
+
+				m_RendererContext->BeginFrame();
+
+				OnUpdate(time_step);
+
+				for (Layer* layer : m_LayerStack)
+					layer->OnRender();
+
+				m_RendererContext->EndFrame();
+			}
+
+			{
+				LM_PROFILE_SCOPE("LayerStack OnImGuiRender");
+
+				for (Layer* layer : m_LayerStack)
+					layer->OnImGuiRender(time_step);
+			}
+
 			m_Window->OnUpdate();
-			m_RendererContext->BeginFrame();
-
-			OnUpdate(time_step);
-
-			// TODO: Layers
-
-			m_RendererContext->EndFrame();
 		}
 	}
+
+	void Application::PushLayer(Layer* layer)
+	{
+		LM_PROFILE_FUNCTION();
+
+		m_LayerStack.PushLayer(layer);
+		layer->OnAttach();
+	}
+
+
+	void Application::PushOverlay(Layer* overlay)
+	{
+		LM_PROFILE_FUNCTION();
+
+		m_LayerStack.PushOverlay(overlay);
+		overlay->OnAttach();
+	}
+
 
 	bool Application::OnWindowClose(WindowCloseEvent& e)
 	{

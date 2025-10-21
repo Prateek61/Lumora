@@ -157,7 +157,7 @@ namespace Lumora
 	{
 		LM_PROFILE_FUNCTION();
 
-		LM_CORE_TRACE("Reloading Asset: {}", GetAssetName(id));
+		LM_CORE_ASSETS_TRACE("Reloading Asset: {}", GetAssetName(id));
 
 		auto record = m_Storage.GetAssetRecord(id);
 		if (!record)

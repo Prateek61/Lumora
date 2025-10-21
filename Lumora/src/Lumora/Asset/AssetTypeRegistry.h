@@ -41,8 +41,8 @@ namespace Lumora
 			requires std::is_base_of_v<Asset, T> and std::is_base_of_v<AssetProps, PT>
 		AssetTypeRegistrar(std::string name, AssetLoadFunction<T, PT> loadFunction)
 		{
-			LM_CORE_ASSERT(loadFunction, "Load function cannot be null");
-			LM_CORE_ASSERT(!name.empty(), "Asset type name cannot be empty");
+			LM_CORE_ASSERT(loadFunction, "Load function cannot be null")
+			LM_CORE_ASSERT(!name.empty(), "Asset type name cannot be empty")
 
 			AssetLoadFunction<Asset, AssetProps> wrapperFunction = [loadFunction](AssetProps& props) -> Ref<Asset>
 			{
