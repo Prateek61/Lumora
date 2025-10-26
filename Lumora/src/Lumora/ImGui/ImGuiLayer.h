@@ -1,7 +1,7 @@
 #pragma once
 
-#include <imgui/imgui.h>
-#include <imgui/imgui_internal.h>
+#include <imgui.h>
+#include <imgui_internal.h>
 #include "Lumora/Core/Layer.h"
 #include <bgfx/bgfx.h>
 
@@ -14,7 +14,7 @@ namespace Lumora
 	{
 	public:
 		ImGuiLayer(float fontSize = 10.0f);
-		~ImGuiLayer() override = default;
+		~ImGuiLayer() override;
 
 		void OnAttach() override;
 		void OnDetach() override;
@@ -23,10 +23,10 @@ namespace Lumora
 
 		void BeginImGuiFrame();
 		void EndImGuiFrame();
-		void InitializeDockSpace() {}
-		void ShutDownDockSpace() {}
-		void BeginDockSpace() {}
-		void EndDockSpace() {}
+		void InitializeDockSpace();
+		void ShutDownDockSpace();
+		void BeginDockSpace();
+		void EndDockSpace();
 
 		void BlockEvents(bool block) { m_Block = block; }
 		void SetStyle(bool dark);
@@ -34,6 +34,7 @@ namespace Lumora
 
 	private:
 		bool m_Block = true;
+		std::string m_IniPath;
 
 	private:
 		void Render(ImDrawData* drawData);

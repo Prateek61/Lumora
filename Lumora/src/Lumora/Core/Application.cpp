@@ -56,11 +56,11 @@ namespace Lumora
 		m_RendererContext = RendererContext::Create();
 		m_RendererContext->Init(*m_Window);
 
-		m_ImGuiLayer = new ImGuiLayer();
-		PushOverlay(m_ImGuiLayer);
-
 		// Asset Manager
 		m_AssetManager = CreateScope<AssetManager>(props.AssetsDirectory, m_Serializer);
+
+		m_ImGuiLayer = new ImGuiLayer();
+		PushOverlay(m_ImGuiLayer);
 	}
 
 	void Application::OnEvent(Event& e)

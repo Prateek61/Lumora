@@ -15,7 +15,7 @@ IncludeDir["GLM"] = "%{wks.location}/External/glm/"
 -- Logging
 IncludeDir["SPDLOG"] = "%{wks.location}/External/spdlog/include"
 -- ImGui
-IncludeDir["IMGUI"] = "%{wks.location}/External/imgui/"
+IncludeDir["IMGUI"] = "%{wks.location}/External/imgui/imgui/"
 -- Visit Struct
 IncludeDir["VISITSTRUCT"] = "%{wks.location}/External/visit_struct/include"
 IncludeDir["FILEWATCH"] = "%{wks.location}/External/filewatch/"

@@ -5,15 +5,20 @@
 void LumoraLayer::OnUpdate(Lm::TimeStep ts)
 {
 	m_FPS = 1.0f / ts.GetSeconds();
-	bgfx::dbgTextClear();
-	bgfx::dbgTextPrintf(0, 0, 0x0f, "FPS: %f", m_FPS);
-
-	Handle && [](const Lm::Ref<ExampleAsset>& asset)
-	{
-		bgfx::dbgTextPrintf(0, 1, 0x0f, "ExampleAsset Data: %s", asset->Data.c_str());
-	};
 }
 
 void LumoraLayer::OnRender()
 {
+	LM_LOG_TRACE("Logging");
+}
+
+void LumoraLayer::OnImGuiRender(Lumora::TimeStep ts)
+{
+	ImGui::Begin("Lumora Layer");
+	ImGui::Text("FPS: %f", m_FPS);
+	Handle && [this](const Lm::Ref<ExampleAsset>& asset)
+	{
+		ImGui::Text("ExampleAsset Data: %s", asset->Data.c_str());
+	};
+	ImGui::End();
 }

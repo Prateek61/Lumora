@@ -25,6 +25,8 @@ public:
 	void OnUpdate(Lm::TimeStep ts) override;
 	void OnRender() override;
 
+	void OnImGuiRender(Lumora::TimeStep ts) override;
+
 private:
 	Lm::AssetHandle<ExampleAsset> Handle;
 	float m_FPS = 0.0f;
