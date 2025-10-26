@@ -82,6 +82,8 @@ project "Lumora"
         }
         runtime "Release"
         optimize "Full"
+    
+    setBxCompat()
 
     -- Clear the filters
     filter {}

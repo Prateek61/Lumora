@@ -56,7 +56,8 @@ namespace Lumora
 		m_RendererContext = RendererContext::Create();
 		m_RendererContext->Init(*m_Window);
 
-		// TODO: ImGui setup
+		m_ImGuiLayer = new ImGuiLayer();
+		PushOverlay(m_ImGuiLayer);
 
 		// Asset Manager
 		m_AssetManager = CreateScope<AssetManager>(props.AssetsDirectory, m_Serializer);
@@ -73,6 +74,12 @@ namespace Lumora
 		dispatcher.Dispatch<WindowResizeEvent>(LM_BIND_EVENT_FN(Application::OnWindowResize));
 
 		// TODO: Dispatch events to layers
+		for (auto it = m_LayerStack.end(); it != m_LayerStack.begin(); )
+		{
+			(*--it)->OnEvent(e);
+			if (e.Handled)
+				break;
+		}
 	}
 
 	void Application::Close()
@@ -119,8 +126,12 @@ namespace Lumora
 			{
 				LM_PROFILE_SCOPE("LayerStack OnImGuiRender");
 
+				m_ImGuiLayer->BeginImGuiFrame();
+
 				for (Layer* layer : m_LayerStack)
 					layer->OnImGuiRender(time_step);
+
+				m_ImGuiLayer->EndImGuiFrame();
 			}
 
 			m_Window->OnUpdate();

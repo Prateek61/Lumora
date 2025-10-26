@@ -99,27 +99,37 @@ namespace Lumora
 
 	void BgfxRendererContext::Shutdown()
 	{
+		LM_PROFILE_FUNCTION();
+
 		bgfx::shutdown();
 	}
 
 	void BgfxRendererContext::BeginFrame()
 	{
+		LM_PROFILE_FUNCTION();
+
 		bgfx::touch(0); // Ensure view 0 is cleared
 	}
 
 	void BgfxRendererContext::EndFrame()
 	{
+		LM_PROFILE_FUNCTION();
+
 		bgfx::frame();
 	}
 
 	void BgfxRendererContext::Resize(uint32_t width, uint32_t height)
 	{
+		LM_PROFILE_FUNCTION();
+
 		bgfx::reset(width, height, BGFX_RESET_VSYNC);
 		bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(width), static_cast<uint16_t>(height));
 	}
 
 	void BgfxRendererContext::SetClearColor(uint32_t rgba)
 	{
+		LM_PROFILE_FUNCTION();
+
 		bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, rgba, 1.0f, 0);
 	}
 }

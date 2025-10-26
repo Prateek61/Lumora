@@ -11,7 +11,7 @@ return {
 
     LoggerConfig = {
         File = "../Lumora.log",
-        ConsolePattern = "[%T] %^%n: %v [%s:%#] %$";
+        ConsolePattern = "[%T] %^%n: %v [%s:%#] %$",
         Core = "trace", -- levels: [trace, debug, info, warn, error, fatal, off]
         CoreSerializer = "info",
         CoreAssets = "off",

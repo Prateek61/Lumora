@@ -9,6 +9,7 @@
 #include "Lumora/Utilities/TimeStep.h"
 #include "Lumora/Asset/AssetManager.h"
 #include "Lumora/Core/LayerStack.h"
+#include "Lumora/ImGui/ImGuiLayer.h"
 
 // Forward declaration of main
 int main(int argc, char** argv);
@@ -48,6 +49,8 @@ namespace Lumora
 		LuaSerializer m_Serializer = {};
 		bool m_Running = true;
 		float m_LastFrameTime = 0.0f;
+
+		ImGuiLayer* m_ImGuiLayer;
 
 	private:
 		void Init(const ApplicationProps& props);
