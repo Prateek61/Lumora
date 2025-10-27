@@ -30,6 +30,8 @@ project "Lumora"
         "%{IncludeDir.BGFX}",
         "%{IncludeDir.BX}",
         "%{IncludeDir.BIMG}",
+        -- VULKAN
+        "%{IncludeDir.VULKAN}",
 
         "%{IncludeDir.VISITSTRUCT}",
         "%{IncludeDir.FILEWATCH}",
@@ -38,8 +40,14 @@ project "Lumora"
         "%{IncludeDir.GLM}"
     }
 
+    libdirs
+    {
+        VULKAN_LIB_DIR
+    }
+
     links
     {
+        "%{Library.VULKAN}",
         "glfw",
         "Lua",
         "bgfx", "bimg", "bx", -- BGFX

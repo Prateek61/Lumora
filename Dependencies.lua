@@ -1,6 +1,13 @@
 -- Lumora Dependencies
+vk_sdk = os.getenv("VULKAN_SDK")
+if (vk_sdk == nil) then
+    print("VULKAN_SDK environment variable not set. Please install the Vulkan SDK and set the VULKAN_SDK environment variable.")
+    os.exit(1)
+end
+VULKAN_LIB_DIR = vk_sdk .. "/Lib"
 
 IncludeDir = {}
+IncludeDir["VULKAN"] = vk_sdk .. "/Include"
 -- BGFX
 IncludeDir["BGFX"] = "%{wks.location}/External/bgfx/bgfx/include"
 IncludeDir["BX"] = "%{wks.location}/External/bx/bx/include"
@@ -23,6 +30,7 @@ IncludeDir["FILEWATCH"] = "%{wks.location}/External/filewatch/"
 
 -- Libraries
 Library = {}
+Library["VULKAN"] = "vulkan-1"
 -- Windows
 Library["Win"] = {}
 Library["Win"]["GDI32"] = "gdi32"

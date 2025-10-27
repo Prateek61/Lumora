@@ -22,6 +22,8 @@ project "LumoraApp"
         "%{IncludeDir.BGFX}",
         "%{IncludeDir.BX}",
         "%{IncludeDir.BIMG}",
+        -- VULKAN
+        "%{IncludeDir.VULKAN}",
         -- SPDLOG
         "%{IncludeDir.SPDLOG}",
         -- LUA
@@ -35,10 +37,16 @@ project "LumoraApp"
         "%{IncludeDir.GLM}"
     }
 
+    libdirs
+    {
+        VULKAN_LIB_DIR
+    }
+
     links
     {
         "Lumora",
 
+        "%{Library.VULKAN}",
         "glfw",
         "bgfx", "bimg", "bx", -- BGFX
         "lua",
