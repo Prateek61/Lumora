@@ -4,7 +4,7 @@
 
 namespace Lumora
 {
-	RendererContext::API RendererContext::s_API = RendererContext::API::OPENGL;
+	RendererContext::API RendererContext::s_API = RendererContext::API::DEFAULT;
 
 	RendererContext::API RendererContext::StringToAPI(std::string_view api)
 	{
@@ -40,8 +40,10 @@ namespace Lumora
 		return "Unknown";
 	}
 
-	Scope<RendererContext> RendererContext::Create()
+	Scope<RendererContext> RendererContext::Create(Window& window)
 	{
-		return CreateScope<BgfxRendererContext>();
+		auto ptr = CreateScope<BgfxRendererContext>();
+		ptr->Init(window);
+		return ptr;
 	}
 }

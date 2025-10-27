@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include <iostream>
@@ -35,7 +36,10 @@
 #include "Lumora/Scripting/LuaSerializer.h"
 
 // Renderer
-#include "Lumora/Renderer/RendererContext.h"
+#include "Lumora/Renderer/Renderer.h"
+
+// ImGui
+#include "Lumora/ImGui/ImUI.h"
 
 // Utilities
 #include "Lumora/Utilities/Time.h"

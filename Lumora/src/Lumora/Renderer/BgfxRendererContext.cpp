@@ -2,8 +2,6 @@
 #include "BgfxRendererContext.h"
 #include "Lumora/Bgfx/BgfxCallback.h"
 
-#include "bgfx/platform.h"
-
 namespace
 {
 	Lumora::BgfxCallback s_BgfxCallback = {};
@@ -64,7 +62,6 @@ namespace Lumora
 		m_PlatformData.ndt = glfwGetX11Display();
 #endif
 
-		// bgfx::setPlatformData(m_PlatformData);
 
 		// Init bgfx
 		bgfx::Init init;
@@ -88,7 +85,6 @@ namespace Lumora
 		auto caps = bgfx::getCaps();
 		auto vendorName = GetVendorName(caps->vendorId);
 
-		//LM_CORE_RENDERER_INFO("Initialized BGFX with API-({}) DEVICE_ID-({}) VENDOR_ID-({})", bgfx::getRendererName(bgfx::getRendererType()), bgfx::);
 		LM_CORE_RENDERER_INFO("Initialized BGFX with API({}), VENDOR({}), DEVICE-ID({:X}), VENDOR-ID({:X})", bgfx::getRendererName(bgfx::getRendererType()), vendorName, caps->deviceId, caps->vendorId);
 
 		bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(window.GetWidth()), static_cast<uint16_t>(window.GetHeight()));

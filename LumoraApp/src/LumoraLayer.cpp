@@ -18,7 +18,7 @@ void LumoraLayer::OnUpdate(Lm::TimeStep ts)
 		(static_cast<uint32_t>(green * 255.0f) << 16) |
 		(static_cast<uint32_t>(blue * 255.0f) << 8);
 
-	Lm::Application::Get().GetRendererContext().SetClearColor(m_Color);
+	Lm::Renderer::SetClearColor(m_Color);
 }
 
 void LumoraLayer::OnRender()
@@ -27,11 +27,14 @@ void LumoraLayer::OnRender()
 
 void LumoraLayer::OnImGuiRender(Lumora::TimeStep ts)
 {
-	ImGui::Begin("Lumora Layer");
-	ImGui::Text("FPS: %f", m_FPS);
-	Handle && [this](const Lm::Ref<ExampleAsset>& asset)
+	static bool open = true;
+
+	Lm::ImUI::Begin::If(open, "Lumora Layer", &open) && [&]()
 	{
-		ImGui::Text("ExampleAsset Data: %s", asset->Data.c_str());
+		ImGui::Text("FPS: %f", m_FPS);
+		Handle && [this](const Lm::Ref<ExampleAsset>& asset)
+		{
+			ImGui::Text("ExampleAsset Data: %s", asset->Data.c_str());
+		};
 	};
-	ImGui::End();
 }

@@ -29,7 +29,7 @@ namespace Lumora
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
 		virtual void SetClearColor(uint32_t rgba) = 0;
 
-		static Scope<RendererContext> Create();
+		static Scope<RendererContext> Create(Window& window);
 	private:
 		static API s_API;
 	};

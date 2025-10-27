@@ -3,7 +3,6 @@
 #include "Lumora/Common/Base.h"
 #include "Lumora/Core/Props.h"
 #include "Lumora/Core/Window.h"
-#include "Lumora/Renderer/RendererContext.h"
 #include "Lumora/Scripting/LuaSerializer.h"
 #include "Lumora/Event/ApplicationEvent.h"
 #include "Lumora/Utilities/TimeStep.h"
@@ -36,13 +35,11 @@ namespace Lumora
 
 		LuaSerializer& GetSerializer() { return m_Serializer; }
 		Window& GetWindow() { return *m_Window; }
-		RendererContext& GetRendererContext() { return *m_RendererContext; }
 		AssetManager& GetAssetManager() { return *m_AssetManager; }
 
 	private:
 		ApplicationProps m_Props;
 		Scope<Window> m_Window;
-		Scope<RendererContext> m_RendererContext;
 		Scope<AssetManager> m_AssetManager;
 		LayerStack m_LayerStack;
 

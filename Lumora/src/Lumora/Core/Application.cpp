@@ -2,6 +2,7 @@
 #include "Application.h"
 
 #include "Lumora/Utilities/Time.h"
+#include "Lumora/Renderer/Renderer.h"
 
 namespace
 {
@@ -31,7 +32,12 @@ namespace Lumora
 		Init(props);
 	}
 
-	Application::~Application() = default;
+	Application::~Application()
+	{
+		m_LayerStack.~LayerStack();
+
+		Renderer::Shutdown();
+	}
 
 	void Application::Init(const ApplicationProps& props)
 	{
@@ -52,9 +58,8 @@ namespace Lumora
 		m_Running = props.Run;
 
 		// Renderer context
-		RendererContext::SetAPI(RendererContext::StringToAPI(props.API));
-		m_RendererContext = RendererContext::Create();
-		m_RendererContext->Init(*m_Window);
+		Renderer::SetAPI(props.API);
+		Renderer::Init(*m_Window);
 
 		// Asset Manager
 		m_AssetManager = CreateScope<AssetManager>(props.AssetsDirectory, m_Serializer);
@@ -113,14 +118,14 @@ namespace Lumora
 			{
 				LM_PROFILE_SCOPE("LayerStack OnRender");
 
-				m_RendererContext->BeginFrame();
+				Renderer::BeginFrame();
 
 				OnUpdate(time_step);
 
 				for (Layer* layer : m_LayerStack)
 					layer->OnRender();
 
-				m_RendererContext->EndFrame();
+				Renderer::EndFrame();
 			}
 
 			{
@@ -174,7 +179,7 @@ namespace Lumora
 
 		if (e.GetWidth() == 0 || e.GetHeight() == 0)
 			return false;
-		m_RendererContext->Resize(e.GetWidth(), e.GetHeight());
+		Renderer::Resize(e.GetWidth(), e.GetHeight());
 
 		return false;
 	}

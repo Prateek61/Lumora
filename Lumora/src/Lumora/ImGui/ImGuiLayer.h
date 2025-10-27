@@ -14,6 +14,7 @@ namespace Lumora
 		void OnAttach() override;
 		void OnDetach() override;
 		void OnEvent(Event& e) override;
+		void OnUpdate(TimeStep ts) override;
 		void OnImGuiRender(TimeStep ts) override;
 
 		void BeginImGuiFrame();

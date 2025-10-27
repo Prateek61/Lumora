@@ -14,7 +14,7 @@ public:
 	{
 		PushLayer(new LumoraLayer());
 
-		GetRendererContext().SetClearColor(0x9a9a9aff);
+		Lm::Renderer::SetClearColor(0x9a9a9aff);
 	}
 
 	~App() override = default;

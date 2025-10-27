@@ -48,7 +48,7 @@ namespace Lumora
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // Enable Docking
-		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; // Enable Multi-Viewport / Platform Windows
+		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; // Enable Multi-Viewport / Platform Windows
 
 		m_IniPath = Assets::GetFullAssetPath("ImGui.local.ini").string();
 		io.IniFilename = m_IniPath.c_str();
@@ -96,16 +96,22 @@ namespace Lumora
 		}
 	}
 
-	void ImGuiLayer::OnImGuiRender(TimeStep ts)
+	void ImGuiLayer::OnUpdate(TimeStep ts)
 	{
 		LM_PROFILE_FUNCTION();
 
 		ImGuiIO& io = ImGui::GetIO();
-		float del_time = ts.GetSeconds();
-		io.DeltaTime = del_time > 0.0f ? del_time : (1.0f / 60.0f);
+		float delta_time = ts.GetSeconds();
+		io.DeltaTime = delta_time > 0.0f ? delta_time : (1.0f / 60.0f);
+	}
 
-		static bool show = true;
-		ImGui::ShowDemoWindow(&show);
+
+	void ImGuiLayer::OnImGuiRender(TimeStep ts)
+	{
+		LM_PROFILE_FUNCTION();
+
+		/*static bool show = false;
+		ImGui::ShowDemoWindow(&show);*/
 	}
 
 	void ImGuiLayer::BeginImGuiFrame()
