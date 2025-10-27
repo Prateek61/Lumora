@@ -25,11 +25,21 @@ void LumoraLayer::OnRender()
 {
 }
 
+void LumoraLayer::OnEvent(Lumora::Event& e)
+{
+	Lm::EventDispatcher disp(e);
+
+	disp.Dispatch<Lm::KeyPressedEvent>([this](const Lm::KeyPressedEvent& e)
+	{
+		if (e.GetKeyCode() == Lm::Key::W) m_ShowLumoraWindow = !m_ShowLumoraWindow;
+		if (e.GetKeyCode() == Lm::Key::M) m_ShowImGuiMenu = !m_ShowImGuiMenu;
+		return false;
+	});
+}
+
 void LumoraLayer::OnImGuiRender(Lumora::TimeStep ts)
 {
-	static bool open = true;
-
-	Lm::ImUI::Begin::If(open, "Lumora Layer", &open) && [&]()
+	Lm::ImUI::Begin::If(m_ShowLumoraWindow, "Lumora Layer", &m_ShowLumoraWindow) && [&]()
 	{
 		ImGui::Text("FPS: %f", m_FPS);
 		Handle && [this](const Lm::Ref<ExampleAsset>& asset)
@@ -37,4 +47,9 @@ void LumoraLayer::OnImGuiRender(Lumora::TimeStep ts)
 			ImGui::Text("ExampleAsset Data: %s", asset->Data.c_str());
 		};
 	};
+
+	if (m_ShowImGuiMenu)
+	{
+		ImGui::ShowDemoWindow(&m_ShowImGuiMenu);
+	}
 }

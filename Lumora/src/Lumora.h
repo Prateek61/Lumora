@@ -37,6 +37,7 @@
 
 // Renderer
 #include "Lumora/Renderer/Renderer.h"
+#include "Lumora/Renderer/Renderer2D.h"
 
 // ImGui
 #include "Lumora/ImGui/ImUI.h"

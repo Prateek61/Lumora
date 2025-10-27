@@ -15,6 +15,7 @@ public:
 	void OnAttach() override
 	{
 		LM_LOG_INFO("LumoraLayer Attached");
+		Lm::Renderer2D::Init();
 	}
 
 	void OnDetach() override
@@ -24,6 +25,7 @@ public:
 
 	void OnUpdate(Lm::TimeStep ts) override;
 	void OnRender() override;
+	void OnEvent(Lumora::Event& e) override;
 
 	void OnImGuiRender(Lumora::TimeStep ts) override;
 
@@ -32,4 +34,7 @@ private:
 	float m_FPS = 0.0f;
 	uint32_t m_Color = 0xff336699;
 	float m_CumTime = 0.0f;
+
+	bool m_ShowImGuiMenu = false;
+	bool m_ShowLumoraWindow = false;
 };

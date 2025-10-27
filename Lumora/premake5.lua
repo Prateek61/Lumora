@@ -34,7 +34,8 @@ project "Lumora"
         "%{IncludeDir.VISITSTRUCT}",
         "%{IncludeDir.FILEWATCH}",
 
-        "%{IncludeDir.IMGUI}"
+        "%{IncludeDir.IMGUI}",
+        "%{IncludeDir.GLM}"
     }
 
     links
