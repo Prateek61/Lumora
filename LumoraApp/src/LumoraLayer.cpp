@@ -9,7 +9,6 @@ void LumoraLayer::OnUpdate(Lm::TimeStep ts)
 
 void LumoraLayer::OnRender()
 {
-	LM_LOG_TRACE("Logging");
 }
 
 void LumoraLayer::OnImGuiRender(Lumora::TimeStep ts)

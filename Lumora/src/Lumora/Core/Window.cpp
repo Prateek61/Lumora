@@ -45,7 +45,7 @@ namespace Lumora
 
 		LM_CORE_INFO("Creating window {0} ({1}, {2})", props.Title, props.Width, props.Height);
 
-		if ( s_GLFWWindowCount == 0 )
+		if (s_GLFWWindowCount == 0)
 		{
 			LM_PROFILE_SCOPE("Window::Init glfwInit");
 			int success = glfwInit();
@@ -122,30 +122,30 @@ namespace Lumora
 
 			auto window = static_cast<Window*>(glfwGetWindowUserPointer(glfwWindow));
 
-			switch ( action )
+			switch (action)
 			{
 			case GLFW_PRESS:
-			{
-				KeyPressedEvent event(static_cast<uint16_t>(key), false);
-				window->EventCallback(event);
-				break;
-			}
+				{
+					KeyPressedEvent event(static_cast<uint16_t>(key), false);
+					window->EventCallback(event);
+					break;
+				}
 			case GLFW_RELEASE:
-			{
-				KeyReleasedEvent event(static_cast<uint16_t>(key));
-				window->EventCallback(event);
-				break;
-			}
+				{
+					KeyReleasedEvent event(static_cast<uint16_t>(key));
+					window->EventCallback(event);
+					break;
+				}
 			case GLFW_REPEAT:
-			{
-				KeyPressedEvent event(static_cast<uint16_t>(key), true);
-				window->EventCallback(event);
-				break;
-			}
+				{
+					KeyPressedEvent event(static_cast<uint16_t>(key), true);
+					window->EventCallback(event);
+					break;
+				}
 			default:
-			{
-				break;
-			}
+				{
+					break;
+				}
 			}
 		});
 		glfwSetCharCallback(window, [](GLFWwindow* glfwWindow, unsigned int keycode)
@@ -165,24 +165,24 @@ namespace Lumora
 
 			auto window = static_cast<Window*>(glfwGetWindowUserPointer(glfwWindow));
 
-			switch ( action )
+			switch (action)
 			{
 			case GLFW_PRESS:
-			{
-				MouseButtonPressedEvent event(button);
-				window->EventCallback(event);
-				break;
-			}
+				{
+					MouseButtonPressedEvent event(button);
+					window->EventCallback(event);
+					break;
+				}
 			case GLFW_RELEASE:
-			{
-				MouseButtonReleasedEvent event(static_cast<uint16_t>(button));
-				window->EventCallback(event);
-				break;
-			}
+				{
+					MouseButtonReleasedEvent event(static_cast<uint16_t>(button));
+					window->EventCallback(event);
+					break;
+				}
 			default:
-			{
-				break;
-			}
+				{
+					break;
+				}
 			}
 		});
 		glfwSetScrollCallback(window, [](GLFWwindow* glfwWindow, double xOffset, double yOffset)
@@ -212,10 +212,41 @@ namespace Lumora
 		glfwDestroyWindow(static_cast<GLFWwindow*>(m_GLFWWindow));
 		--s_GLFWWindowCount;
 
-		if ( s_GLFWWindowCount == 0 )
+		if (s_GLFWWindowCount == 0)
 		{
 			LM_PROFILE_SCOPE("Window::Shutdown glfwTerminate");
 			glfwTerminate();
 		}
 	}
+
+	SharedWindow::SharedWindow(const WindowProps& props, void* glfwWindow)
+	{
+		LM_PROFILE_FUNCTION();
+
+		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+		m_GLFWWindow = static_cast<void*>(glfwCreateWindow(
+			static_cast<int>(props.Width), static_cast<int>(props.Height), props.Title.c_str(),
+			nullptr, static_cast<GLFWwindow*>(glfwWindow)
+		));
+
+		LM_CORE_TRACE("SharedWindow created: m_GLFWWindow = {0:X}", reinterpret_cast<uintptr_t>(m_GLFWWindow));
+
+		s_GLFWWindowCount++;
+	}
+
+	SharedWindow::~SharedWindow()
+	{
+		LM_PROFILE_FUNCTION();
+		LM_CORE_TRACE("Destroying SharedWindow: m_GLFWWindow = {0:X}", reinterpret_cast<uintptr_t>(m_GLFWWindow));
+
+		glfwDestroyWindow(static_cast<GLFWwindow*>(m_GLFWWindow));
+		--s_GLFWWindowCount;
+
+		if (s_GLFWWindowCount == 0)
+		{
+			LM_PROFILE_SCOPE("Window::Shutdown glfwTerminate");
+			glfwTerminate();
+		}
+	}
+
 }

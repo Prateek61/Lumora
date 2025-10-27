@@ -37,4 +37,15 @@ namespace Lumora
 		void SetGLFWCallbacks();
 		void Shutdown();
 	};
+
+	class SharedWindow
+	{
+	public:
+		explicit SharedWindow(const WindowProps& props, void* glfwWindow);
+		~SharedWindow();
+
+		void* GetGLFWWindow() { return m_GLFWWindow; }
+	private:
+		void* m_GLFWWindow;
+	};
 }

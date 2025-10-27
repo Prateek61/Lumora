@@ -1,19 +1,14 @@
 #pragma once
 
-#include <imgui.h>
-#include <imgui_internal.h>
 #include "Lumora/Core/Layer.h"
-#include <bgfx/bgfx.h>
-
-#define IMGUI_FLAGS_NONE        UINT8_C(0x00)
-#define IMGUI_FLAGS_ALPHA_BLEND UINT8_C(0x01)
+#include <imgui.h>
 
 namespace Lumora
 {
 	class ImGuiLayer : public Layer
 	{
 	public:
-		ImGuiLayer(float fontSize = 10.0f);
+		ImGuiLayer();
 		~ImGuiLayer() override;
 
 		void OnAttach() override;
@@ -35,20 +30,5 @@ namespace Lumora
 	private:
 		bool m_Block = true;
 		std::string m_IniPath;
-
-	private:
-		void Render(ImDrawData* drawData);
-
-	private:
-		// Bgfx Stuff
-		ImGuiContext* m_ImGui;
-		bgfx::VertexLayout m_Layout;
-		bgfx::ProgramHandle m_Program;
-		bgfx::ProgramHandle m_ImageProgram;
-		bgfx::UniformHandle m_Tex;
-		bgfx::UniformHandle m_ImageLodEnabled;
-		int64_t m_Last;
-		int32_t m_LastScroll;
-		bgfx::ViewId m_ViewId;
 	};
 }
