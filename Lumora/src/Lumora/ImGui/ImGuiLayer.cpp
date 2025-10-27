@@ -64,12 +64,7 @@ namespace Lumora
 			io.ConfigDebugHighlightIdConflicts = true;
 		)
 
-		//LumoraImGuiContext::ImGuiSetPlatformIO();
 		ImGui_ImplGlfw_InitForOther(static_cast<GLFWwindow*>(window.GetGLFWWindow()), true);
-
-		//auto& pio = ImGui::GetPlatformIO();
-		//pio.Platform_CreateWindow = LumoraImGuiContext::ImGuiCreateWindow;
-
 
 		InitializeDockSpace();
 		// TODO: ImGuizmo
@@ -117,8 +112,9 @@ namespace Lumora
 	{
 		LM_PROFILE_FUNCTION();
 
-
+		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
+
 		BeginDockSpace();
 		// TODO: ImGuizmo
 	}

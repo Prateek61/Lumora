@@ -30,4 +30,6 @@ public:
 private:
 	Lm::AssetHandle<ExampleAsset> Handle;
 	float m_FPS = 0.0f;
+	uint32_t m_Color = 0xff336699;
+	float m_CumTime = 0.0f;
 };

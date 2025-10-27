@@ -58,6 +58,217 @@ namespace
 
 namespace Lumora
 {
+	// --- Multi-viewport renderer callbacks for ImGui using bgfx ---
+	namespace
+	{
+		struct ImGuiBgfxViewportData
+		{
+			bgfx::FrameBufferHandle fbh{ BGFX_INVALID_HANDLE };
+			bgfx::ViewId viewId{ 0 };
+			uint16_t width{ 0 };
+			uint16_t height{ 0 };
+		};
+
+		static uint16_t s_nextViewportViewId = 250; // start from high id and decrement
+
+		static void ImGui_Bgfx_RenderWindow(ImGuiViewport* vp, void* /*render_arg*/)
+		{
+			if (nullptr == vp || nullptr == vp->RendererUserData)
+				return;
+
+			ImGuiBgfxViewportData* vd = reinterpret_cast<ImGuiBgfxViewportData*>(vp->RendererUserData);
+			if (!bgfx::isValid(vd->fbh))
+				return;
+
+			ImDrawData* drawData = vp->DrawData;
+			if (nullptr == drawData)
+				return;
+
+			// Avoid rendering when minimized
+			int32_t display_width = static_cast<int32_t>(drawData->DisplaySize.x * drawData->FramebufferScale.x);
+			int32_t display_height = static_cast<int32_t>(drawData->DisplaySize.y * drawData->FramebufferScale.y);
+			if (display_width <= 0 || display_height <= 0)
+				return;
+
+			bgfx::setViewName(vd->viewId, "ImGuiViewport");
+			bgfx::setViewMode(vd->viewId, bgfx::ViewMode::Sequential);
+
+			const bgfx::Caps* caps = bgfx::getCaps();
+			float ortho[16];
+			float x = drawData->DisplayPos.x;
+			float y = drawData->DisplayPos.y;
+			float width = drawData->DisplaySize.x;
+			float height = drawData->DisplaySize.y;
+			bx::mtxOrtho(ortho, x, x + width, y + height, y, 0.0f, 1000.0f, 0.0f, caps->homogeneousDepth);
+
+			bgfx::setViewTransform(vd->viewId, nullptr, ortho);
+			bgfx::setViewFrameBuffer(vd->viewId, vd->fbh);
+			bgfx::setViewRect(vd->viewId, 0, 0, static_cast<uint16_t>(width), static_cast<uint16_t>(height));
+
+			const ImVec2 clips = drawData->DisplayPos;
+			const ImVec2 clipScale = drawData->FramebufferScale;
+
+			for (int32_t ii = 0, num = drawData->CmdListsCount; ii < num; ++ii)
+			{
+				bgfx::TransientVertexBuffer tvb;
+				bgfx::TransientIndexBuffer tib;
+
+				const ImDrawList* draw_list = drawData->CmdLists[ii];
+				uint32_t num_vertices = static_cast<uint32_t>(draw_list->VtxBuffer.Size);
+				uint32_t num_indices = static_cast<uint32_t>(draw_list->IdxBuffer.Size);
+
+				if (!Lumora::BgfxUtils::CheckAvailTransientBuffers(num_vertices, g_LumoraImGuiContext.Layout, num_indices))
+				{
+					LM_CORE_RENDERER_WARN("Unable to allocate transient buffers for ImGui rendering (viewport).");
+					break;
+				}
+
+				bgfx::allocTransientVertexBuffer(&tvb, num_vertices, g_LumoraImGuiContext.Layout);
+				bgfx::allocTransientIndexBuffer(&tib, num_indices, sizeof(ImDrawIdx) == 4);
+
+				auto vertices = reinterpret_cast<ImDrawVert*>(tvb.data);
+				bx::memCopy(vertices, draw_list->VtxBuffer.begin(), num_vertices * sizeof(ImDrawVert));
+
+				auto indices = reinterpret_cast<ImDrawIdx*>(tib.data);
+				bx::memCopy(indices, draw_list->IdxBuffer.begin(), num_indices * sizeof(ImDrawIdx));
+
+				bgfx::Encoder* encoder = bgfx::begin();
+
+				for (const ImDrawCmd* cmd = draw_list->CmdBuffer.begin(), *cmd_end = draw_list->CmdBuffer.end(); cmd != cmd_end; ++cmd)
+				{
+					if (cmd->UserCallback)
+					{
+						cmd->UserCallback(draw_list, cmd);
+					}
+					else if (0 != cmd->ElemCount)
+					{
+						uint64_t state = BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_MSAA;
+
+						bgfx::TextureHandle th = BGFX_INVALID_HANDLE;
+						bgfx::ProgramHandle program = g_LumoraImGuiContext.Program;
+
+						const ImTextureID tex_id = cmd->GetTexID();
+						if (ImTextureID_Invalid != tex_id)
+						{
+							auto tex = bx::bitCast<TextureBgfx>(tex_id);
+
+							state |= 0 != (tex.flags & IMGUI_FLAGS_ALPHA_BLEND)
+								? BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA)
+								: BGFX_STATE_NONE;
+							th = tex.handle;
+
+							if (0 != tex.mip)
+							{
+								const float lod_enabled[4] = { static_cast<float>(tex.mip), 1.0f, 0.0f, 0.0f };
+								encoder->setUniform(g_LumoraImGuiContext.ImageLodEnabled, lod_enabled);
+								program = g_LumoraImGuiContext.ImageProgram;
+							}
+						}
+						else
+						{
+							state |= BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA);
+						}
+
+						ImVec4 clip_rect;
+						clip_rect.x = (cmd->ClipRect.x - clips.x) * clipScale.x;
+						clip_rect.y = (cmd->ClipRect.y - clips.y) * clipScale.y;
+						clip_rect.z = (cmd->ClipRect.z - clips.x) * clipScale.x;
+						clip_rect.w = (cmd->ClipRect.w - clips.y) * clipScale.y;
+
+						if (clip_rect.x < static_cast<float>(display_width) &&
+							clip_rect.y < static_cast<float>(display_height) &&
+							clip_rect.z >= 0.0f &&
+							clip_rect.w >= 0.0f)
+						{
+							const uint16_t xx = static_cast<uint16_t>(bx::max(clip_rect.x, 0.0f));
+							const uint16_t yy = static_cast<uint16_t>(bx::max(clip_rect.y, 0.0f));
+							encoder->setScissor(xx, yy,
+								static_cast<uint16_t>(bx::min(clip_rect.z, 65535.0f) - static_cast<float>(xx)),
+								static_cast<uint16_t>(bx::min(clip_rect.w, 65535.0f) - static_cast<float>(yy))
+							);
+
+							encoder->setState(state);
+							encoder->setTexture(0, g_LumoraImGuiContext.Tex, th);
+							encoder->setVertexBuffer(0, &tvb, cmd->VtxOffset, num_vertices);
+							encoder->setIndexBuffer(&tib, cmd->IdxOffset, cmd->ElemCount);
+							encoder->submit(vd->viewId, program);
+						}
+					}
+				}
+
+				bgfx::end(encoder);
+			}
+		}
+
+		static void ImGui_Bgfx_CreateWindow(ImGuiViewport* vp)
+		{
+			if (nullptr == vp)
+				return;
+
+			// Use raw platform handle if available (Win32 HWND etc.), otherwise use generic PlatformHandle
+			void* nwh = vp->PlatformHandleRaw ? vp->PlatformHandleRaw : vp->PlatformHandle;
+
+			ImGuiBgfxViewportData* vd = IM_NEW(ImGuiBgfxViewportData)();
+			vd->width = static_cast<uint16_t>(vp->Size.x);
+			vd->height = static_cast<uint16_t>(vp->Size.y);
+
+			if (nullptr != nwh && vd->width > 0 && vd->height > 0)
+			{
+				vd->fbh = bgfx::createFrameBuffer(nwh, vd->width, vd->height);
+			}
+
+			// assign a view id for this viewport
+			vd->viewId = s_nextViewportViewId--;
+			if (s_nextViewportViewId <= 1)
+				s_nextViewportViewId = 250;
+
+			vp->RendererUserData = vd;
+		}
+
+		static void ImGui_Bgfx_DestroyWindow(ImGuiViewport* vp)
+		{
+			if (nullptr == vp || nullptr == vp->RendererUserData)
+				return;
+
+			ImGuiBgfxViewportData* vd = static_cast<ImGuiBgfxViewportData*>(vp->RendererUserData);
+			if (bgfx::isValid(vd->fbh))
+			{
+				bgfx::destroy(vd->fbh);
+			}
+
+			IM_DELETE(vd);
+			vp->RendererUserData = nullptr;
+		}
+
+		static void ImGui_Bgfx_SetWindowSize(ImGuiViewport* vp, ImVec2 size)
+		{
+			if (nullptr == vp || nullptr == vp->RendererUserData)
+				return;
+
+			ImGuiBgfxViewportData* vd = static_cast<ImGuiBgfxViewportData*>(vp->RendererUserData);
+			uint16_t newW = static_cast<uint16_t>(size.x);
+			uint16_t newH = static_cast<uint16_t>(size.y);
+			if (newW == vd->width && newH == vd->height)
+				return;
+
+			// recreate framebuffer for new size
+			if (bgfx::isValid(vd->fbh))
+			{
+				bgfx::destroy(vd->fbh);
+				vd->fbh.idx = bgfx::kInvalidHandle;
+			}
+
+			void* nwh = vp->PlatformHandleRaw ? vp->PlatformHandleRaw : vp->PlatformHandle;
+			if (nullptr != nwh && newW > 0 && newH > 0)
+			{
+				vd->fbh = bgfx::createFrameBuffer(nwh, newW, newH);
+			}
+
+			vd->width = newW;
+			vd->height = newH;
+		}
+	}
+
 	void LumoraImGuiContext::Init()
 	{
 		LM_PROFILE_FUNCTION();
@@ -91,6 +302,18 @@ namespace Lumora
 		Tex = bgfx::createUniform("s_tex", bgfx::UniformType::Sampler);
 
 		ImGui = ImGui::CreateContext();
+
+		// Hook ImGui renderer callbacks to support multi-viewport (platform windows)
+		ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
+		platform_io.Renderer_CreateWindow = ImGui_Bgfx_CreateWindow;
+		platform_io.Renderer_DestroyWindow = ImGui_Bgfx_DestroyWindow;
+		platform_io.Renderer_SetWindowSize = ImGui_Bgfx_SetWindowSize;
+		platform_io.Renderer_RenderWindow = ImGui_Bgfx_RenderWindow;
+		platform_io.Renderer_SwapBuffers = nullptr; // bgfx frame/present is handled by application
+
+		// Inform ImGui that renderer supports multi-viewports
+		ImGuiIO& io = ImGui::GetIO();
+		io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;
 	}
 
 	void LumoraImGuiContext::Shutdown()
