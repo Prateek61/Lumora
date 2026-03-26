@@ -32,6 +32,8 @@ namespace
 			return str;
 		return str + std::string(totalLength - str.length(), ' ');
 	}
+
+	bool LogInitialized = false;
 }
 
 namespace Lumora
@@ -78,7 +80,7 @@ namespace Lumora
 
 	Ref<spdlog::logger>& Log::GetCoreLogger()
 	{
-		if (!s_CoreLogger)	return GetDefaultLogger();
+		LM_CORE_ASSERT(s_CoreLogger, "Core Logger not initialized!")
 		return s_CoreLogger;
 	}
 	Ref<spdlog::logger>& Log::GetClientLogger()
@@ -98,7 +100,7 @@ namespace Lumora
 	}
 	Ref<spdlog::logger>& Log::GetCoreSerializerLogger()
 	{
-		if (!s_CoreSerializerLogger)	return GetDefaultLogger();
+		LM_CORE_ASSERT(s_CoreSerializerLogger, "Serializer Logger not initialized!")
 		return s_CoreSerializerLogger;
 	}
 	Ref<spdlog::logger>& Log::GetCoreAssetsLogger()

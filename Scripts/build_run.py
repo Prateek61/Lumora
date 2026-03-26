@@ -7,17 +7,42 @@ from clean_build_files import delete_files_and_dirs
 
 from typing import Literal
 
-VS_DEV_CMD = r'"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat"'
+VS_DEV_CMD = r'"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\VsDevCmd.bat"'
 EXECUTABLE_PATH = "bin/LumoraApp"
-SLN_FILE = "Lumora.sln"
+SOLUTION_CANDIDATES = ("Lumora.slnx", "Lumora.sln")
+
+
+def get_solution_file(project_dir: str) -> str | None:
+    """Return the first existing solution file from known candidates."""
+    for solution_file in SOLUTION_CANDIDATES:
+        if os.path.isfile(os.path.join(project_dir, solution_file)):
+            return solution_file
+    return None
+
+
+def get_sanitized_env() -> dict[str, str] | None:
+    """On Windows, remove case-duplicate env vars that can break spawned tools."""
+    if os.name != "nt":
+        return None
+
+    sanitized_env: dict[str, str] = {}
+    seen_keys: set[str] = set()
+    for key, value in os.environ.items():
+        normalized_key = key.lower()
+        if normalized_key in seen_keys:
+            continue
+        seen_keys.add(normalized_key)
+        sanitized_env[key] = value
+    return sanitized_env
 
 def run_command(command: str, cwd: str = None) -> bool:
     """Run a shell command and print its output live."""
     try:
         print(f"Running command: {command}")
+        env = get_sanitized_env()
         
         # Start the subprocess with Popen to capture stdout/stderr live
-        with subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, cwd=cwd) as process:
+        with subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, cwd=cwd, env=env) as process:
             # Read the output line by line as it is produced
             for line in process.stdout:
                 print(line, end='')  # Print standard output
@@ -53,7 +78,11 @@ def compile_project(project_dir: str, config: str, generator: str, system_type: 
     if system_type == "Windows" and generator == "gmake2":
         compile_command = f"make CC=gcc config={config.lower()}"
     elif system_type == "Windows" and generator.startswith("vs"):
-        compile_command = f'cmd /c "call {VS_DEV_CMD} & msbuild {SLN_FILE} /p:Configuration={config}"'
+        solution_file = get_solution_file(project_dir)
+        if not solution_file:
+            print(f"No solution file found. Expected one of: {', '.join(SOLUTION_CANDIDATES)}")
+            return False
+        compile_command = f'cmd /c "call {VS_DEV_CMD} & msbuild {solution_file} /p:Configuration={config}"'
     elif system_type == "Linux" and generator == "gmake2":
         compile_command = f"make config={config.lower()}"
 
@@ -88,7 +117,7 @@ def main():
     parser.add_argument("-r", "--run", action="store_true", help="Run the project", default=False)
 
     # Build system and build configuration
-    parser.add_argument("-g", "--generator", type=str, choices=["gmake2", "vs2022"], default="gmake2", help="Specify the build system generator")
+    parser.add_argument("-g", "--generator", type=str, choices=["gmake2", "vs2026"], default="gmake2", help="Specify the build system generator")
     parser.add_argument("-f", "--config", type=str, choices=["Debug", "Release", "Dist"], default="Release", help="Specify the build configuration")
 
     args = parser.parse_args()

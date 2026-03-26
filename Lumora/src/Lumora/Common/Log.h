@@ -55,8 +55,6 @@ namespace Lumora
 	};
 }
 
-VISITABLE_STRUCT(Lumora::Internal::LoggerConfig, ConsolePattern, FilePattern, File ,Core, CoreLua, CoreBgfx, CoreAssets, CoreSerializer, CoreRenderer, Client);
-
 /// Logging Macros
 /// Log levels: 0 = Off, 1 = Fatal, 2 = Error, 3 = Warn, 4 = Info, 5 = Trace, 6 = Debug
 

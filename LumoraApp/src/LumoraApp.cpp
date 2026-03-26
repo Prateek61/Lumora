@@ -27,11 +27,8 @@ public:
 Lm::Application* Lm::CreateApplication(ApplicationCommandLineArgs args)
 {
 	Lm::LuaSerializer serializer;
-	auto props = ApplicationProps::Get("..\\Assets\\Config.lua", serializer);
+	auto props = ApplicationProps::Get("Assets\\Config.lua", serializer);
 	props.CommandLineArgs = args;
-
-	// Make sure to Initialize the Logger
-	Lm::Log::Init(props.LoggerConfig);
 
 	return new App(props);
 }

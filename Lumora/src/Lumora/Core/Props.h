@@ -34,8 +34,6 @@ namespace Lumora
 
 		bool Run = true; // Whether to run the application loop, for debugging or testing purposes
 
-		Internal::LoggerConfig LoggerConfig = {};
-
 		static ApplicationProps Get(const std::filesystem::path& configFile, LuaSerializer& serializer)
 		{
 			LM_PROFILE_FUNCTION();
@@ -47,4 +45,4 @@ namespace Lumora
 }
 
 VISITABLE_STRUCT(Lumora::WindowProps, Title, Width, Height);
-VISITABLE_STRUCT(Lumora::ApplicationProps, Name, AssetsDirectory, WindowProps, API, Run, LoggerConfig);
+VISITABLE_STRUCT(Lumora::ApplicationProps, Name, AssetsDirectory, WindowProps, API, Run);

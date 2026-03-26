@@ -2,7 +2,7 @@
 
 #include "Lumora/Common/PlatformDetection.h"
 
-#define LM_LOG_LEVEL 6
+#define LM_LOG_LEVEL 5
 #define LM_ENABLE_BGFX_LOG
 
 #define LM_ENABLE_ASSERTS
