@@ -3,6 +3,11 @@ project "LumoraApp"
     language "C++"
     cppdialect "C++20"
 
+    defines
+    {
+        "flecs_STATIC"
+    }
+
     targetdir ("%{wks.location}/bin/" .. outdir .. "/%{prj.name}")
     objdir ("%{wks.location}/bin/bin-int/" .. outdir .. "/%{prj.name}")
 
@@ -34,7 +39,8 @@ project "LumoraApp"
         "%{IncludeDir.FILEWATCH}",
 
         "%{IncludeDir.IMGUI}",
-        "%{IncludeDir.GLM}"
+        "%{IncludeDir.GLM}",
+        "%{IncludeDir.FLECS}"
     }
 
     libdirs
@@ -50,7 +56,8 @@ project "LumoraApp"
         "glfw",
         "bgfx", "bimg", "bx", -- BGFX
         "lua",
-        "ImGui"
+        "ImGui",
+        "flecs"
     }
 
     -- If VS

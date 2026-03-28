@@ -33,3 +33,6 @@
 [submodule "External/filewatch"]
 	path = External/filewatch
 	url = https://github.com/ThomasMonkman/filewatch.git
+[submodule "External/flecs/flecs"]
+	path = External/flecs/flecs
+	url = https://github.com/SanderMertens/flecs.git

@@ -9,6 +9,11 @@ project "Lumora"
     pchheader "LMPCH.h"
     pchsource "src/LMPCH.cpp"
 
+    defines
+    {
+        "flecs_STATIC"
+    }
+
     files
     {
         "src/**.h",
@@ -37,7 +42,8 @@ project "Lumora"
         "%{IncludeDir.FILEWATCH}",
 
         "%{IncludeDir.IMGUI}",
-        "%{IncludeDir.GLM}"
+        "%{IncludeDir.GLM}",
+        "%{IncludeDir.FLECS}"
     }
 
     libdirs
@@ -51,7 +57,8 @@ project "Lumora"
         "glfw",
         "Lua",
         "bgfx", "bimg", "bx", -- BGFX
-        "ImGui"
+        "ImGui",
+        "flecs"
     }
 
     -- If VS

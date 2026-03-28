@@ -29,6 +29,7 @@ group "Dependencies"
     include "External/glfw"
 
     include "External/imgui"
+    include "External/flecs"
 
     include "External/lua"
 group ""
