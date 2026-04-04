@@ -28,5 +28,8 @@ Assets/local/
 Assets/**/local
 Assets/**.local.*
 
+# Local Files
+**.local.*
+
 # Python
 __pycache__/
