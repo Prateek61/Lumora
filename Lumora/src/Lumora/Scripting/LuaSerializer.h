@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Lumora/Common/Threading.h"
+#include "Lumora/Core/Threading.h"
 #include "Lumora/Scripting/Lua/LuaBase.h"
 #include "Lumora/Scripting/Lua/Serialize.h"
 

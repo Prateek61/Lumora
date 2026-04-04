@@ -4,7 +4,10 @@
 #include <iostream>
 
 // Core
-#include "Lumora/Core/App.h"
+#include "Lumora/Core/Base.h"
+#include "Lumora/Core/Application.h"
+#include "Lumora/Core/Resource.h"
+#include "Lumora/Core/Plugin.h"
 
 // Aether (Entity Component System)
 #include "Lumora/Aether/Entity.h"

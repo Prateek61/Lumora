@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Lumora/Common/PlatformDetection.h"
+#include "Lumora/Core/PlatformDetection.h"
 
 #define LM_LOG_LEVEL 5
 #define LM_ENABLE_BGFX_LOG

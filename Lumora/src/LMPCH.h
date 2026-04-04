@@ -26,6 +26,6 @@
 
 
 // Lumora
-#include "Lumora/Common/UUID.h"
-#include "Lumora/Common/Base.h"
-#include "Lumora/Common/Threading.h"
+#include "Lumora/Core/UUID.h"
+#include "Lumora/Core/Base.h"
+#include "Lumora/Core/Threading.h"

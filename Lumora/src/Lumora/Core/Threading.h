@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Lumora/Common/Defines.h"
+#include "Lumora/Core/Defines.h"
 #include <thread>
 #include <shared_mutex>
 #include <atomic>

@@ -50,6 +50,11 @@ namespace Lumora
 	{
 		LM_PROFILE_FUNCTION();
 
+		if (LogInitialized)
+		{
+			return;
+		}
+
 		std::vector<spdlog::sink_ptr> log_sinks;
 		log_sinks.emplace_back(CreateRef<spdlog::sinks::stdout_color_sink_mt>());
 		log_sinks.emplace_back(CreateRef<spdlog::sinks::basic_file_sink_mt>(config.File.string()));
@@ -76,6 +81,7 @@ namespace Lumora
 		s_CoreSerializerLogger = create_logger(config.CoreSerializer, PadString("SERIALIZER", 10));
 		s_CoreAssetsLogger = create_logger(config.CoreAssets, PadString("ASSETS", 10));
 		s_CoreRendererLogger = create_logger(config.CoreRenderer, PadString("RENDERER", 10));
+		LogInitialized = true;
 	}
 
 	Ref<spdlog::logger>& Log::GetCoreLogger()

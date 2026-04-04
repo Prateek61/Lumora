@@ -3,7 +3,7 @@
 #include "Lumora/Aether/Base.h"
 #include "Lumora/Aether/Entity.h"
 
-#include "Lumora/Common/Base.h"
+#include "Lumora/Core/Instrumentor.h"
 
 namespace Lumora::Aether
 {
@@ -24,7 +24,13 @@ namespace Lumora::Aether
 		const T* TryGetResource() const;
 
 		template <typename T>
-		const T* GetResource() const;
+		const T& GetResource() const;
+
+		template <typename T>
+		T* TryGetResourceMut();
+
+		template <typename T>
+		T& GetResourceMut();
 
 		// Phases
 		template <typename Phase>
@@ -67,11 +73,27 @@ namespace Lumora::Aether
 	}
 
 	template <typename T>
-	const T* World::GetResource() const
+	const T& World::GetResource() const
 	{
 		LM_PROFILE_FUNCTION();
 
 		return m_World.get<T>();
+	}
+
+	template<typename T>
+	T* World::TryGetResourceMut()
+	{
+		LM_PROFILE_FUNCTION();
+
+		return m_World.try_get_mut<T>();
+	}
+
+	template<typename T>
+	inline T& World::GetResourceMut()
+	{
+		LM_PROFILE_FUNCTION();
+
+		return m_World.get_mut<T>();
 	}
 
 	template <typename Phase>

@@ -1,11 +1,9 @@
 #pragma once
 
-#include "Lumora/Core/Base.h"
-
 namespace Lumora::Core
 {
 	// Forward Declaration
-	class App;
+	class Application;
 
 	class Plugin
 	{
@@ -13,13 +11,13 @@ namespace Lumora::Core
 		virtual ~Plugin() = default;
 
 		// Register components, systems, resources and observers
-		virtual void Build(App& app) = 0;
+		virtual void Build(Application& app) = 0;
 
 		// Called after all plugins have been built
-		virtual void Finish(App& app) {}
+		virtual void Finish(Application& app) {}
 
 		// Called on shutdown in reverse order. Release resources and perform cleanup here.
-		virtual void Cleanup(App& app) {}
+		virtual void Cleanup(Application& app) {}
 
 		virtual const char* GetName() const = 0;
 	};

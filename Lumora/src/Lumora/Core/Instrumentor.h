@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Lumora/Common/Defines.h"
+#include "Lumora/Core/Defines.h"
 
 #include <chrono>
 #include <fstream>

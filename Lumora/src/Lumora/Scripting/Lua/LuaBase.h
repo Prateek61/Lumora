@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Lumora/Common/Base.h"
+#include "Lumora/Core/Base.h"
 #include "sol/sol.hpp"
 #include <filesystem>
 

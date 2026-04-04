@@ -1,9 +1,7 @@
 #pragma once
 
-#include "Lumora/Common/Defines.h"
-#include "Lumora/Common/SmartPointers.h"
-#include <visit_struct/visit_struct.hpp>
-#include "Lumora/Common/Instrumentor.h"
+#include "Lumora/Core/Defines.h"
+#include "Lumora/Core/SmartPointers.h"
 
 #include <filesystem>
 
