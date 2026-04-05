@@ -1,0 +1,163 @@
+#include "LMPCH.h"
+#include "FluxPlugin.h"
+
+#include "Lumora/Core/Application.h"
+#include "Lumora/Flux/Window.h"
+#include "Lumora/Flux/Input.h"
+
+#include <GLFW/glfw3.h>
+
+namespace
+{
+	using namespace Lumora;
+	using namespace Lumora::Flux;
+
+	void ProcessEvent(const Raw::KeyAction& event, KeyboardState& keyboardState, MouseState& mouseState,
+	                  flecs::world& world)
+	{
+		if (event.Key >= Key::MaxKeyCode) return;
+
+		switch (event.Action)
+		{
+		case GLFW_PRESS:
+			keyboardState.Keys[event.Key] = true;
+			keyboardState.JustPressed[event.Key] = true;
+			break;
+		case GLFW_RELEASE:
+			keyboardState.Keys[event.Key] = false;
+			keyboardState.JustReleased[event.Key] = true;
+			break;
+		default:
+			break;
+		}
+	}
+
+	void ProcessEvent(const Raw::MouseButton& event, KeyboardState& keyboardState, MouseState& mouseState,
+	                  flecs::world& world)
+	{
+		if (event.Button >= Mouse::MaxButtonCode) return;
+		switch (event.Action)
+		{
+		case GLFW_PRESS:
+			mouseState.Buttons[event.Button] = true;
+			mouseState.JustPressed[event.Button] = true;
+			break;
+		case GLFW_RELEASE:
+			mouseState.Buttons[event.Button] = false;
+			mouseState.JustReleased[event.Button] = true;
+			break;
+		default:
+			break;
+		}
+	}
+
+	void ProcessEvent(const Raw::MouseMove& event, KeyboardState& keyboardState, MouseState& mouseState,
+	                  flecs::world& world)
+	{
+		mouseState.DeltaX += event.X - mouseState.X;
+		mouseState.DeltaY += event.Y - mouseState.Y;
+		mouseState.X = event.X;
+		mouseState.Y = event.Y;
+	}
+
+	void ProcessEvent(const Raw::MouseScroll& event, KeyboardState& keyboardState, MouseState& mouseState,
+	                  flecs::world& world)
+	{
+		mouseState.ScrollX += event.XOffset;
+		mouseState.ScrollY += event.YOffset;
+	}
+
+	void ProcessEvent(const Raw::WindowResize& event, KeyboardState& keyboardState, MouseState& mouseState,
+	                  flecs::world& world)
+	{
+		auto& windowRes = world.get_mut<WindowResource>();
+		windowRes.Resource->UpdateSize(event.Width, event.Height);
+	}
+
+	void ProcessEvent(const Raw::WindowClose& event, KeyboardState& keyboardState, MouseState& mouseState,
+	                  flecs::world& world)
+	{
+		LM_CORE_INFO("Window Close Event Received. Quitting Application.");
+		world.quit();
+	}
+
+	void ProcessEvent(const Raw::WindowFocus& event, KeyboardState& keyboardState, MouseState& mouseState,
+	                  flecs::world& world)
+	{
+		// For now, we ignore focus events. They can be used to pause the game when the window is unfocused, for example.
+	}
+
+	void ProcessEvent(const Raw::CharTyped& event, KeyboardState& keyboardState, MouseState& mouseState,
+	                  flecs::world& world)
+	{
+		// For now, we ignore CharTyped events. They can be used for text input later on.
+	}
+}
+
+namespace Lumora::Flux
+{
+	FluxPlugin::FluxPlugin(WindowProps props)
+		: m_InitialProps(std::move(props))
+	{
+	}
+
+	void FluxPlugin::Build(Core::Application& app)
+	{
+		LM_PROFILE_FUNCTION();
+
+		Aether::World& world = app.GetWorld();
+
+		// Create the window and insert it as a resource
+		world.SetResource(WindowResource{CreateScope<Window>(m_InitialProps)});
+		world.SetResource(KeyboardState{});
+		world.SetResource(MouseState{});
+
+		// Setup Some Events
+
+
+		// Set up Callback
+		auto callbackFn = [this](const Raw::RawEvent& event)
+		{
+			m_EventBuffer.push_back(event);
+		};
+
+		// Add the callback to the window
+		auto& win = world.GetResource<WindowResource>().Resource;
+		win->SetupCallback(callbackFn);
+
+		// Add a system that polls events and processes the event buffer
+		auto& f_world = world.Raw();
+		auto poll_system = f_world.system("Flux::PollAndProcessEvents");
+		poll_system.kind(flecs::OnLoad);
+		// poll_system.read<KeyboardState>().read<MouseState>();
+		poll_system.write<WindowResource>().write<KeyboardState>().write<MouseState>();
+		poll_system.run([this](flecs::iter& it)
+		{
+			flecs::world f_world = it.world();
+
+			// 1. Get resources
+			auto& window_res = f_world.get_mut<WindowResource>();
+			auto& keyboard_state = f_world.get_mut<KeyboardState>();
+			auto& mouse_state = f_world.get_mut<MouseState>();
+
+			// 2. Reset per-frame input state
+			keyboard_state.ResetFrame();
+			mouse_state.ResetFrame();
+
+			// 3. Poll GLFW events (this will trigger our callbacks and fill the event buffer)
+			window_res.Resource->PollEvents();
+
+			// 4. Drain the buffer and update state
+			for (const auto& event: m_EventBuffer)
+			{
+				std::visit([&](const auto& e) {ProcessEvent(e, keyboard_state, mouse_state, f_world); }, event);
+			}
+
+			m_EventBuffer.clear();
+		});
+	}
+
+	void FluxPlugin::Cleanup(Core::Application& app)
+	{
+	}
+}

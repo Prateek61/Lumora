@@ -40,11 +40,7 @@ namespace Lumora
 {
 	Ref<spdlog::logger> Log::s_CoreLogger;
 	Ref<spdlog::logger> Log::s_ClientLogger;
-	Ref<spdlog::logger> Log::s_CoreLuaLogger;
-	Ref<spdlog::logger> Log::s_CoreBgfxLogger;
-	Ref<spdlog::logger> Log::s_CoreSerializerLogger;
-	Ref<spdlog::logger> Log::s_CoreAssetsLogger;
-	Ref<spdlog::logger> Log::s_CoreRendererLogger;
+	Ref<spdlog::logger> Log::s_ScriptLogger;
 
 	void Log::Init(const Internal::LoggerConfig& config)
 	{
@@ -76,11 +72,7 @@ namespace Lumora
 
 		s_CoreLogger = create_logger(config.Core, PadString("ENGINE", 10));
 		s_ClientLogger = create_logger(config.Client, PadString("APP", 10));
-		s_CoreBgfxLogger = create_logger(config.CoreBgfx, PadString("BGFX", 10));
-		s_CoreLuaLogger = create_logger(config.CoreLua, PadString("LUA", 10));
-		s_CoreSerializerLogger = create_logger(config.CoreSerializer, PadString("SERIALIZER", 10));
-		s_CoreAssetsLogger = create_logger(config.CoreAssets, PadString("ASSETS", 10));
-		s_CoreRendererLogger = create_logger(config.CoreRenderer, PadString("RENDERER", 10));
+		s_ScriptLogger = create_logger(config.Scripting, PadString("SCRIPT", 10));
 		LogInitialized = true;
 	}
 
@@ -94,29 +86,9 @@ namespace Lumora
 		LM_CORE_ASSERT(s_ClientLogger, "Client Logger not initialized!")
 		return s_ClientLogger;
 	}
-	Ref<spdlog::logger>& Log::GetLuaLogger()
+	Ref<spdlog::logger>& Log::GetScriptLogger()
 	{
-		LM_CORE_ASSERT(s_CoreLuaLogger, "Lua Logger not initialized!")
-		return s_CoreLuaLogger;
-	}
-	Ref<spdlog::logger>& Log::GetBgfxLogger()
-	{
-		LM_CORE_ASSERT(s_CoreBgfxLogger, "Bgfx Logger not initialized!")
-		return s_CoreBgfxLogger;
-	}
-	Ref<spdlog::logger>& Log::GetCoreSerializerLogger()
-	{
-		LM_CORE_ASSERT(s_CoreSerializerLogger, "Serializer Logger not initialized!")
-		return s_CoreSerializerLogger;
-	}
-	Ref<spdlog::logger>& Log::GetCoreAssetsLogger()
-	{
-		LM_CORE_ASSERT(s_CoreAssetsLogger, "Assets Logger not initialized!")
-		return s_CoreAssetsLogger;
-	}
-	Ref<spdlog::logger>& Log::GetCoreRendererLogger()
-	{
-		LM_CORE_ASSERT(s_CoreRendererLogger, "Renderer Logger not initialized!")
-		return s_CoreRendererLogger;
+		LM_CORE_ASSERT(s_ScriptLogger, "Lua Logger not initialized!")
+		return s_ScriptLogger;
 	}
 }

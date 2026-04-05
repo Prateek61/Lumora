@@ -40,7 +40,7 @@ namespace Lumora::Core
 		const Aether::World& GetWorld() const { return m_World; }
 
 		// Application is move-only — vector<unique_ptr<Plugin>> can't be copied.
-		Application(Application&&) = default;
+		Application(Application&&) noexcept = default;
 		Application& operator=(Application&&) = default;
 		Application(const Application&) = delete;
 		Application& operator=(const Application&) = delete;

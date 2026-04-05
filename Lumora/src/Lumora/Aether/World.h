@@ -11,6 +11,7 @@ namespace Lumora::Aether
 	{
 	public:
 		explicit World();
+		explicit World(flecs::world flecsWorld);
 		~World();
 
 		// Entity Management

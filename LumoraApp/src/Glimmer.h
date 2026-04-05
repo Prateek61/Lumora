@@ -4,11 +4,6 @@
 
 using namespace Lm;
 
-struct IterationCount
-{
-	int count = 0;
-};
-
 class Glimmer : public Core::Plugin
 {
 public:
@@ -19,55 +14,27 @@ public:
 		auto& world = app.GetWorld();
 		auto& flecs_world = world.Raw();
 
-		// .set<T>() on the world creates the singleton AND assigns a value.
-		// .component<T>().add(flecs::Singleton) only registers metadata
-		// it doesn't create an instance with data for systems to match.
-		flecs_world.set<IterationCount>({ 0 });
+		auto system = flecs_world.system("GlimmerSystem");;
+		system.kind(flecs::OnUpdate);
+		system.read<Flux::KeyboardState>().read<Flux::KeyboardState>();
+		system.run([](flecs::iter& iter)
+		{
+			auto world = Aether::World{ iter.world() };
+			auto input = Flux::Input::Get(world);
 
-		// Add Systems
-		flecs_world.system<const IterationCount>("OnLoad")
-			.kind(flecs_world.component<Aether::Phases::OnLoad>())
-			.each([](const IterationCount& count)
-				{
-					LM_LOG_INFO("Glimmer: OnLoad System Running! Iteration: {}", count.count);
-				});
-
-		
-		flecs_world.system<const IterationCount>("OnUpdate")
-			.kind(flecs_world.component<Aether::Phases::OnUpdate>())
-			.each([](const IterationCount& count)
-				{
-					LM_LOG_INFO("Glimmer: OnUpdate System Running! Iteration: {}", count.count);
-				});
-
-		flecs_world.system<const IterationCount>("PostUpdate")
-			.kind(flecs_world.component<Aether::Phases::PostUpdate>())
-			.each([](const IterationCount& count)
-				{
-					LM_LOG_INFO("Glimmer: PostUpdate System Running! Iteration: {}", count.count);
-				});
-
-		flecs_world.system<IterationCount>("PreStore")
-			.kind(flecs_world.component<Aether::Phases::PreStore>())
-			.run([](flecs::iter& it)
-				{
-					if (!it.next())
-					{
-						LM_CORE_WARN("Glimmer: No entities with IterationCount component found. Quitting application.");
-						it.world().quit();
-						return;
-					}
-
-					auto c_arr = it.field<IterationCount>(0);
-
-					c_arr[0].count++;
-					if (c_arr[0].count > 5)
-					{
-						LM_LOG_INFO("Glimmer: Reached iteration limit, quitting application.");
-						it.world().quit();
-					}
-					it.fini();
-				});
+			if (input.Keyboard.Pressed(Flux::Key::Space))
+			{
+				LM_LOG_INFO("Space key was just pressed!");
+			}
+			if (input.Keyboard.Down(Flux::Key::Space))
+			{
+				LM_LOG_INFO("Space Key is Held Down!");
+			}
+			if (input.Keyboard.Released(Flux::Key::Space))
+			{
+				LM_LOG_INFO("Space Key was just released!");
+			}
+		});
 	}
 
 	const char* GetName() const override

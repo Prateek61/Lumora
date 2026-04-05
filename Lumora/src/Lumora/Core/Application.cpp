@@ -1,7 +1,7 @@
 #include "LMPCH.h"
 #include "Application.h"
 
-#include "Lumora/Core/Resource.h"
+#include "Lumora/Core/CoreResource.h"
 #include "Lumora/Utilities/Time.h"
 
 namespace Lumora::Core

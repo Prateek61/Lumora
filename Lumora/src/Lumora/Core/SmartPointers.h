@@ -34,4 +34,10 @@ namespace Lumora
 	{
 		return std::static_pointer_cast<T>(r);
 	}
+
+	template <typename T>
+	struct ScopedResource
+	{
+		Scope<T> Resource;
+	};
 }

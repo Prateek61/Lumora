@@ -4,6 +4,10 @@
 namespace Lumora::Aether
 {
 	World::World() = default;
+	World::World(flecs::world flecsWorld)
+		: m_World(flecsWorld)
+	{
+	}
 	World::~World() = default;
 
 	Entity World::CreateEntity(const char* name)
