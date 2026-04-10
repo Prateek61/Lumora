@@ -35,10 +35,7 @@ namespace Lumora::Aether
 
 		// Phases
 		template <typename Phase>
-		PhaseBuilder<Phase> AddPhase();
-
-		template <typename Phase, typename DependsOnPhase>
-		void AddPhaseAfter();
+		PhaseBuilder AddPhase();
 
 		// TODO: Systems
 		// TODO: Observers
@@ -98,22 +95,10 @@ namespace Lumora::Aether
 	}
 
 	template <typename Phase>
-	PhaseBuilder<Phase> World::AddPhase()
+	PhaseBuilder World::AddPhase()
 	{
 		LM_PROFILE_FUNCTION();
 
-		m_World.component<Phase>()
-			.add(flecs::Phase);
-		return PhaseBuilder<Phase>(*this);
-	}
-
-	template <typename Phase, typename DependsOnPhase>
-	void World::AddPhaseAfter()
-	{
-		LM_PROFILE_FUNCTION();
-
-		m_World.component<Phase>()
-			.add(flecs::Phase)
-			.template before<DependsOnPhase>();
+		return PhaseBuilder(*this, Entity(m_World.entity<Phase>()));
 	}
 }

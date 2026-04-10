@@ -128,7 +128,7 @@ namespace Lumora::Flux
 		// Add a system that polls events and processes the event buffer
 		auto& f_world = world.Raw();
 		auto poll_system = f_world.system("Flux::PollAndProcessEvents");
-		poll_system.kind(flecs::OnLoad);
+		poll_system.kind(f_world.entity<Aether::Phases::OnLoad>());
 		// poll_system.read<KeyboardState>().read<MouseState>();
 		poll_system.write<WindowResource>().write<KeyboardState>().write<MouseState>();
 		poll_system.run([this](flecs::iter& it)

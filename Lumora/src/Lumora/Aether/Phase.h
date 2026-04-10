@@ -4,21 +4,23 @@
 
 namespace Lumora::Aether
 {
-	template<typename Phase>
 	class PhaseBuilder
 	{
 	public:
-		explicit PhaseBuilder(World& world)
-			: m_World(&world) {}
+		explicit PhaseBuilder(World& world, Entity phase);
+
 
 		template <typename Dependency>
 		PhaseBuilder& DependsOn();
+		PhaseBuilder& DependsOn(Entity dependency);
 
 		template <typename Target>
 		PhaseBuilder& Before();
+		PhaseBuilder& Before(Entity target);
 
 	private:
 		World* m_World;
+		flecs::entity m_PhaseEntity;
 	};
 
 	namespace Phases
@@ -41,21 +43,15 @@ namespace Lumora::Aether
 // Template Implementation
 namespace Lumora::Aether
 {
-	template<typename Phase>
 	template<typename Dependency>
-	PhaseBuilder<Phase>& PhaseBuilder<Phase>::DependsOn()
+	PhaseBuilder& PhaseBuilder::DependsOn()
 	{
-		m_World->Raw().component<Phase>()
-			.template depends_on<Dependency>();
-		return *this;
+		m_PhaseEntity.depends_on(m_World->Raw().entity<Dependency>());
 	}
 
-	template<typename Phase>
 	template<typename Target>
-	PhaseBuilder<Phase>& PhaseBuilder<Phase>::Before()
+	PhaseBuilder& PhaseBuilder::Before()
 	{
-		m_World->Raw().component<Phase>()
-			.template before<Target>();
-		return *this;
+		m_World->Raw().entity<Target>().depends_on(m_PhaseEntity);
 	}
 }

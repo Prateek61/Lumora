@@ -10,6 +10,5 @@ namespace Lumora::Aether
 	class System;
 	template <typename... Components>
 	class Query;
-	template <typename Phase>
 	class PhaseBuilder;
 }
