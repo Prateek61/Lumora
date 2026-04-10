@@ -16,6 +16,8 @@ namespace Lumora::Core
 		// Range-based for loop support
 		auto begin() { return m_Buffer.begin(); }
 		auto end() { return m_Buffer.end(); }
+		auto begin() const { return m_Buffer.begin(); }
+		auto end() const { return m_Buffer.end(); }
 
 	private:
 		std::vector<T> m_Buffer;

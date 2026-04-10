@@ -12,8 +12,8 @@ namespace
 	using namespace Lumora;
 	using namespace Lumora::Flux;
 
-	void ProcessEvent(const Raw::KeyAction& event, KeyboardState& keyboardState, MouseState& mouseState,
-	                  flecs::world& world)
+	void ProcessEvent(const Raw::KeyAction& event, KeyboardState& keyboardState, MouseState&,
+	                  flecs::world&)
 	{
 		if (event.Key >= Key::MaxKeyCode) return;
 
@@ -32,8 +32,8 @@ namespace
 		}
 	}
 
-	void ProcessEvent(const Raw::MouseButton& event, KeyboardState& keyboardState, MouseState& mouseState,
-	                  flecs::world& world)
+	void ProcessEvent(const Raw::MouseButton& event, KeyboardState&, MouseState& mouseState,
+	                  flecs::world&)
 	{
 		if (event.Button >= Mouse::MaxButtonCode) return;
 		switch (event.Action)
@@ -51,8 +51,8 @@ namespace
 		}
 	}
 
-	void ProcessEvent(const Raw::MouseMove& event, KeyboardState& keyboardState, MouseState& mouseState,
-	                  flecs::world& world)
+	void ProcessEvent(const Raw::MouseMove& event, KeyboardState&, MouseState& mouseState,
+	                  flecs::world&)
 	{
 		mouseState.DeltaX += event.X - mouseState.X;
 		mouseState.DeltaY += event.Y - mouseState.Y;
@@ -60,35 +60,35 @@ namespace
 		mouseState.Y = event.Y;
 	}
 
-	void ProcessEvent(const Raw::MouseScroll& event, KeyboardState& keyboardState, MouseState& mouseState,
-	                  flecs::world& world)
+	void ProcessEvent(const Raw::MouseScroll& event, KeyboardState&, MouseState& mouseState,
+	                  flecs::world&)
 	{
 		mouseState.ScrollX += event.XOffset;
 		mouseState.ScrollY += event.YOffset;
 	}
 
-	void ProcessEvent(const Raw::WindowResize& event, KeyboardState& keyboardState, MouseState& mouseState,
+	void ProcessEvent(const Raw::WindowResize& event, KeyboardState&, MouseState&,
 	                  flecs::world& world)
 	{
 		auto& windowRes = world.get_mut<WindowResource>();
 		windowRes.Resource->UpdateSize(event.Width, event.Height);
 	}
 
-	void ProcessEvent(const Raw::WindowClose& event, KeyboardState& keyboardState, MouseState& mouseState,
+	void ProcessEvent(const Raw::WindowClose&, KeyboardState&, MouseState&,
 	                  flecs::world& world)
 	{
 		LM_CORE_INFO("Window Close Event Received. Quitting Application.");
 		world.quit();
 	}
 
-	void ProcessEvent(const Raw::WindowFocus& event, KeyboardState& keyboardState, MouseState& mouseState,
-	                  flecs::world& world)
+	void ProcessEvent(const Raw::WindowFocus&, KeyboardState&, MouseState&,
+	                  flecs::world&)
 	{
 		// For now, we ignore focus events. They can be used to pause the game when the window is unfocused, for example.
 	}
 
-	void ProcessEvent(const Raw::CharTyped& event, KeyboardState& keyboardState, MouseState& mouseState,
-	                  flecs::world& world)
+	void ProcessEvent(const Raw::CharTyped&, KeyboardState&, MouseState&,
+	                  flecs::world&)
 	{
 		// For now, we ignore CharTyped events. They can be used for text input later on.
 	}
@@ -148,9 +148,9 @@ namespace Lumora::Flux
 			window_res.Resource->PollEvents();
 
 			// 4. Drain the buffer and update state
-			for (const auto& event: m_EventBuffer)
+			for (const auto& event : m_EventBuffer)
 			{
-				std::visit([&](const auto& e) {ProcessEvent(e, keyboard_state, mouse_state, f_world); }, event);
+				std::visit([&](const auto& e) { ProcessEvent(e, keyboard_state, mouse_state, f_world); }, event);
 			}
 
 			m_EventBuffer.clear();
@@ -159,5 +159,7 @@ namespace Lumora::Flux
 
 	void FluxPlugin::Cleanup(Core::Application& app)
 	{
+		auto& world = app.GetWorld();
+		world.GetResourceMut<WindowResource>().Resource.reset();
 	}
 }

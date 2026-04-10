@@ -19,7 +19,7 @@ namespace Lumora::Flux
 		void Build(Core::Application& app) override;
 		void Cleanup(Core::Application& app) override;
 
-		const char* GetName() const override { return "WindowPlugin"; }
+		const char* GetName() const override { return "FluxPlugin"; }
 	private:
 		Raw::RawEventBuffer m_EventBuffer;
 		WindowProps m_InitialProps;

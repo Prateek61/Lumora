@@ -28,17 +28,24 @@ namespace Lumora::Flux
 	}
 
 	Window::Window(Window&& other) noexcept
+		: m_GLFWWindow(other.m_GLFWWindow), m_NativeWindow(other.m_NativeWindow), m_Props(other.m_Props), m_EventCallback(std::move(other.m_EventCallback))
 	{
-		m_GLFWWindow = other.m_GLFWWindow;
-		m_NativeWindow = other.m_NativeWindow;
-		m_Props = other.m_Props;
+		m_GLFWWindow = nullptr;
+		m_NativeWindow = nullptr;
 	}
 
 	Window& Window::operator=(Window&& other) noexcept
 	{
-		m_GLFWWindow = other.m_GLFWWindow;
-		m_NativeWindow = other.m_NativeWindow;
-		m_Props = other.m_Props;
+		if (this != &other)
+		{
+			Shutdown();
+			m_EventCallback = std::move(other.m_EventCallback);
+			m_GLFWWindow = other.m_GLFWWindow;
+			m_NativeWindow = other.m_NativeWindow;
+			m_Props = other.m_Props;
+			other.m_GLFWWindow = nullptr;
+			other.m_NativeWindow = nullptr;
+		}
 		return *this;
 	}
 
@@ -71,7 +78,6 @@ namespace Lumora::Flux
 			LM_PROFILE_FUNCTION();
 
 			auto win = static_cast<Window*>(glfwGetWindowUserPointer(window));
-			win->UpdateSize(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
 			Raw::WindowResize event{static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 			win->m_EventCallback(event);
 		});
@@ -177,8 +183,13 @@ namespace Lumora::Flux
 	{
 		LM_PROFILE_FUNCTION();
 
+		if (!m_GLFWWindow)
+			return;
+
 		glfwDestroyWindow(m_GLFWWindow);
 		--s_GLFWWindowCount;
+		m_GLFWWindow = nullptr;
+		m_NativeWindow = nullptr;
 
 		if (s_GLFWWindowCount == 0)
 		{
