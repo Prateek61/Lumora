@@ -8,10 +8,7 @@ VULKAN_LIB_DIR = vk_sdk .. "/Lib"
 
 IncludeDir = {}
 IncludeDir["VULKAN"] = vk_sdk .. "/Include"
--- BGFX
-IncludeDir["BGFX"] = "%{wks.location}/External/bgfx/bgfx/include"
-IncludeDir["BX"] = "%{wks.location}/External/bx/bx/include"
-IncludeDir["BIMG"] = "%{wks.location}/External/bimg/bimg/include"
+IncludeDir["GLAD"] = "%{wks.location}/External/glad/include"
 -- Windowing
 IncludeDir["GLFW"] = "%{wks.location}/External/glfw/glfw/include"
 -- Lua
@@ -51,16 +48,3 @@ Library["MacOS"]["COCOA"] = "Cocoa.framework"
 Library["MacOS"]["IOKIT"] = "IOKit.framework"
 Library["MacOS"]["METAL"] = "Metal.framework"
 Library["MacOS"]["COREVIDEO"] = "CoreVideo.framework"
-
--- BGFX Compactability
-function setBxCompat()
-    filter "action:vs*"
-        includedirs { path.join(IncludeDir["BX"], "compat/msvc") }
-        buildoptions { "/Zc:__cplusplus", "/Zc:preprocessor" }
-    filter { "system:windows", "action:gmake*" }
-        includedirs { path.join(IncludeDir["BX"], "compat/mingw") }
-    filter { "system:macosx" }
-        includedirs { path.join(IncludeDir["BX"], "compat/osx") }
-        buildoptions { "-x objective-c++" }
-    filter {}
-end

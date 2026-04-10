@@ -23,10 +23,6 @@ project "LumoraApp"
         "%{wks.location}/Lumora/src",
         -- DEPS
         "%{IncludeDir.GLFW}",
-        -- BGFX
-        "%{IncludeDir.BGFX}",
-        "%{IncludeDir.BX}",
-        "%{IncludeDir.BIMG}",
         -- VULKAN
         "%{IncludeDir.VULKAN}",
         -- SPDLOG
@@ -54,7 +50,6 @@ project "LumoraApp"
 
         "%{Library.VULKAN}",
         "glfw",
-        "bgfx", "bimg", "bx", -- BGFX
         "lua",
         "ImGui",
         "flecs"
@@ -99,7 +94,6 @@ project "LumoraApp"
         {
             "LM_DEBUG",
             "_DEBUG",
-            "BX_CONFIG_DEBUG=1"
         }
         runtime "Debug"
         optimize "Debug"
@@ -110,7 +104,6 @@ project "LumoraApp"
         {
             "LM_RELEASE",
             "NDEBUG",
-            "BX_CONFIG_DEBUG=0"
         }
         runtime "Release"
         optimize "On"
@@ -121,12 +114,9 @@ project "LumoraApp"
         {
             "LM_DIST",
             "NDEBUG",
-            "BX_CONFIG_DEBUG=0"
         }
         runtime "Release"
         optimize "Full"
-
-    setBxCompat()
 
     -- Clear the filters
     filter {}

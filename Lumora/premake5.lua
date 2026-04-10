@@ -31,12 +31,10 @@ project "Lumora"
         -- Lua
         "%{IncludeDir.SOL}",
         "%{IncludeDir.LUA}",
-        -- BGFX
-        "%{IncludeDir.BGFX}",
-        "%{IncludeDir.BX}",
-        "%{IncludeDir.BIMG}",
         -- VULKAN
         "%{IncludeDir.VULKAN}",
+        -- OPENGL
+        "%{IncludeDir.GLAD}",
 
         "%{IncludeDir.VISITSTRUCT}",
         "%{IncludeDir.FILEWATCH}",
@@ -56,7 +54,7 @@ project "Lumora"
         "%{Library.VULKAN}",
         "glfw",
         "Lua",
-        "bgfx", "bimg", "bx", -- BGFX
+        "glad",
         "ImGui",
         "flecs"
     }
@@ -72,7 +70,6 @@ project "Lumora"
         {
             "LM_DEBUG",
             "_DEBUG",
-            "BX_CONFIG_DEBUG=1"
         }
         runtime "Debug"
         optimize "Debug"
@@ -83,7 +80,6 @@ project "Lumora"
         {
             "LM_RELEASE",
             "NDEBUG",
-            "BX_CONFIG_DEBUG=0"
         }
         runtime "Release"
         optimize "On"
@@ -94,12 +90,9 @@ project "Lumora"
         {
             "LM_DIST",
             "NDEBUG",
-            "BX_CONFIG_DEBUG=0"
         }
         runtime "Release"
         optimize "Full"
-    
-    setBxCompat()
 
     -- Clear the filters
     filter {}

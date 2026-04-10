@@ -1,12 +1,3 @@
-[submodule "External/bgfx/bgfx"]
-	path = External/bgfx/bgfx
-	url = https://github.com/bkaradzic/bgfx.git
-[submodule "External/bimg/bimg"]
-	path = External/bimg/bimg
-	url = https://github.com/bkaradzic/bimg.git
-[submodule "External/bx/bx"]
-	path = External/bx/bx
-	url = https://github.com/bkaradzic/bx.git
 [submodule "External/glm"]
 	path = External/glm
 	url = https://github.com/g-truc/glm.git

@@ -22,9 +22,7 @@ group "Core"
 group ""
 
 group "Dependencies"
-    include "External/bgfx"
-    include "External/bimg"
-    include "External/bx"
+    include "External/glad"
 
     include "External/glfw"
 

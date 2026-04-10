@@ -20,14 +20,10 @@ project "flecs"
 		"flecs/distr"
 	}
 
-    defines { "flecs_STATIC" }
-
 	filter "system:windows"
 		links
 		{
-			"wsock32",
 			"ws2_32",
-			"dbghelp"
 		}
 
 	filter "system:linux"

@@ -3,7 +3,6 @@
 #include "Lumora/Core/PlatformDetection.h"
 
 #define LM_LOG_LEVEL 5
-#define LM_ENABLE_BGFX_LOG
 
 #define LM_ENABLE_ASSERTS
 //#define LM_ENABLE_PERFORMANCE_PROFILING
