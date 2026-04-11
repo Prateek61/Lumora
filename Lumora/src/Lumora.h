@@ -22,4 +22,12 @@
 #include "Lumora/Flux/WindowProps.h"
 #include "Lumora/Flux/Input.h"
 
+// Lumen (Rendering)
+#include "Lumora/Lumen/RendererPlugin.h"
+#include "Lumora/Lumen/RenderDevice.h"
+#include "Lumora/Lumen/RenderTypes.h"
+#include "Lumora/Lumen/RenderAPI.h"
+#include "Lumora/Lumen/Props.h"
+#include "Lumora/Lumen/Renderer2D.h"
+
 namespace Lm = Lumora;

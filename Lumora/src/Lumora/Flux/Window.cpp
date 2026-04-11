@@ -158,7 +158,7 @@ namespace Lumora::Flux
 			(
 				glfwWindowHint(GLFW_CONTEXT_DEBUG, GLFW_TRUE);
 			)
-			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+			glfwWindowHint(GLFW_CLIENT_API, props.API == Lumen::RenderAPI::OpenGL ? GLFW_OPENGL_API : GLFW_NO_API);
 			m_GLFWWindow = glfwCreateWindow(static_cast<int>(props.Width), static_cast<int>(props.Height),
 			                                props.Title.c_str(), nullptr, nullptr);
 

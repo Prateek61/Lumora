@@ -11,8 +11,13 @@ public:
 	
 	void Build(Core::Application& app) override;
 
+	void Cleanup(Core::Application& app) override;
+
 	const char* GetName() const override
 	{
 		return "Glimmer";
 	}
+
+private:
+	 Lumen::Renderer2D m_Renderer2D;
 };
