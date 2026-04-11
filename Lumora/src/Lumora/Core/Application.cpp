@@ -13,7 +13,6 @@ namespace Lumora::Core
 
 	void Application::Run()
 	{
-
 		{
 			LM_PROFILE_SCOPE("Plugin Initialization");
 
@@ -101,7 +100,7 @@ namespace Lumora::Core
 			delta_seconds = std::min(delta_seconds, 0.1f); // Clamp to avoid large jumps
 			last_time = current_time;
 
-			m_World.GetResourceMut<DeltaTime>() = DeltaTime{ delta_seconds };
+			m_World.GetResourceMut<DeltaTime>() = DeltaTime{delta_seconds};
 
 			// Run the ECS world for one frame.
 			running = m_World.Raw().progress(delta_seconds);

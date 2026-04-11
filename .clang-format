@@ -1,0 +1,120 @@
+---
+# Lumora - Clang Format Configuration
+# Based on the existing codebase formatting conventions
+
+Language: Cpp
+Standard: c++20
+
+# --- Indentation ---
+UseTab: ForIndentation
+TabWidth: 4
+IndentWidth: 4
+ContinuationIndentWidth: 4
+IndentPPDirectives: None
+IndentExternBlock: Indent
+IndentRequiresClause: true
+
+# --- Namespaces ---
+NamespaceIndentation: All
+CompactNamespaces: false
+FixNamespaceComments: false
+
+# --- Classes & Access Modifiers ---
+IndentAccessModifiers: false
+AccessModifierOffset: -4
+EmptyLineBeforeAccessModifier: Always
+
+# --- Braces (Allman Style) ---
+BreakBeforeBraces: Allman
+# InsertBraces: true  # (clang-format 15+) Uncomment to enforce braces on single-line if/for/while
+
+# --- Line Width ---
+ColumnLimit: 140
+
+# --- Pointers & References ---
+PointerAlignment: Left
+ReferenceAlignment: Left
+DerivePointerAlignment: false
+
+# --- Function Declarations & Calls ---
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowAllArgumentsOnNextLine: true
+AlignAfterOpenBracket: Align
+BinPackArguments: true
+BinPackParameters: true
+
+# --- Short Forms ---
+AllowShortBlocksOnASingleLine: Always
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortLambdasOnASingleLine: Inline
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortEnumsOnASingleLine: true
+
+# --- Breaks & Wrapping ---
+AlwaysBreakTemplateDeclarations: Yes
+BreakBeforeConceptDeclarations: Always
+BreakConstructorInitializers: BeforeColon
+ConstructorInitializerIndentWidth: 4
+PackConstructorInitializers: CurrentLine
+
+# --- Spacing ---
+SpaceBeforeParens: ControlStatements
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceBeforeCaseColon: false
+SpaceInEmptyBlock: false
+SpaceInEmptyParentheses: false
+SpacesInAngles: Never
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+SpaceAfterCStyleCast: false
+SpaceAfterTemplateKeyword: true
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCpp11BracedList: false
+
+# --- Alignment ---
+AlignConsecutiveAssignments: None
+AlignConsecutiveDeclarations: None
+AlignConsecutiveMacros: None
+AlignEscapedNewlines: Left
+AlignOperands: Align
+AlignTrailingComments: true
+
+# --- Switch/Case ---
+IndentCaseLabels: false
+IndentCaseBlocks: false
+
+# --- Includes ---
+SortIncludes: CaseInsensitive
+IncludeBlocks: Preserve
+IncludeCategories:
+  # Precompiled header always first
+  - Regex: '"LMPCH\.h"'
+    Priority: -1
+  # Own header (same name as .cpp)
+  - Regex: '".*"'
+    Priority: 1
+  # Third-party angle-bracket includes
+  - Regex: '<.*>'
+    Priority: 2
+
+# --- Lambdas ---
+LambdaBodyIndentation: Signature
+
+# --- Other ---
+MaxEmptyLinesToKeep: 2
+KeepEmptyLinesAtTheStartOfBlocks: false
+ReflowComments: true
+SeparateDefinitionBlocks: Leave
+InsertNewlineAtEOF: true
+
+# --- Penalties (prefer keeping things together) ---
+PenaltyBreakAssignment: 25
+PenaltyBreakBeforeFirstCallParameter: 50
+PenaltyBreakComment: 300
+PenaltyBreakFirstLessLess: 120
+PenaltyBreakString: 1000
+PenaltyExcessCharacter: 100
+PenaltyReturnTypeOnItsOwnLine: 200
+...

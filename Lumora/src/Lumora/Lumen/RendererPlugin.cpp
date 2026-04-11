@@ -1,7 +1,7 @@
 #include "LMPCH.h"
 #include "RendererPlugin.h"
 
-#include "Lumora/Flux/FluxPlugin.h"
+#include "Lumora/Flux/WindowPlugin.h"
 #include "Lumora/Flux/Window.h"
 #include "Lumora/Core/Application.h"
 

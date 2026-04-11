@@ -24,8 +24,7 @@ namespace Lumora::Core
          */
         static Application Create();
 
-        // Add a plugin
-        template <typename T, typename... Args>
+	    template <typename T, typename... Args>
         Application& AddPlugin(Args&&... args);
 
         template <typename T>
@@ -33,7 +32,6 @@ namespace Lumora::Core
 
         // Lifecycles
         void Run();
-        void Quit();
 
         // Accessors
 		Aether::World& GetWorld() { return m_World; }

@@ -17,7 +17,7 @@
 #include "Lumora/Aether/Phase.h"
 
 // Flux (Windowing, Input, etc.)
-#include "Lumora/Flux/FluxPlugin.h"
+#include "Lumora/Flux/WindowPlugin.h"
 #include "Lumora/Flux/Window.h"
 #include "Lumora/Flux/WindowProps.h"
 #include "Lumora/Flux/Input.h"

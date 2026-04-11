@@ -11,15 +11,15 @@ namespace Lumora::Flux
 
 	using WindowResource = ScopedResource<Window>;
 
-	class FluxPlugin : public Core::Plugin
+	class WindowPlugin : public Core::Plugin
 	{
 	public:
-		FluxPlugin(WindowProps props = {});
-		
+		WindowPlugin(WindowProps props = {});
+
 		void Build(Core::Application& app) override;
 		void Cleanup(Core::Application& app) override;
 
-		const char* GetName() const override { return "FluxPlugin"; }
+		const char* GetName() const override { return "WindowPlugin"; }
 	private:
 		Raw::RawEventBuffer m_EventBuffer;
 		WindowProps m_InitialProps;

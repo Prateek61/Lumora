@@ -1,5 +1,5 @@
 #include "LMPCH.h"
-#include "FluxPlugin.h"
+#include "WindowPlugin.h"
 
 #include "Lumora/Core/Application.h"
 #include "Lumora/Flux/Window.h"
@@ -96,12 +96,12 @@ namespace
 
 namespace Lumora::Flux
 {
-	FluxPlugin::FluxPlugin(WindowProps props)
+	WindowPlugin::WindowPlugin(WindowProps props)
 		: m_InitialProps(std::move(props))
 	{
 	}
 
-	void FluxPlugin::Build(Core::Application& app)
+	void WindowPlugin::Build(Core::Application& app)
 	{
 		LM_PROFILE_FUNCTION();
 
@@ -157,7 +157,7 @@ namespace Lumora::Flux
 		});
 	}
 
-	void FluxPlugin::Cleanup(Core::Application& app)
+	void WindowPlugin::Cleanup(Core::Application& app)
 	{
 		auto& world = app.GetWorld();
 		world.GetResourceMut<WindowResource>().Resource.reset();
