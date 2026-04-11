@@ -3,6 +3,8 @@
 #include "Lumora/Lumen/RenderDevice.h"
 #include <unordered_map>
 
+struct GLFWwindow; // Forward declaration to avoid including GLFW headers
+
 namespace Lumora::Lumen
 {
 	class GLRenderDevice : public RenderDevice

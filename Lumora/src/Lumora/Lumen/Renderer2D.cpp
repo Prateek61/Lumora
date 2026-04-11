@@ -134,6 +134,9 @@ namespace Lumora::Lumen
 		// Create uniform buffer for camera data
 		m_UniformBuffer = device.CreateUniformBuffer(sizeof(glm::mat4));
 
+		// Reserve space for vertex data to avoid reallocations
+		m_QuadVertexData.reserve(MaxVertices);
+
 		LM_CORE_INFO("Renderer2D initialized with max {} quads ({} vertices, {} indices)", MaxQuads, MaxVertices, MaxIndices);
 	}
 

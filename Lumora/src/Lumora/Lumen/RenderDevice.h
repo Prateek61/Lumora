@@ -4,8 +4,6 @@
 #include "Lumora/Lumen/RenderTypes.h"
 #include "glm/glm.hpp"
 
-struct GLFWwindow; // Forward declaration
-
 namespace Lumora::Lumen
 {
 	class RenderDevice

@@ -24,10 +24,10 @@ void Glimmer::Build(Core::Application& app)
 		time += dt;
 		if (input.Keyboard.Down(Flux::Key::Space))
 		{
-			float time_normalized = (time / 2.0f);
-			float r = (std::sin(time_normalized) + 1.0f) / 2.0f;
-			float g = (std::sin(time_normalized + 2.0f) + 1.0f) / 2.0f;
-			float b = (std::sin(time_normalized + 4.0f) + 1.0f) / 2.0f;
+			float time_normalized = (time / 1.0f);
+			float r = (std::sin(time_normalized) + 1.0f) / 4.0f + 0.25f;
+			float g = (std::sin(time_normalized + 2.0f) + 1.0f) / 4.0f + 0.25f;
+			float b = (std::sin(time_normalized + 4.0f) + 1.0f) / 4.0f + 0.25f;
 			render_device->SetClearColor({ r, g, b, 1.0f });
 		}
 		if (input.Keyboard.Released(Flux::Key::Space))

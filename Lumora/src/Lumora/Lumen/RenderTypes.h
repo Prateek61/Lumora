@@ -57,7 +57,7 @@ namespace Lumora::Lumen
 
 	struct VertexLayout
 	{
-		uint32_t Stride; // Total size of one vertex in bytes
+		uint32_t Stride = 0; // Total size of one vertex in bytes
 		std::vector<VertexAttribute> Attributes;
 
 		VertexLayout& Add(AttributeType type)

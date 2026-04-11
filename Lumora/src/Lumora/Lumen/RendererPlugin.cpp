@@ -17,7 +17,6 @@ namespace Lumora::Lumen
 		auto device = RenderDevice::Create(m_Props);
 		// Initialize
 		auto& windowRes = app.GetWorld().GetResourceMut<Flux::WindowResource>();
-		void* glfwWindowHandle = windowRes.Resource->GetGLFWHandle();
 		device->Init(windowRes.Resource->GetGLFWHandle(), windowRes.Resource->GetNativeHandle());
 		device->SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
 

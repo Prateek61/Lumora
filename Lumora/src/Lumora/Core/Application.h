@@ -39,7 +39,7 @@ namespace Lumora::Core
 
 		// Application is move-only — vector<unique_ptr<Plugin>> can't be copied.
 		Application(Application&&) noexcept = default;
-		Application& operator=(Application&&) = default;
+		Application& operator=(Application&&) noexcept = default;
 		Application(const Application&) = delete;
 		Application& operator=(const Application&) = delete;
 
