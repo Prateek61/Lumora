@@ -8,7 +8,10 @@ namespace Lumora::Aether
 	struct Entity;
 	class World;
 	class System;
-	template <typename... Components>
-	class Query;
+	template<typename... Components>
+	class SystemBuilder;
 	class PhaseBuilder;
+	template<typename T>
+	struct Field;
+	class QueryRes;
 }

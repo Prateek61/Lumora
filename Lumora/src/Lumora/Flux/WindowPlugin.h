@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Lumora/Aether/Phase.h"
 #include "Lumora/Core/Plugin.h"
 #include "Lumora/Core/SmartPointers.h"
 #include "Lumora/Flux/RawEvents.h"
@@ -23,5 +24,6 @@ namespace Lumora::Flux
 	private:
 		Raw::RawEventBuffer m_EventBuffer;
 		WindowProps m_InitialProps;
+		Aether::System m_WindowEventPollingSystem;
 	};
 }

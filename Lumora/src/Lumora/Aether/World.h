@@ -4,6 +4,7 @@
 #include "Lumora/Aether/Entity.h"
 
 #include "Lumora/Core/Instrumentor.h"
+#include "Lumora/Utilities/TimeStep.h"
 
 namespace Lumora::Aether
 {
@@ -15,29 +16,33 @@ namespace Lumora::Aether
 		~World();
 
 		// Entity Management
-		Entity CreateEntity(const char* name = nullptr);
+		Entity CreateEntity(const char* name);
+		Entity CreateEntity();
 
 		// Resources (singleton)
 		template <typename T>
 		void SetResource(T&& value);
-
 		template <typename T>
 		const T* TryGetResource() const;
-
 		template <typename T>
 		const T& GetResource() const;
-
 		template <typename T>
 		T* TryGetResourceMut();
-
 		template <typename T>
 		T& GetResourceMut();
+
+		// Lifecycle
+		void Quit() const;
+		bool Progress(TimeStep deltaTime) const;
 
 		// Phases
 		template <typename Phase>
 		PhaseBuilder AddPhase();
 
 		// TODO: Systems
+		template <typename... Components>
+		SystemBuilder<Components...> System(const char* name = nullptr);
+
 		// TODO: Observers
 
 		// Raw access
@@ -51,6 +56,7 @@ namespace Lumora::Aether
 
 // Template Implementations
 #include "Lumora/Aether/Phase.h"
+#include "Lumora/Aether/System.h"
 
 namespace Lumora::Aether
 {
@@ -100,5 +106,11 @@ namespace Lumora::Aether
 		LM_PROFILE_FUNCTION();
 
 		return PhaseBuilder(*this, Entity(m_World.entity<Phase>()));
+	}
+
+	template <typename... Components>
+	SystemBuilder<Components...> World::System(const char* name)
+	{
+		return SystemBuilder<Components...>(*this, name);
 	}
 }

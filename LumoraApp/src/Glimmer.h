@@ -19,5 +19,7 @@ public:
 	}
 
 private:
-	 Lumen::Renderer2D m_Renderer2D;
+	Lumen::Renderer2D m_Renderer2D;
+	Aether::System m_UpdateSystem;
+	Aether::System m_RenderSystem;
 };

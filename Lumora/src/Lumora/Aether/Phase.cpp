@@ -4,10 +4,7 @@
 namespace
 {
 	template <typename Phase>
-	void AnchorPhase(flecs::world& world, flecs::entity_t after, flecs::entity_t before)
-	{
-		
-	}
+	void AnchorPhase(flecs::world& world, flecs::entity_t after, flecs::entity_t before) {}
 }
 
 namespace Lumora::Aether
@@ -15,17 +12,22 @@ namespace Lumora::Aether
 	PhaseBuilder::PhaseBuilder(World& world, Entity phase)
 		: m_World(&world), m_PhaseEntity(phase.Raw())
 	{
-		m_PhaseEntity.add(flecs::Entity);
+		m_PhaseEntity.add(flecs::Phase);
 	}
 
 	PhaseBuilder& PhaseBuilder::DependsOn(Entity dependency)
 	{
+		LM_CORE_ASSERT(dependency.Raw().is_valid() && dependency.Raw().has(flecs::Phase),
+		               "Dependency phase does not exist or is not a phase.");
+
 		m_PhaseEntity.depends_on(dependency.Raw());
 		return *this;
 	}
 
 	PhaseBuilder& PhaseBuilder::Before(Entity target)
 	{
+		LM_CORE_ASSERT(target.Raw().is_valid() && target.Raw().has(flecs::Phase), "Target phase does not exist or is not a phase.");
+
 		target.Raw().depends_on(m_PhaseEntity);
 		return *this;
 	}
@@ -35,7 +37,7 @@ namespace Lumora::Aether
 		// Anchor each of the default Phases to flecs build in Phases.
 		auto& f_world = world.Raw();
 		auto f_on_load = Entity(f_world.entity(flecs::OnLoad));
-		auto f_post_load = Entity(f_world .entity(flecs::PostLoad));
+		auto f_post_load = Entity(f_world.entity(flecs::PostLoad));
 		auto f_pre_update = Entity(f_world.entity(flecs::PreUpdate));
 		auto f_on_update = Entity(f_world.entity(flecs::OnUpdate));
 		auto f_on_validate = Entity(f_world.entity(flecs::OnValidate));
@@ -54,4 +56,3 @@ namespace Lumora::Aether
 		world.AddPhase<OnStore>().DependsOn(f_on_store).Before(f_post_frame);
 	}
 }
-

@@ -14,6 +14,7 @@
 #include "Lumora/Aether/World.h"
 #include "Lumora/Aether/System.h"
 #include "Lumora/Aether/Query.h"
+#include "Lumora/Aether/QueryRes.h"
 #include "Lumora/Aether/Phase.h"
 
 // Flux (Windowing, Input, etc.)

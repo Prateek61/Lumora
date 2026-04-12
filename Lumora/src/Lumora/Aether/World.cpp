@@ -5,8 +5,9 @@ namespace Lumora::Aether
 {
 	World::World() = default;
 	World::World(flecs::world flecsWorld)
-		: m_World(flecsWorld)
+		: m_World(std::move(flecsWorld))
 	{
+		Phases::Register(*this);
 	}
 	World::~World() = default;
 
@@ -14,9 +15,24 @@ namespace Lumora::Aether
 	{
 		LM_PROFILE_FUNCTION();
 
-		if (name)
-			return Entity(m_World.entity(name));
+		return Entity(m_World.entity(name));
+	}
+	Entity World::CreateEntity()
+	{
+		LM_PROFILE_FUNCTION();
 
 		return Entity(m_World.entity());
+	}
+	void World::Quit() const
+	{
+		LM_PROFILE_FUNCTION();
+
+		m_World.quit();
+	}
+	bool World::Progress(TimeStep deltaTime) const
+	{
+		LM_PROFILE_FUNCTION();
+
+		return m_World.progress(deltaTime.GetSeconds());
 	}
 }
