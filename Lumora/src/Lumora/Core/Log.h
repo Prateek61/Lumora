@@ -29,6 +29,7 @@ namespace Lumora
 	{
 	public:
 		static void Init(const Internal::LoggerConfig& config = {});
+		static bool IsInitialized();
 
 		static Ref<spdlog::logger>& GetCoreLogger();
 		static Ref<spdlog::logger>& GetClientLogger();

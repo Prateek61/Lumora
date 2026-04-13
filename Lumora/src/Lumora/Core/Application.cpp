@@ -37,8 +37,11 @@ namespace Lumora::Core
 
 	Application::Application()
 	{
-		Log::Init();
 		LM_PROFILE_BEGIN_SESSION("Startup", "Startup.json");
+		LM_PROFILE_FUNCTION();
+
+		if (!Log::IsInitialized()) Log::Init();
+
 
 		// Initialize the time system
 		auto _ = Time::Get();
@@ -59,6 +62,18 @@ namespace Lumora::Core
 
 		for (auto& plugin : m_Plugins)
 		{
+			// Check dependencies before building
+			DependencyList dependencies;
+			plugin->AddDependencies(dependencies);
+			for (auto& req : dependencies.GetRequiredPlugins())
+			{
+				if (!m_RegisteredPlugins.contains(req))
+				{
+					LM_CORE_ERROR("Plugin '{}' is missing required dependency '{}'", plugin->GetName(), req.name());
+					LM_CORE_ASSERT(false, "Missing plugin dependency");
+				}
+			}
+
 			LM_CORE_INFO("Building plugin '{}'", plugin->GetName());
 			plugin->Build(*this);
 		}
@@ -103,7 +118,7 @@ namespace Lumora::Core
 			m_World.GetResourceMut<DeltaTime>() = DeltaTime{delta_seconds};
 
 			// Run the ECS world for one frame.
-			running = m_World.Raw().progress(delta_seconds);
+			running = m_World.Progress(delta_seconds);
 
 			// Update the application state
 			m_World.GetResourceMut<ApplicationState>().Running = running;

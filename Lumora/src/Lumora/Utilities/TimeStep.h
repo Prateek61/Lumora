@@ -2,7 +2,7 @@
 
 namespace Lumora
 {
-	class TimeStep
+	struct TimeStep
 	{
 	public:
 		TimeStep(float timeSeconds = 0.0f)

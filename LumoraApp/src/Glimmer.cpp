@@ -1,6 +1,8 @@
 #include "Glimmer.h"
 #include <GLM/gtc/matrix_transform.hpp>
 
+#include <numbers>
+
 namespace
 {
 	void Update(Aether::QueryRes& res)
@@ -24,17 +26,16 @@ namespace
 		}
 	}
 
-	void Render(Lumen::Renderer2D& renderer2D, Aether::QueryRes& res)
+	void Render(Aether::QueryRes& res)
 	{
-		static glm::mat4 vp = glm::scale(glm::mat4(1.0f), {1.0f, 1.0f, 1.0f});
+		auto& renderer_2d = res.World().GetResourceMut<Lumen::Renderer2D>();
+
 		static float time = 0.0f;
-		constexpr float pi = 3.14159f;
+		constexpr float pi = std::numbers::pi_v<float>;
 		time += res.DeltaTime().GetSeconds();
 
-		renderer2D.Begin(vp);
-
-		constexpr int gridSize = 25;
-		constexpr float quadSize = 0.065f;
+		constexpr int gridSize = 50;
+		constexpr float quadSize = 0.03f;
 		constexpr float gap = 0.01f;
 		constexpr float step = quadSize + gap;
 
@@ -79,7 +80,7 @@ namespace
 
 				if (alpha > 0.02f)
 				{
-					renderer2D.DrawQuad(
+					renderer_2d.DrawQuad(
 						{xpos + offset, ypos + offset},
 						{size, size},
 						{r, g, b, alpha}
@@ -87,8 +88,6 @@ namespace
 				}
 			}
 		}
-
-		renderer2D.End();
 	}
 }
 
@@ -98,25 +97,26 @@ void Glimmer::Build(Core::Application& app)
 
 	auto& world = app.GetWorld();
 
-	// Create Renderer2D Resource
-	m_Renderer2D.Init(*world.GetResource<Lumen::RenderDeviceResource>().Resource);
-
 	auto update_system_builder = world.System("Glimmer::Update");
 	update_system_builder.SetPhase<Aether::Phases::OnUpdate>().Read<Flux::KeyboardState>().Read<Flux::MouseState>().Read<
 		Lumen::RenderDeviceResource>();
 	m_UpdateSystem = update_system_builder.Run(Update);
 
 	auto render_system_builder = world.System("Glimmer::Render");
-	render_system_builder.SetPhase<Aether::Phases::PreStore>();
+	render_system_builder.SetPhase<Aether::Phases::OnRender>().Write<Lumen::Renderer2D>();
 	m_RenderSystem = render_system_builder.Run([this](Aether::QueryRes& res)
 	{
-		Render(this->m_Renderer2D, res);
+		Render(res);
 	});
 }
 
 void Glimmer::Cleanup(Core::Application& app)
 {
-	LM_PROFILE_FUNCTION();
+}
 
-	m_Renderer2D.Shutdown();
+void Glimmer::AddDependencies(Core::DependencyList& dependencies)
+{
+	dependencies.Require<Flux::WindowPlugin>();
+	dependencies.Require<Lumen::RendererPlugin>();
+	dependencies.Require<Lumen::Renderer2DPlugin>();
 }

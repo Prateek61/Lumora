@@ -15,39 +15,35 @@ namespace
 	void ProcessEvent(const Raw::KeyAction& event, KeyboardState& keyboardState, MouseState&,
 	                  Aether::World&)
 	{
-		if (event.Key >= Key::MaxKeyCode) return;
+		if (event.Key >= Key::MaxKeyCode)
+			return;
 
 		switch (event.Action)
 		{
-		case GLFW_PRESS:
-			keyboardState.Keys[event.Key] = true;
+		case GLFW_PRESS: keyboardState.Keys[event.Key] = true;
 			keyboardState.JustPressed[event.Key] = true;
 			break;
-		case GLFW_RELEASE:
-			keyboardState.Keys[event.Key] = false;
+		case GLFW_RELEASE: keyboardState.Keys[event.Key] = false;
 			keyboardState.JustReleased[event.Key] = true;
 			break;
-		default:
-			break;
+		default: break;
 		}
 	}
 
 	void ProcessEvent(const Raw::MouseButton& event, KeyboardState&, MouseState& mouseState,
 	                  Aether::World&)
 	{
-		if (event.Button >= Mouse::MaxButtonCode) return;
+		if (event.Button >= Mouse::MaxButtonCode)
+			return;
 		switch (event.Action)
 		{
-		case GLFW_PRESS:
-			mouseState.Buttons[event.Button] = true;
+		case GLFW_PRESS: mouseState.Buttons[event.Button] = true;
 			mouseState.JustPressed[event.Button] = true;
 			break;
-		case GLFW_RELEASE:
-			mouseState.Buttons[event.Button] = false;
+		case GLFW_RELEASE: mouseState.Buttons[event.Button] = false;
 			mouseState.JustReleased[event.Button] = true;
 			break;
-		default:
-			break;
+		default: break;
 		}
 	}
 
@@ -93,9 +89,7 @@ namespace
 namespace Lumora::Flux
 {
 	WindowPlugin::WindowPlugin(WindowProps props)
-		: m_InitialProps(std::move(props))
-	{
-	}
+		: m_InitialProps(std::move(props)) {}
 
 	void WindowPlugin::Build(Core::Application& app)
 	{
@@ -107,6 +101,16 @@ namespace Lumora::Flux
 		world.SetResource(WindowResource{CreateScope<Window>(m_InitialProps)});
 		world.SetResource(KeyboardState{});
 		world.SetResource(MouseState{});
+
+		// Define the structure of the resources
+		world.Raw()
+		     .component<MouseState>()
+		     .member("X", &MouseState::X)
+		     .member("Y", &MouseState::Y)
+		     .member("DeltaX", &MouseState::DeltaX)
+		     .member("DeltaY", &MouseState::DeltaY)
+		     .member("ScrollX", &MouseState::ScrollX)
+		     .member("ScrollY", &MouseState::ScrollY);
 
 		// TODO: Setup Events :Resize, Close, Focus etc.
 
@@ -122,10 +126,10 @@ namespace Lumora::Flux
 
 		// Add a system that polls events and processes the event buffer
 		auto poll_system_builder = world.System("Flux::PollAndProcessEvents");
-		poll_system_builder.SetPhase<Aether::Phases::OnLoad>();
+		poll_system_builder.SetPhase<Aether::Phases::Input>();
 		poll_system_builder.Write<WindowResource>().Write<KeyboardState>().Write<MouseState>();
 		m_WindowEventPollingSystem = poll_system_builder.Run([this](Aether::QueryRes& res)
-		{ 
+		{
 			auto world = res.World();
 
 			// 1. Get resources
@@ -141,16 +145,18 @@ namespace Lumora::Flux
 			window_res.Resource->PollEvents();
 
 			// 4. Drain the buffer and update state
-		    for (const auto& event : m_EventBuffer)
-		    {
+			for (const auto& event : m_EventBuffer)
+			{
 				std::visit([&](const auto& e) { ProcessEvent(e, keyboard_state, mouse_state, world); }, event);
-		    }
+			}
 			m_EventBuffer.clear();
 		});
 	}
 
 	void WindowPlugin::Cleanup(Core::Application& app)
 	{
+		LM_PROFILE_FUNCTION();
+
 		auto& world = app.GetWorld();
 		world.GetResourceMut<WindowResource>().Resource.reset();
 	}

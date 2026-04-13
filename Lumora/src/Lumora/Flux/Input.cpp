@@ -7,6 +7,8 @@ namespace Lumora::Flux
 {
 	Input Input::Get(Aether::World& world)
 	{
+		LM_PROFILE_FUNCTION();
+
 		return Input(world.GetResource<KeyboardState>(), world.GetResource<MouseState>());
 	}
 }

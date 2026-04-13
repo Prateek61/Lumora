@@ -36,6 +36,7 @@ namespace Lumora::Core
         // Accessors
 		Aether::World& GetWorld() { return m_World; }
 		const Aether::World& GetWorld() const { return m_World; }
+		const auto& GetRegisteredPlugins() const { return m_RegisteredPlugins; }
 
 		// Application is move-only — vector<unique_ptr<Plugin>> can't be copied.
 		Application(Application&&) noexcept = default;

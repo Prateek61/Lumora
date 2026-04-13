@@ -7,6 +7,8 @@ namespace Lumora::Lumen
 {
 	Scope<RenderDevice> Lumora::Lumen::RenderDevice::Create(const RendererProps& props)
 	{
+		LM_PROFILE_FUNCTION();
+
 		switch (props.API)
 		{
 			case RenderAPI::None:

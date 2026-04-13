@@ -48,6 +48,7 @@ namespace Lumora
 
 		if (LogInitialized)
 		{
+			LM_CORE_WARN("Log system already initialized! Ignoring duplicate initialization.");
 			return;
 		}
 
@@ -74,6 +75,11 @@ namespace Lumora
 		s_ClientLogger = create_logger(config.Client, PadString("APP", 10));
 		s_ScriptLogger = create_logger(config.Scripting, PadString("SCRIPT", 10));
 		LogInitialized = true;
+	}
+
+	bool Log::IsInitialized()
+	{
+		return LogInitialized;
 	}
 
 	Ref<spdlog::logger>& Log::GetCoreLogger()

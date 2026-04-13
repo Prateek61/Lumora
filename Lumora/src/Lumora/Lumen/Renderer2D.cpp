@@ -245,6 +245,8 @@ namespace Lumora::Lumen
 
 	void Renderer2D::Flush()
 	{
+		LM_PROFILE_FUNCTION();
+
 		if (m_QuadCount == 0)
 			return;
 

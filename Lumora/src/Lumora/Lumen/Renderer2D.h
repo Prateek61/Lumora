@@ -21,6 +21,7 @@ namespace Lumora::Lumen
 		// Frame API
 		void Begin(const glm::mat4& viewProjMatrix);
 		void End();
+		void Flush(); // Manually flush if you want to draw before End() or if you want to ensure stats are updated immediately
 
 		// Draw Calls — Solid Color
 		void DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
@@ -58,7 +59,6 @@ namespace Lumora::Lumen
 		Stats m_Stats;
 
 		int FindOrAssignTextureSlot(TextureHandle texture);
-		void Flush();
 	};
 
 	namespace DefaultShaders

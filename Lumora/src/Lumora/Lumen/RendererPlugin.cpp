@@ -4,8 +4,37 @@
 #include "Lumora/Flux/WindowPlugin.h"
 #include "Lumora/Flux/Window.h"
 #include "Lumora/Core/Application.h"
+#
 
 #include <GLFW/glfw3.h>
+
+namespace
+{
+	void BeginFrame(const Lumora::Aether::QueryRes& res)
+	{
+		LM_PROFILE_FUNCTION();
+
+		auto& deviceResource = res.World().GetResourceMut<Lumora::Lumen::RenderDeviceResource>();
+		LM_CORE_ASSERT(deviceResource.Resource != nullptr, "RenderDeviceResource is null");
+
+		{
+			LM_PROFILE_SCOPE("RenderDevice::BeginFrame");
+			deviceResource.Resource->BeginFrame();
+		}
+	}
+
+	void PresentFrame(const Lumora::Aether::QueryRes& res)
+	{
+		LM_PROFILE_FUNCTION();
+
+		auto& deviceResource = res.World().GetResourceMut<Lumora::Lumen::RenderDeviceResource>();
+		LM_CORE_ASSERT(deviceResource.Resource != nullptr, "RenderDeviceResource is null");
+		{
+			LM_PROFILE_SCOPE("RenderDevice::EndFrame");
+			deviceResource.Resource->EndFrame();
+		}
+	}
+}
 
 namespace Lumora::Lumen
 {
@@ -18,38 +47,34 @@ namespace Lumora::Lumen
 		// Initialize
 		auto& windowRes = app.GetWorld().GetResourceMut<Flux::WindowResource>();
 		device->Init(windowRes.Resource->GetGLFWHandle(), windowRes.Resource->GetNativeHandle());
-		device->SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
+		device->SetClearColor({0.1f, 0.1f, 0.1f, 1.0f});
 
 		// Insert the RenderDevice as a resource for systems to use
-		app.InsertResource(RenderDeviceResource{ std::move(device) });
+		app.InsertResource(RenderDeviceResource{std::move(device)});
 
 		// Register a system for BeginFrame and EndFrame
-		auto& f_world = app.GetWorld().Raw();
-		f_world.system<RenderDeviceResource>("Lumen::Renderer::BeginFrame")
-			.kind(f_world.entity<Aether::Phases::PreStore>())
-			.each([](RenderDeviceResource& deviceResource)
-				{
-					LM_CORE_ASSERT(deviceResource.Resource != nullptr, "RenderDeviceResource is null");
-					
-					deviceResource.Resource->BeginFrame();
-				});
+		auto begin_frame_system_builder = app.GetWorld().System("Lumen::Renderer::BeginFrame");
+		begin_frame_system_builder.Write<RenderDeviceResource>().SetPhase<Aether::Phases::PreRender>();
+		m_BeginFrameSystem = begin_frame_system_builder.Run(BeginFrame);
 
-		f_world.system<RenderDeviceResource>("Lumen::Renderer::EndFrame")
-			.kind(f_world.entity<Aether::Phases::OnStore>())
-			.each([](RenderDeviceResource& deviceResource)
-				{
-					LM_CORE_ASSERT(deviceResource.Resource != nullptr, "RenderDeviceResource is null");
+		auto present_frame_system_builder = app.GetWorld().System("Lumen::Renderer::PresentFrame");
+		present_frame_system_builder.Write<RenderDeviceResource>().SetPhase<Aether::Phases::Present>();
+		m_PresentFrameSystem = present_frame_system_builder.Run(PresentFrame);
+	}
 
-					deviceResource.Resource->EndFrame();
-				});
-	}
-	void RendererPlugin::Finish(Core::Application& app)
-	{
-	}
+	void RendererPlugin::Finish(Core::Application& app) {}
+
 	void RendererPlugin::Cleanup(Core::Application& app)
 	{
+		LM_PROFILE_FUNCTION();
+
 		// Cleanup the RenderDevice
 		auto& deviceRes = app.GetWorld().GetResourceMut<RenderDeviceResource>();
 		deviceRes.Resource.reset();
+	}
+
+	void RendererPlugin::AddDependencies(Core::DependencyList& dependencies)
+	{
+		dependencies.Require<Flux::WindowPlugin>();
 	}
 }

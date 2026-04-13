@@ -16,6 +16,7 @@
 #include "Lumora/Aether/Query.h"
 #include "Lumora/Aether/QueryRes.h"
 #include "Lumora/Aether/Phase.h"
+#include "Lumora/Aether/FlecsDiagonisticPlugin.h"
 
 // Flux (Windowing, Input, etc.)
 #include "Lumora/Flux/WindowPlugin.h"
@@ -30,5 +31,6 @@
 #include "Lumora/Lumen/RenderAPI.h"
 #include "Lumora/Lumen/Props.h"
 #include "Lumora/Lumen/Renderer2D.h"
+#include "Lumora/Lumen/Renderer2DPlugin.h"
 
 namespace Lm = Lumora;
