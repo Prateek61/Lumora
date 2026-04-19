@@ -53,11 +53,11 @@ namespace Lumora::Lumen
 		app.InsertResource(RenderDeviceResource{std::move(device)});
 
 		// Register a system for BeginFrame and EndFrame
-		auto begin_frame_system_builder = app.GetWorld().System("Lumen::Renderer::BeginFrame");
+		auto begin_frame_system_builder = app.GetWorld().System("Renderer::BeginFrame");
 		begin_frame_system_builder.Write<RenderDeviceResource>().SetPhase<Aether::Phases::PreRender>();
 		m_BeginFrameSystem = begin_frame_system_builder.Run(BeginFrame);
 
-		auto present_frame_system_builder = app.GetWorld().System("Lumen::Renderer::PresentFrame");
+		auto present_frame_system_builder = app.GetWorld().System("Renderer::PresentFrame");
 		present_frame_system_builder.Write<RenderDeviceResource>().SetPhase<Aether::Phases::Present>();
 		m_PresentFrameSystem = present_frame_system_builder.Run(PresentFrame);
 	}

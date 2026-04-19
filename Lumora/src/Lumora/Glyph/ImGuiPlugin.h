@@ -20,6 +20,8 @@ namespace Lumora::Glyph
 		bool DockingEnabled = true;
 		bool ViewportsEnabled = true;
 		bool ShowDemoWindow = false;
+		bool DockSpaceOverMainViewport = true;
+
 		const char* IniFilename = nullptr;
 	};
 

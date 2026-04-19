@@ -12,17 +12,15 @@ namespace
 	void OpenGLMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
 	                           const GLchar* message, const void* userParam)
 	{
-		switch (severity)
+		switch (type)
 		{
-		case GL_DEBUG_SEVERITY_HIGH: LM_CORE_FATAL(message);
-			return;
-		case GL_DEBUG_SEVERITY_MEDIUM: LM_CORE_ERROR(message);
-			return;
-		case GL_DEBUG_SEVERITY_LOW: LM_CORE_WARN(message);
-			return;
-		case GL_DEBUG_SEVERITY_NOTIFICATION: LM_CORE_TRACE(message);
-			return;
-		default: LM_CORE_ASSERT(false, "Unknown OpenGL severity level!"); return;
+			case GL_DEBUG_TYPE_ERROR: LM_CORE_ERROR(message); break;
+			case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+			case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: LM_CORE_ERROR(message); break;
+			case GL_DEBUG_TYPE_PERFORMANCE: LM_CORE_WARN(message); break;
+			case GL_DEBUG_TYPE_PORTABILITY:
+			case GL_DEBUG_TYPE_OTHER: LM_CORE_INFO(message); break;
+			default: LM_CORE_TRACE(message); break;
 		}
 	}
 
@@ -68,8 +66,8 @@ namespace Lumora::Lumen
 			LM_GL_CALL(glDebugMessageCallback(OpenGLMessageCallback, nullptr))
 
 			LM_GL_CALL(glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE,
-				GL_DEBUG_SEVERITY_HIGH, 0, nullptr, GL_TRUE))
-			)
+				GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE))
+		)
 
 		// Default GL State
 		LM_GL_CALL(glEnable(GL_BLEND))

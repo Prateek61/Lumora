@@ -12,10 +12,6 @@ namespace Lumora
 	{
 		class Window;
 	}
-	namespace Lumen
-	{
-		
-	}
 }
 
 namespace Lumora::Glyph
@@ -29,6 +25,8 @@ namespace Lumora::Glyph
 		virtual void Shutdown() = 0;
 		virtual void NewFrame() = 0;
 		virtual void RenderDrawData(ImDrawData* draw_data) = 0;
+
+		virtual void UpdateAndRenderPlatformWindows() = 0;
 
 		static Scope<ImGuiBackend> Create(Lumen::RenderAPI api);
 	};
