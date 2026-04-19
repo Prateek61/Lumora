@@ -4,11 +4,11 @@
 
 using namespace Lumora;
 
-class Glimmer : public Core::Plugin
+class Spark : public Core::Plugin
 {
 public:
-	Glimmer() = default;
-
+	Spark() = default;
+	
 	void Build(Core::Application& app) override;
 
 	void Cleanup(Core::Application& app) override;
@@ -17,6 +17,10 @@ public:
 
 	const char* GetName() const override
 	{
-		return "Glimmer";
+		return "Spark";
 	}
+
+private:
+	Aether::System m_UpdateSystem;
+	Aether::System m_RenderSystem;
 };

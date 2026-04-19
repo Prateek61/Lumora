@@ -35,5 +35,3 @@
 
 // UI (Glyph)
 #include "Lumora/Glyph/ImGuiPlugin.h"
-
-namespace Lm = Lumora;
