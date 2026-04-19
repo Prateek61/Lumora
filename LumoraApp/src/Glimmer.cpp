@@ -1,6 +1,8 @@
 #include "Glimmer.h"
 #include <GLM/gtc/matrix_transform.hpp>
+#include <imgui.h>
 
+#include <inttypes.h>
 #include <numbers>
 
 namespace
@@ -89,6 +91,18 @@ namespace
 			}
 		}
 	}
+
+	void UI(Aether::QueryRes& res)
+	{
+		const auto& stats = res.World().GetResource<Lumen::Renderer2D::Stats>();
+
+		ImGui::Begin("Draw Calls");
+
+		ImGui::Text("Draw Calls: %" PRIu32, stats.DrawCalls);
+		ImGui::Text("Quad Count: %" PRIu32, stats.QuadCount);
+
+		ImGui::End();
+	}
 }
 
 void Glimmer::Build(Core::Application& app)
@@ -108,6 +122,10 @@ void Glimmer::Build(Core::Application& app)
 	{
 		Render(res);
 	});
+
+	auto ui_system_builder = world.System("Glimmer::UI");
+	ui_system_builder.SetPhase<Aether::Phases::OnUI>().Read<Lumen::Renderer2D::Stats>();
+	ui_system_builder.Run(UI);
 }
 
 void Glimmer::Cleanup(Core::Application& app)

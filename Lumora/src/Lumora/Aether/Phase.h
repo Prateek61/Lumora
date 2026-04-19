@@ -24,14 +24,15 @@ namespace Lumora::Aether
 
 	namespace Phases
 	{
+		struct None {};		  // Mark system as not running in any phase. Use for manual control or one-off systems.
 		struct FrameStart {}; // Internal anchor: marks the beginning of a frame. Not for user systems.
-		struct Input {};     // Poll OS events, update keyboard/mouse/gamepad state.
+		struct Input {};      // Poll OS events, update keyboard/mouse/gamepad state.
 		struct PreUpdate {};  // Pre-logic setup: timers, animation sampling, network receive.
-		struct OnUpdate {};     // Main game logic: AI, movement, physics, gameplay rules.
+		struct OnUpdate {};   // Main game logic: AI, movement, physics, gameplay rules.
 		struct OnValidate {}; // Validate state after logic: constraint checks, transform propagation.
 		struct PostUpdate {}; // React to validated state: collision response, trigger events, cleanup.
 		struct PreRender {};  // Begin GPU frame: clear buffers, bind camera, prepare render state.
-		struct OnRender {};     // Submit draw calls: sprites, meshes, particles, text.
+		struct OnRender {};   // Submit draw calls: sprites, meshes, particles, text.
 		struct PostRender {}; // Flush render batches to GPU, post-processing effects.
 		struct OnUI {};       // UI rendering: ImGui windows, debug overlays, editor panels.
 		struct PostUI {};     // Finalize UI: ImGui::EndFrame/Render, submit UI draw data to GPU.

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include "Lumora/Core/Assert.h"
 
 namespace Lumora
 {
@@ -39,5 +40,15 @@ namespace Lumora
 	struct ScopedResource
 	{
 		Scope<T> Resource;
+
+		// Override the -> operator
+		T* operator->()
+		{
+			return Resource.get();
+		}
+		const T* operator->() const
+		{
+			return Resource.get();
+		}
 	};
 }

@@ -46,10 +46,12 @@ project "flecs"
 		runtime "Release"
 		optimize "On"
 		symbols "On"
+		defines { "NDEBUG" }
 
 	filter "configurations:Dist"
 		runtime "Release"
 		optimize "Full"
+		defines { "NDEBUG" }
 
 	filter {}
 

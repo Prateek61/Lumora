@@ -33,4 +33,7 @@
 #include "Lumora/Lumen/Renderer2D.h"
 #include "Lumora/Lumen/Renderer2DPlugin.h"
 
+// UI (Glyph)
+#include "Lumora/Glyph/ImGuiPlugin.h"
+
 namespace Lm = Lumora;

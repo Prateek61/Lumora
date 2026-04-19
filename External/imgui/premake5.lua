@@ -9,7 +9,15 @@ project "ImGui"
     files
     {
         "imgui/*.h",
-        "imgui/*.cpp"
+        "imgui/*.cpp",
+
+        "imgui/backends/imgui_impl_opengl3.h",
+        "imgui/backends/imgui_impl_opengl3.cpp"
+    }
+
+    includedirs
+    {
+        "imgui/"
     }
 
     filter "configurations:Debug"
@@ -21,11 +29,12 @@ project "ImGui"
         runtime "Release"
         optimize "On"
         symbols "On"
+        defines { "NDEBUG" }
 
     filter "configurations:Dist"
         runtime "Release"
         optimize "Full"
+        defines { "NDEBUG" }
 
     -- Clear the filters
-    filter {} 
-    
+    filter {}

@@ -22,7 +22,7 @@ namespace
 			return;
 		case GL_DEBUG_SEVERITY_NOTIFICATION: LM_CORE_TRACE(message);
 			return;
-		default: return;
+		default: LM_CORE_ASSERT(false, "Unknown OpenGL severity level!"); return;
 		}
 	}
 

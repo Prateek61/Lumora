@@ -68,14 +68,14 @@ namespace Lumora
 #define LM_IMPL_LOG_INFO(Type, ...)
 #endif
 #if LM_LOG_LEVEL >= 5
-#define LM_IMPL_LOG_TRACE(Type, ...)   ::Lumora::Log::Get##Type##Logger()->log(LM_IMPL_SPDLOG_SOURCE_LOC(), spdlog::level::trace, __VA_ARGS__)
-#else
-#define LM_IMPL_LOG_TRACE(Type, ...)
-#endif
-#if LM_LOG_LEVEL >= 6
 #define LM_IMPL_LOG_DEBUG(Type, ...)   ::Lumora::Log::Get##Type##Logger()->log(LM_IMPL_SPDLOG_SOURCE_LOC(), spdlog::level::debug, __VA_ARGS__)
 #else
 #define LM_IMPL_LOG_DEBUG(Type, ...)
+#endif
+#if LM_LOG_LEVEL >= 6
+#define LM_IMPL_LOG_TRACE(Type, ...)   ::Lumora::Log::Get##Type##Logger()->log(LM_IMPL_SPDLOG_SOURCE_LOC(), spdlog::level::trace, __VA_ARGS__)
+#else
+#define LM_IMPL_LOG_TRACE(Type, ...)
 #endif
 
 // Core log macros

@@ -5,6 +5,11 @@
 
 namespace Lumora::Aether
 {
+	namespace Phases
+	{
+		struct None;
+	}
+
 	class System
 	{
 	public:
@@ -101,10 +106,18 @@ namespace Lumora::Aether
 	template <typename Phase>
 	SystemBuilder<Components...>& SystemBuilder<Components...>::SetPhase()
 	{
-		auto phase_entity = m_World.Raw().entity<Phase>();
-		LM_CORE_ASSERT(phase_entity.is_valid() && phase_entity.has(flecs::Phase), "Phase does not exist or is not a phase.");
+		if constexpr (std::is_same_v<Phase, Phases::None>)
+		{
+			m_SystemBuilder.kind(0);
+		}
+		else
+		{
+			auto phase_entity = m_World.Raw().entity<Phase>();
+			LM_CORE_ASSERT(phase_entity.is_valid() && phase_entity.has(flecs::Phase), "Phase does not exist or is not a phase.");
 
-		m_SystemBuilder.kind(phase_entity);
+			m_SystemBuilder.kind(phase_entity);
+		}
+
 		return *this;
 	}
 

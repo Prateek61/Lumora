@@ -50,12 +50,13 @@ namespace Lumora::Lumen
 		});
 
 		// A Flush system for manual flushing if needed, not attached to any phase so not automatically run
-		auto flush_system = world.System("Renderer2D::Flush").Write<Renderer2D>();
+		auto flush_system = world.System("Renderer2D::Flush").Write<Renderer2D>().SetPhase<Aether::Phases::None>();
 		m_FrameFlushSystem = flush_system.Run([](Aether::QueryRes& res)
 		{
 			auto& renderer_2d = res.World().GetResourceMut<Renderer2D>();
 			renderer_2d.Flush();
 		});
+		m_FrameFlushSystem.Disable();
 	}
 
 	void Renderer2DPlugin::Cleanup(Core::Application& app)

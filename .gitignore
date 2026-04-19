@@ -31,5 +31,8 @@ Assets/**.local.*
 # Local Files
 **.local.*
 
+# Temporary files
+.tmp_flecs/
+
 # Python
 __pycache__/
