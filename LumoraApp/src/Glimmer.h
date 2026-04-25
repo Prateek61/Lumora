@@ -7,7 +7,8 @@ using namespace Lumora;
 class Glimmer : public Core::Plugin
 {
 public:
-	Glimmer() = default;
+	Glimmer(bool useImGui = true)
+		: m_UseImGui(useImGui) {}
 
 	void Build(Core::Application& app) override;
 
@@ -19,4 +20,7 @@ public:
 	{
 		return "Glimmer";
 	}
+
+private:
+	bool m_UseImGui;
 };

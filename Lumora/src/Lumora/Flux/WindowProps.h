@@ -3,6 +3,7 @@
 #include <string>
 #include <cstdint>
 #include "Lumora/Lumen/RenderAPI.h"
+#include "Lumora/Rune/Serialization/Reflect.h"
 
 namespace Lumora::Flux
 {
@@ -15,3 +16,4 @@ namespace Lumora::Flux
 		bool VSync = true;
 	};
 }
+VISITABLE_STRUCT(Lumora::Flux::WindowProps, Title, Width, Height, VSync);

@@ -47,7 +47,7 @@ namespace Lumora::Glyph
 		/// 2. Apply engine-side settings to ImGui IO
 		ImGuiIO& io = ImGui::GetIO();
 		(void)io; // Silence unused variable warning if no settings are applied
-		io.IniFilename = m_InitialSettings.IniFilename;
+		io.IniFilename = m_InitialSettings.IniFilename.empty() ? nullptr : m_InitialSettings.IniFilename.c_str();
 
 		ImGuiConfigFlags config_flags = 0;
 		if (m_InitialSettings.DockingEnabled)

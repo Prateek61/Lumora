@@ -111,21 +111,51 @@ void Spark::Build(Core::Application& app)
 
 	auto& world = app.GetWorld();
 
+	// Read data
+	auto& serializer_res = world.GetResourceMut<Rune::LuaSerializerResource>();
+	if (auto data_opt = serializer_res.Resource->DeserializeFromFile<Data>("../Assets/Data.local.lua"); data_opt)
+	{
+		m_Data = std::move(data_opt.value());
+	}
+
 	auto update_system_builder = world.System("Spark::Update");
 	update_system_builder.SetPhase<Aether::Phases::OnUpdate>().Read<Flux::KeyboardState>().Read<Flux::MouseState>().Read<
 		Lumen::RenderDeviceResource>();
-	m_UpdateSystem = update_system_builder.Run(Update);
+	update_system_builder.Run(Update);
 
 	auto render_system_builder = world.System("Spark::Render");
 	render_system_builder.SetPhase<Aether::Phases::OnRender>().Write<Lumen::Renderer2D>();
-	m_RenderSystem = render_system_builder.Run([this](Aether::QueryRes& res)
+	render_system_builder.Run([this](Aether::QueryRes& res)
 	{
 		Render(res);
 	});
 
+	auto reload_data_system_builder = world.System("Spark::ReloadData");
+	reload_data_system_builder.SetPhase<Aether::Phases::OnUpdate>().Read<Rune::LuaSerializerResource>();
+	reload_data_system_builder.Run([this](Aether::QueryRes& res)
+	{
+		auto& serializer_res = res.World().GetResourceMut<Rune::LuaSerializerResource>();
+		
+		// Update the data
+		if (auto data_opt = serializer_res.Resource->DeserializeFromFile<Data>("../Assets/Data.local.lua"); data_opt)
+		{
+			if (data_opt.value().Message != m_Data.Message)
+			{
+				m_Data = std::move(data_opt.value());
+				LM_LOG_INFO("Data reloaded: {}", m_Data.Message);
+			}
+		}
+	});
+
+
 	auto ui_system_builder = world.System("Spark::UI");
 	ui_system_builder.SetPhase<Aether::Phases::OnUI>().Read<Lumen::Renderer2D::Stats>();
 	ui_system_builder.Run(UI);
+}
+
+void Spark::Finish(Core::Application& app)
+{
+	LM_LOG_INFO("Message from Data.lua: {}", m_Data.Message);
 }
 
 void Spark::Cleanup(Core::Application& app)

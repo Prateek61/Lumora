@@ -1,11 +1,17 @@
 return {
-    Name = "Lumora Application",
-    AssetsDirectory = "",
-    WindowProps = {
-        Title = "Lumora",
+    WindowSettings = {
+        Title = "Silly Linguine Cat Simulator Deluxe Online",
         Width = 1280,
         Height = 720,
+        Vsync = true,
     },
-    API = "Vulkan", -- Options: [Default, OpenGL, DirectX11, DirectX12, Vulkan]
-    Run = true, -- Setting this to false doesn't run the application loop
+    ImGuiSettings = {
+        DockingEnabled = true,
+        ViewportsEnabled = true,
+        ShowDemoWindow = false,
+        DockSpaceOverMainViewport = true,
+        IniFilename = "ImGui.local.ini",
+    },
+    UseGlimmer = true,
+    GlimmerImGui = true
 }

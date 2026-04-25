@@ -30,6 +30,8 @@ namespace Lumora::Aether
 		T* TryGetResourceMut();
 		template <typename T>
 		T& GetResourceMut();
+		template <typename T>
+		void RemoveResource();
 
 		// Lifecycle
 		void Quit() const;
@@ -98,6 +100,14 @@ namespace Lumora::Aether
 		LM_PROFILE_FUNCTION();
 
 		return m_World.get_mut<T>();
+	}
+
+	template <typename T>
+	void World::RemoveResource()
+	{
+		LM_PROFILE_FUNCTION();
+
+		m_World.remove<T>();
 	}
 
 	template <typename Phase>

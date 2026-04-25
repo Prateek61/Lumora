@@ -3,6 +3,7 @@
 #include "Lumora/Core/Plugin.h"
 #include "Lumora/Core/SmartPointers.h"
 #include "Lumora/Glyph/ImGuiBackend.h"
+#include "Lumora/Rune/Serialization/Reflect.h"
 
 struct ImGuiContext;
 
@@ -22,7 +23,7 @@ namespace Lumora::Glyph
 		bool ShowDemoWindow = false;
 		bool DockSpaceOverMainViewport = true;
 
-		const char* IniFilename = nullptr;
+		std::string IniFilename = "";
 	};
 
 	class ImGuiPlugin final : public Core::Plugin
@@ -44,3 +45,5 @@ namespace Lumora::Glyph
 		ImGuiSettings m_InitialSettings;
 	};
 }
+
+VISITABLE_STRUCT(Lumora::Glyph::ImGuiSettings, DockingEnabled, ViewportsEnabled, ShowDemoWindow, DockSpaceOverMainViewport);

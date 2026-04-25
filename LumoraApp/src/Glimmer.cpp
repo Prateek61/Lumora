@@ -155,35 +155,42 @@ namespace
 
 	// Layer z-values. Depth test is GL_LESS with identity projection, so
 	// smaller z = drawn on top. Later layers use smaller z.
-	constexpr float ZBackdrop   =  0.9f;
-	constexpr float ZTrails     =  0.5f;
-	constexpr float ZParticles  =  0.1f;
+	constexpr float ZBackdrop = 0.9f;
+	constexpr float ZTrails = 0.5f;
+	constexpr float ZParticles = 0.1f;
 	constexpr float ZAttractors = -0.3f;
 
 	float RandFloat(uint32_t& seed, float a = 0.0f, float b = 1.0f)
 	{
 		seed = seed * 1664525u + 1013904223u;
-		float t = ((seed >> 8) & 0xFFFFFFu) / float(0x01000000u);
+		float t = ((seed >> 8) & 0xFFFFFFu) / static_cast<float>(0x01000000u);
 		return a + (b - a) * t;
 	}
 
 	glm::vec4 HsvToRgba(float h, float s, float v, float a)
 	{
 		h = std::fmod(h, 1.0f);
-		if (h < 0.0f) h += 1.0f;
+		if (h < 0.0f)
+			h += 1.0f;
 		float c = v * s;
 		float x = c * (1.0f - std::fabs(std::fmod(h * 6.0f, 2.0f) - 1.0f));
 		float m = v - c;
 		glm::vec3 rgb;
-		int seg = int(h * 6.0f) % 6;
+		int seg = static_cast<int>(h * 6.0f) % 6;
 		switch (seg)
 		{
-		case 0: rgb = {c, x, 0.0f}; break;
-		case 1: rgb = {x, c, 0.0f}; break;
-		case 2: rgb = {0.0f, c, x}; break;
-		case 3: rgb = {0.0f, x, c}; break;
-		case 4: rgb = {x, 0.0f, c}; break;
-		default: rgb = {c, 0.0f, x}; break;
+		case 0: rgb = {c, x, 0.0f};
+			break;
+		case 1: rgb = {x, c, 0.0f};
+			break;
+		case 2: rgb = {0.0f, c, x};
+			break;
+		case 3: rgb = {0.0f, x, c};
+			break;
+		case 4: rgb = {x, 0.0f, c};
+			break;
+		default: rgb = {c, 0.0f, x};
+			break;
 		}
 		rgb += m;
 		return {rgb.r, rgb.g, rgb.b, a};
@@ -191,7 +198,8 @@ namespace
 
 	glm::vec2 ScreenToNdc(float mx, float my, float width, float height)
 	{
-		if (width <= 0.0f || height <= 0.0f) return {0.0f, 0.0f};
+		if (width <= 0.0f || height <= 0.0f)
+			return {0.0f, 0.0f};
 		float x = (mx / width) * 2.0f - 1.0f;
 		float y = 1.0f - (my / height) * 2.0f;
 		return {x, y};
@@ -205,7 +213,8 @@ namespace
 	void SpawnParticle(Particles& particles, const SimParams& params, SimRuntime& rt,
 	                   glm::vec2 pos, glm::vec2 baseVel)
 	{
-		if (particles.AliveCount >= Particles::MaxAlive) return;
+		if (particles.AliveCount >= Particles::MaxAlive)
+			return;
 
 		if (particles.Items.size() <= particles.AliveCount)
 			particles.Items.resize(particles.AliveCount + 1);
@@ -221,15 +230,15 @@ namespace
 		p.Vel = baseVel + dir * speed;
 
 		float hue = params.HueBase +
-			(params.RainbowOverTime ? rt.Time * 0.1f : 0.0f) +
-			RandFloat(rt.Seed, -params.HueRange * 0.5f, params.HueRange * 0.5f);
+		            (params.RainbowOverTime ? rt.Time * 0.1f : 0.0f) +
+		            RandFloat(rt.Seed, -params.HueRange * 0.5f, params.HueRange * 0.5f);
 		p.Color = HsvToRgba(hue, params.Saturation, params.Value, 1.0f);
 
 		p.Size = std::max(0.001f, params.ParticleSize +
-			RandFloat(rt.Seed, -params.ParticleSizeVariance, params.ParticleSizeVariance));
+		                          RandFloat(rt.Seed, -params.ParticleSizeVariance, params.ParticleSizeVariance));
 		p.Age = 0.0f;
 		p.Lifetime = std::max(0.1f, params.ParticleLifetime +
-			RandFloat(rt.Seed, -params.LifetimeVariance, params.LifetimeVariance));
+		                            RandFloat(rt.Seed, -params.LifetimeVariance, params.LifetimeVariance));
 	}
 
 	void SpawnBurst(Particles& particles, const SimParams& params, SimRuntime& rt, glm::vec2 pos, int count)
@@ -249,7 +258,7 @@ namespace
 			if (d2 < bestD2)
 			{
 				bestD2 = d2;
-				best = int(i);
+				best = static_cast<int>(i);
 			}
 		}
 		return best;
@@ -261,7 +270,10 @@ namespace
 		bool was = enabled;
 		if (ImGui::Checkbox(label, &enabled))
 		{
-			if (enabled) sys.Enable(); else sys.Disable();
+			if (enabled)
+				sys.Enable();
+			else
+				sys.Disable();
 		}
 		return enabled != was;
 	}
@@ -279,10 +291,10 @@ namespace
 		auto& particles = world.GetResourceMut<Particles>();
 		auto& attractors = world.GetResourceMut<Attractors>();
 		const auto& window = *world.GetResource<Flux::WindowResource>().Resource;
-		const auto& io = world.GetResource<Glyph::ImGuiIOState>();
+		const Glyph::ImGuiIOState* io = world.TryGetResource<Glyph::ImGuiIOState>();
 
-		float w = float(window.GetProps().Width);
-		float h = float(window.GetProps().Height);
+		float w = static_cast<float>(window.GetProps().Width);
+		float h = static_cast<float>(window.GetProps().Height);
 
 		glm::vec2 ndc = ScreenToNdc(input.Mouse.X, input.Mouse.Y, w, h);
 		rt.CursorNdc = ndc;
@@ -291,7 +303,7 @@ namespace
 		float dt = res.DeltaTime().GetSeconds();
 
 		// Keyboard — only if ImGui isn't capturing it
-		if (!io.WantsCaptureKeyboard)
+		if (!io || !io->WantsCaptureKeyboard)
 		{
 			if (input.Keyboard.Pressed(Flux::Key::P) || input.Keyboard.Pressed(Flux::Key::Space))
 				rt.Paused = !rt.Paused;
@@ -302,7 +314,7 @@ namespace
 		}
 
 		// Mouse — only if ImGui isn't capturing it
-		if (!io.WantsCaptureMouse && rt.CursorInWindow)
+		if (!io || !io->WantsCaptureMouse && rt.CursorInWindow)
 		{
 			if (input.Mouse.Pressed(Flux::Mouse::ButtonLeft))
 			{
@@ -316,8 +328,8 @@ namespace
 			if (rt.DragSpawning && input.Mouse.Down(Flux::Mouse::ButtonLeft))
 			{
 				rt.DragSpawnAccum += params.DragSpawnRate * dt;
-				int n = int(rt.DragSpawnAccum);
-				rt.DragSpawnAccum -= float(n);
+				int n = static_cast<int>(rt.DragSpawnAccum);
+				rt.DragSpawnAccum -= static_cast<float>(n);
 				glm::vec2 baseVel{0.0f};
 				if (rt.HasLastMouse)
 					baseVel = (ndc - rt.LastMouseNdc) / std::max(dt, 0.001f) * 0.25f;
@@ -375,7 +387,8 @@ namespace
 	{
 		auto world = res.World();
 		auto& rt = world.GetResourceMut<SimRuntime>();
-		if (rt.Paused) return;
+		if (rt.Paused)
+			return;
 
 		const auto& params = world.GetResource<SimParams>();
 		auto& particles = world.GetResourceMut<Particles>();
@@ -401,18 +414,38 @@ namespace
 			if (params.WrapBounds)
 			{
 				float e = params.BoundExtent;
-				if (p.Pos.x < -e) p.Pos.x += 2.0f * e;
-				if (p.Pos.x > e)  p.Pos.x -= 2.0f * e;
-				if (p.Pos.y < -e) p.Pos.y += 2.0f * e;
-				if (p.Pos.y > e)  p.Pos.y -= 2.0f * e;
+				if (p.Pos.x < -e)
+					p.Pos.x += 2.0f * e;
+				if (p.Pos.x > e)
+					p.Pos.x -= 2.0f * e;
+				if (p.Pos.y < -e)
+					p.Pos.y += 2.0f * e;
+				if (p.Pos.y > e)
+					p.Pos.y -= 2.0f * e;
 			}
 			else if (params.BounceBounds)
 			{
 				float e = params.BoundExtent;
-				if (p.Pos.x < -e) { p.Pos.x = -e; p.Vel.x = -p.Vel.x * params.Restitution; }
-				if (p.Pos.x > e)  { p.Pos.x = e;  p.Vel.x = -p.Vel.x * params.Restitution; }
-				if (p.Pos.y < -e) { p.Pos.y = -e; p.Vel.y = -p.Vel.y * params.Restitution; }
-				if (p.Pos.y > e)  { p.Pos.y = e;  p.Vel.y = -p.Vel.y * params.Restitution; }
+				if (p.Pos.x < -e)
+				{
+					p.Pos.x = -e;
+					p.Vel.x = -p.Vel.x * params.Restitution;
+				}
+				if (p.Pos.x > e)
+				{
+					p.Pos.x = e;
+					p.Vel.x = -p.Vel.x * params.Restitution;
+				}
+				if (p.Pos.y < -e)
+				{
+					p.Pos.y = -e;
+					p.Vel.y = -p.Vel.y * params.Restitution;
+				}
+				if (p.Pos.y > e)
+				{
+					p.Pos.y = e;
+					p.Vel.y = -p.Vel.y * params.Restitution;
+				}
 			}
 		}
 	}
@@ -421,13 +454,15 @@ namespace
 	{
 		auto world = res.World();
 		auto& rt = world.GetResourceMut<SimRuntime>();
-		if (rt.Paused) return;
+		if (rt.Paused)
+			return;
 
 		const auto& params = world.GetResource<SimParams>();
 		const auto& attractors = world.GetResource<Attractors>();
 		auto& particles = world.GetResourceMut<Particles>();
 
-		if (attractors.Items.empty()) return;
+		if (attractors.Items.empty())
+			return;
 
 		float dt = res.DeltaTime().GetSeconds() * rt.DtScale;
 		float eps2 = params.AttractorEpsilon * params.AttractorEpsilon;
@@ -440,11 +475,13 @@ namespace
 				glm::vec2 d = a.Pos - p.Pos;
 				float d2 = d.x * d.x + d.y * d.y;
 				float dist = std::sqrt(d2 + eps2);
-				if (dist > a.Radius) continue;
+				if (dist > a.Radius)
+					continue;
 
 				float falloff = 1.0f - (dist / a.Radius);
 				float mag = a.Strength * falloff * falloff / (dist + params.AttractorEpsilon);
-				if (a.Repel) mag = -mag;
+				if (a.Repel)
+					mag = -mag;
 				p.Vel += (d / dist) * mag * dt;
 			}
 		}
@@ -454,10 +491,12 @@ namespace
 	{
 		auto world = res.World();
 		auto& rt = world.GetResourceMut<SimRuntime>();
-		if (rt.Paused) return;
+		if (rt.Paused)
+			return;
 
 		const auto& params = world.GetResource<SimParams>();
-		if (std::fabs(params.SwirlStrength) < 1e-5f) return;
+		if (std::fabs(params.SwirlStrength) < 1e-5f)
+			return;
 
 		auto& particles = world.GetResourceMut<Particles>();
 		float dt = res.DeltaTime().GetSeconds() * rt.DtScale;
@@ -467,7 +506,8 @@ namespace
 		{
 			Particle& p = particles.Items[i];
 			float d2 = p.Pos.x * p.Pos.x + p.Pos.y * p.Pos.y;
-			if (d2 > r2) continue;
+			if (d2 > r2)
+				continue;
 			float falloff = 1.0f - std::sqrt(d2) / params.SwirlRadius;
 			// Tangent (perpendicular to position)
 			glm::vec2 tang{-p.Pos.y, p.Pos.x};
@@ -479,7 +519,8 @@ namespace
 	{
 		auto world = res.World();
 		auto& rt = world.GetResourceMut<SimRuntime>();
-		if (rt.Paused) return;
+		if (rt.Paused)
+			return;
 
 		auto& particles = world.GetResourceMut<Particles>();
 		float dt = res.DeltaTime().GetSeconds() * rt.DtScale;
@@ -505,7 +546,8 @@ namespace
 	{
 		auto world = res.World();
 		auto& rt = world.GetResourceMut<SimRuntime>();
-		if (rt.Paused) return;
+		if (rt.Paused)
+			return;
 
 		const auto& params = world.GetResource<SimParams>();
 		auto& trails = world.GetResourceMut<Trails>();
@@ -523,20 +565,24 @@ namespace
 		{
 			if (trails.Items[i].Age < trails.Items[i].Lifetime)
 			{
-				if (write != i) trails.Items[write] = trails.Items[i];
+				if (write != i)
+					trails.Items[write] = trails.Items[i];
 				++write;
 			}
 		}
 		trails.Count = write;
 
-		if (!params.TrailsEnabled) return;
-		if (particles.AliveCount == 0) return;
+		if (!params.TrailsEnabled)
+			return;
+		if (particles.AliveCount == 0)
+			return;
 
 		// Sample rate accumulator
 		rt.TrailEmitAccum += params.TrailSampleRate * dt;
-		int samplesPerParticle = int(rt.TrailEmitAccum);
-		if (samplesPerParticle <= 0) return;
-		rt.TrailEmitAccum -= float(samplesPerParticle);
+		int samplesPerParticle = static_cast<int>(rt.TrailEmitAccum);
+		if (samplesPerParticle <= 0)
+			return;
+		rt.TrailEmitAccum -= static_cast<float>(samplesPerParticle);
 		samplesPerParticle = std::min(samplesPerParticle, 3);
 
 		if (trails.Items.size() < Trails::MaxPoints)
@@ -623,7 +669,8 @@ namespace
 		{
 			const TrailPoint& tp = trails.Items[i];
 			float t = tp.Age / std::max(tp.Lifetime, 1e-4f);
-			if (t >= 1.0f) continue;
+			if (t >= 1.0f)
+				continue;
 			float alpha = (1.0f - t);
 			alpha = alpha * alpha * tp.Color.a;
 			float size = tp.Size * (1.0f - 0.5f * t);
@@ -644,7 +691,7 @@ namespace
 			const Particle& p = particles.Items[i];
 			float t = p.Age / std::max(p.Lifetime, 1e-4f);
 			// Pulse size + fade out with age
-			float pulse = 0.85f + 0.15f * std::sin(rt.Time * 6.0f + float(i) * 0.3f);
+			float pulse = 0.85f + 0.15f * std::sin(rt.Time * 6.0f + static_cast<float>(i) * 0.3f);
 			float alpha = std::clamp(1.0f - t * t, 0.0f, 1.0f);
 			float size = p.Size * pulse * (0.5f + 0.5f * (1.0f - t));
 			glm::vec4 color{p.Color.r, p.Color.g, p.Color.b, alpha};
@@ -656,7 +703,8 @@ namespace
 	{
 		auto world = res.World();
 		const auto& params = world.GetResource<SimParams>();
-		if (!params.ShowAttractorGizmos) return;
+		if (!params.ShowAttractorGizmos)
+			return;
 
 		auto& renderer = world.GetResourceMut<Lumen::Renderer2D>();
 		const auto& attractors = world.GetResource<Attractors>();
@@ -665,8 +713,8 @@ namespace
 		for (const auto& a : attractors.Items)
 		{
 			glm::vec4 core = a.Repel
-				? glm::vec4{1.0f, 0.3f, 0.3f, 0.9f}
-				: glm::vec4{0.3f, 0.8f, 1.0f, 0.9f};
+				                 ? glm::vec4{1.0f, 0.3f, 0.3f, 0.9f}
+				                 : glm::vec4{0.3f, 0.8f, 1.0f, 0.9f};
 
 			// Core dot
 			float pulse = 0.8f + 0.2f * std::sin(rt.Time * 4.0f);
@@ -696,9 +744,11 @@ namespace
 		const auto& stats = world.GetResource<Lumen::Renderer2D::Stats>();
 
 		// --- Stats -----------------------------------------------------
-		ImGui::Begin("Glimmer — Stats");
+		ImGui::Begin("Stats");
 		ImGui::Text("Draw Calls: %" PRIu32, stats.DrawCalls);
 		ImGui::Text("Quads:      %" PRIu32, stats.QuadCount);
+		ImGui::Text("Frame Time: %.2f ms", res.DeltaTime().GetMilliseconds());
+		ImGui::Text("FrameRate:  %.1f FPS", 1.0f / res.DeltaTime().GetSeconds());
 		ImGui::Separator();
 		ImGui::Text("Time:       %.2f s", rt.Time);
 		ImGui::Text("Particles:  %zu / %zu", particles.AliveCount, Particles::MaxAlive);
@@ -709,32 +759,39 @@ namespace
 		ImGui::End();
 
 		// --- Systems ---------------------------------------------------
-		ImGui::Begin("Glimmer — Systems");
+		ImGui::Begin("Systems");
 		ImGui::TextDisabled("Toggle individual systems");
 		ImGui::Separator();
-		SystemToggle("SimInput",          sys.SimInput);
-		SystemToggle("ClearColorAnim",    sys.ClearColorAnim);
-		SystemToggle("Physics",           sys.Physics);
-		SystemToggle("AttractorForce",    sys.AttractorForce);
-		SystemToggle("Swirl",             sys.Swirl);
-		SystemToggle("Lifetime",          sys.Lifetime);
-		SystemToggle("TrailEmit",         sys.TrailEmit);
+		SystemToggle("SimInput", sys.SimInput);
+		SystemToggle("ClearColorAnim", sys.ClearColorAnim);
+		SystemToggle("Physics", sys.Physics);
+		SystemToggle("AttractorForce", sys.AttractorForce);
+		SystemToggle("Swirl", sys.Swirl);
+		SystemToggle("Lifetime", sys.Lifetime);
+		SystemToggle("TrailEmit", sys.TrailEmit);
 		ImGui::Separator();
-		SystemToggle("RenderBackdrop",    sys.RenderBackdrop);
-		SystemToggle("RenderTrails",      sys.RenderTrails);
-		SystemToggle("RenderParticles",   sys.RenderParticles);
-		SystemToggle("RenderAttractors",  sys.RenderAttractors);
+		SystemToggle("RenderBackdrop", sys.RenderBackdrop);
+		SystemToggle("RenderTrails", sys.RenderTrails);
+		SystemToggle("RenderParticles", sys.RenderParticles);
+		SystemToggle("RenderAttractors", sys.RenderAttractors);
 		ImGui::End();
 
 		// --- Controls --------------------------------------------------
-		ImGui::Begin("Glimmer — Controls");
+		ImGui::Begin("Controls");
 
-		if (ImGui::Button(rt.Paused ? "Resume" : "Pause")) rt.Paused = !rt.Paused;
+		if (ImGui::Button(rt.Paused ? "Resume" : "Pause"))
+			rt.Paused = !rt.Paused;
 		ImGui::SameLine();
-		if (ImGui::Button("Clear Particles")) particles.AliveCount = 0;
+		if (ImGui::Button("Clear Particles"))
+			particles.AliveCount = 0;
 		ImGui::SameLine();
-		if (ImGui::Button("Clear Attractors")) attractors.Items.clear();
-		if (ImGui::Button("Clear Trails")) { trails.Count = 0; trails.Head = 0; }
+		if (ImGui::Button("Clear Attractors"))
+			attractors.Items.clear();
+		if (ImGui::Button("Clear Trails"))
+		{
+			trails.Count = 0;
+			trails.Head = 0;
+		}
 		ImGui::SameLine();
 		if (ImGui::Button("Burst at Center"))
 			SpawnBurst(particles, params, rt, {0.0f, 0.0f}, params.BurstCount * 3);
@@ -793,12 +850,18 @@ namespace
 			ImGui::Checkbox("Show Gizmos", &params.ShowAttractorGizmos);
 
 			int idx = 0;
-			for (auto it = attractors.Items.begin(); it != attractors.Items.end(); )
+			for (auto it = attractors.Items.begin(); it != attractors.Items.end();)
 			{
 				ImGui::PushID(idx);
 				ImGui::Text("[%d] %s", idx, it->Repel ? "Repel" : "Attract");
 				ImGui::SameLine();
-				if (ImGui::SmallButton("X")) { it = attractors.Items.erase(it); ImGui::PopID(); ++idx; continue; }
+				if (ImGui::SmallButton("X"))
+				{
+					it = attractors.Items.erase(it);
+					ImGui::PopID();
+					++idx;
+					continue;
+				}
 				ImGui::SameLine();
 				if (ImGui::SmallButton(it->Repel ? "-> Attract" : "-> Repel"))
 					it->Repel = !it->Repel;
@@ -830,7 +893,7 @@ namespace
 		ImGui::End();
 
 		// --- Help ------------------------------------------------------
-		ImGui::Begin("Glimmer — Help");
+		ImGui::Begin("Help");
 		ImGui::TextWrapped("LMB: burst spawn particles (hold to stream)");
 		ImGui::TextWrapped("RMB: place attractor");
 		ImGui::TextWrapped("Shift+RMB: place repeller");
@@ -947,19 +1010,20 @@ void Glimmer::Build(Core::Application& app)
 		 .Write<SimParams>().Write<SimRuntime>()
 		 .Write<Particles>().Write<Trails>().Write<Attractors>();
 		handles.UI = b.Run(UISystem);
+		if (!m_UseImGui)
+			handles.UI.Disable();
 	}
 
 	world.SetResource<SystemHandles>(std::move(handles));
 }
 
-void Glimmer::Cleanup(Core::Application&)
-{
-}
+void Glimmer::Cleanup(Core::Application&) {}
 
 void Glimmer::AddDependencies(Core::DependencyList& dependencies)
 {
 	dependencies.Require<Flux::WindowPlugin>();
 	dependencies.Require<Lumen::RendererPlugin>();
 	dependencies.Require<Lumen::Renderer2DPlugin>();
-	dependencies.Require<Glyph::ImGuiPlugin>();
+	if (m_UseImGui)
+		dependencies.Require<Glyph::ImGuiPlugin>();
 }

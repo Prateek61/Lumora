@@ -4,13 +4,19 @@
 
 using namespace Lumora;
 
+struct Data
+{
+	std::string Message;
+};
+VISITABLE_STRUCT(Data, Message);
+
 class Spark : public Core::Plugin
 {
 public:
 	Spark() = default;
 	
 	void Build(Core::Application& app) override;
-
+	void Finish(Core::Application& app) override;
 	void Cleanup(Core::Application& app) override;
 
 	void AddDependencies(Core::DependencyList& dependencies) override;
@@ -21,6 +27,5 @@ public:
 	}
 
 private:
-	Aether::System m_UpdateSystem;
-	Aether::System m_RenderSystem;
+	Data m_Data;
 };

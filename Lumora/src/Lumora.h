@@ -35,3 +35,12 @@
 
 // UI (Glyph)
 #include "Lumora/Glyph/ImGuiPlugin.h"
+
+// Scripting (Rune)
+#include "Lumora/Rune/Serialization/Reflect.h"
+#include "Lumora/Rune/Serialization/Serialize.h"
+#include "Lumora/Rune/LuaSerializer.h"
+#include "Lumora/Rune/LuaSerializerPlugin.h"
+
+// Utils
+#include "Lumora/Utilities/TypeMeta.h"
