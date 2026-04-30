@@ -4,6 +4,8 @@
 #include "Lumora/Core/Application.h"
 #include "Lumora/Flux/Window.h"
 #include "Lumora/Flux/Input.h"
+#include "Lumora/Flux/Events.h"
+#include "Lumora/Core/Events.h"
 
 #include <GLFW/glfw3.h>
 
@@ -65,19 +67,21 @@ namespace
 	{
 		auto& windowRes = world.GetResourceMut<WindowResource>();
 		windowRes.Resource->UpdateSize(event.Width, event.Height);
+		world.GetResourceMut<Core::Events<WindowResize>>().Send({event.Width, event.Height});
 	}
 
 	void ProcessEvent(const Raw::WindowClose&, KeyboardState&, MouseState&,
 	                  Aether::World& world)
 	{
 		LM_CORE_INFO("Window Close Event Received. Quitting Application.");
+		world.GetResourceMut<Core::Events<WindowClose>>().Send({});
 		world.Quit();
 	}
 
-	void ProcessEvent(const Raw::WindowFocus&, KeyboardState&, MouseState&,
-	                  Aether::World&)
+	void ProcessEvent(const Raw::WindowFocus& event, KeyboardState&, MouseState&,
+	                  Aether::World& world)
 	{
-		// For now, we ignore focus events. They can be used to pause the game when the window is unfocused, for example.
+		world.GetResourceMut<Core::Events<WindowFocus>>().Send(WindowFocus{.Focused = event.Focused});
 	}
 
 	void ProcessEvent(const Raw::CharTyped&, KeyboardState&, MouseState&, Aether::World&)
@@ -112,7 +116,10 @@ namespace Lumora::Flux
 		     .member("ScrollX", &MouseState::ScrollX)
 		     .member("ScrollY", &MouseState::ScrollY);
 
-		// TODO: Setup Events :Resize, Close, Focus etc.
+		// Setup Events :Resize, Close, Focus etc.
+		world.SetResource(Core::Events<WindowResize>{});
+		world.SetResource(Core::Events<WindowClose>{});
+		world.SetResource(Core::Events<WindowFocus>{});
 
 		// Set up Callback
 		auto callbackFn = [this](const Raw::RawEvent& event)
@@ -136,10 +143,16 @@ namespace Lumora::Flux
 			auto& window_res = world.GetResourceMut<WindowResource>();
 			auto& keyboard_state = world.GetResourceMut<KeyboardState>();
 			auto& mouse_state = world.GetResourceMut<MouseState>();
+			auto& window_resize_event = world.GetResourceMut<Core::Events<WindowResize>>();
+			auto& window_close_event = world.GetResourceMut<Core::Events<WindowClose>>();
+			auto& window_focus_event = world.GetResourceMut<Core::Events<WindowFocus>>();
 
-			// 2. Reset per-frame input state
+			// 2. Reset per-frame input state and Event buffer
 			keyboard_state.ResetFrame();
 			mouse_state.ResetFrame();
+			window_resize_event.Clear();
+			window_close_event.Clear();
+			window_focus_event.Clear();
 
 			// 3. Poll GLFW events (this will trigger our callbacks and fill the event buffer)
 			window_res.Resource->PollEvents();

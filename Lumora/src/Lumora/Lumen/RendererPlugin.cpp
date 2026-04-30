@@ -4,7 +4,8 @@
 #include "Lumora/Flux/WindowPlugin.h"
 #include "Lumora/Flux/Window.h"
 #include "Lumora/Core/Application.h"
-#
+#include "Lumora/Core/Events.h"
+#include "Lumora/Flux/Events.h"
 
 #include <GLFW/glfw3.h>
 
@@ -16,6 +17,13 @@ namespace
 
 		auto& deviceResource = res.World().GetResourceMut<Lumora::Lumen::RenderDeviceResource>();
 		LM_CORE_ASSERT(deviceResource.Resource != nullptr, "RenderDeviceResource is null");
+
+		// Resize event
+		auto& window_resize_event = res.World().GetResource<Lumora::Core::Events<Lumora::Flux::WindowResize>>();
+		for (const auto& event : window_resize_event)
+		{
+			deviceResource.Resource->OnResize(event.Width, event.Height);
+		}
 
 		{
 			LM_PROFILE_SCOPE("RenderDevice::BeginFrame");
