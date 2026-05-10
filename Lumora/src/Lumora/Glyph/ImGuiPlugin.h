@@ -3,7 +3,7 @@
 #include "Lumora/Core/Plugin.h"
 #include "Lumora/Core/SmartPointers.h"
 #include "Lumora/Glyph/ImGuiBackend.h"
-#include "Lumora/Rune/Serialization/Reflect.h"
+#include "Lumora/Rune/Reflect.h"
 
 struct ImGuiContext;
 
@@ -46,4 +46,4 @@ namespace Lumora::Glyph
 	};
 }
 
-VISITABLE_STRUCT(Lumora::Glyph::ImGuiSettings, DockingEnabled, ViewportsEnabled, ShowDemoWindow, DockSpaceOverMainViewport);
+LM_REFLECTABLE(Lumora::Glyph::ImGuiSettings, DockingEnabled, ViewportsEnabled, ShowDemoWindow, DockSpaceOverMainViewport);

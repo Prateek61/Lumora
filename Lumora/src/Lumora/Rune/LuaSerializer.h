@@ -38,6 +38,8 @@ namespace Lumora::Rune
 		Ref<void> DeserializeFromLuaScript(const std::string& typeName, const std::string_view& script);
 		std::optional<std::string> SerializeToScript(const std::string& typeName, const void* data);
 
+		WriteLock<RWMutex> LockLuaState();
+
 	private:
 		RWMutex m_TypeRegistryMutex;
 		sol::state m_Lua;

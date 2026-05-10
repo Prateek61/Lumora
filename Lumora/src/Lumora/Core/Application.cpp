@@ -112,7 +112,6 @@ namespace Lumora::Core
 
 			const auto current_time = std::chrono::steady_clock::now();
 			float delta_seconds = std::chrono::duration<float>(current_time - last_time).count();
-			delta_seconds = std::min(delta_seconds, 0.1f); // Clamp to avoid large jumps
 			last_time = current_time;
 
 			m_World.GetResourceMut<DeltaTime>() = DeltaTime{delta_seconds};

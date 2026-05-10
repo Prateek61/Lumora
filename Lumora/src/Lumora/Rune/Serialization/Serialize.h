@@ -2,7 +2,7 @@
 
 #include "Lumora/Rune/Serialization/Concepts.h"
 #include "Lumora/Rune/Lua/LuaBase.h"
-#include "Lumora/Rune/Serialization/Reflect.h"
+#include "Lumora/Rune/Reflect.h"
 
 namespace Lumora::Rune::Serialization
 {
@@ -158,8 +158,6 @@ namespace Lumora::Rune::Serialization
 	template <MapLike M>
 	void ToLuaString(const M& map, LuaScriptBackend& backend)
 	{
-		using KeyType = typename M::key_type;
-		using ValueType = typename M::mapped_type;
 		backend.Scope();
 		for (const auto& [key, value] : map)
 		{

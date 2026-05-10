@@ -6,6 +6,7 @@ namespace Lumora::Aether
 {
 	struct Entity
 	{
+		Entity() = default;
 		explicit Entity(const flecs::entity& e): m_Entity(e) {}
 		explicit Entity(flecs::entity&& e)
 		    : m_Entity(std::move(e)) {}

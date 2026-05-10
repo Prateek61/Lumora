@@ -37,7 +37,7 @@
 #include "Lumora/Glyph/ImGuiPlugin.h"
 
 // Scripting (Rune)
-#include "Lumora/Rune/Serialization/Reflect.h"
+#include "Lumora/Rune/Reflect.h"
 #include "Lumora/Rune/Serialization/Serialize.h"
 #include "Lumora/Rune/LuaSerializer.h"
 #include "Lumora/Rune/LuaSerializerPlugin.h"

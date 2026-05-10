@@ -8,7 +8,7 @@ struct Data
 {
 	std::string Message;
 };
-VISITABLE_STRUCT(Data, Message);
+LM_REFLECTABLE(Data, Message);
 
 class Spark : public Core::Plugin
 {

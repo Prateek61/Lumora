@@ -76,6 +76,11 @@ namespace Lumora::Rune
 		return type_info.ToLuaScriptFunc(data);
 	}
 
+	WriteLock<RWMutex> LuaSerializer::LockLuaState()
+	{
+		return WriteLock(LuaStateMutex);
+	}
+
 	std::optional<LuaSerializer::TypeInfo> LuaSerializer::GetTypeInfo(const std::string& typeName)
 	{
 		LM_PROFILE_FUNCTION();

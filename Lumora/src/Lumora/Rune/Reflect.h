@@ -2,6 +2,7 @@
 
 #include <utility>
 #include <visit_struct/visit_struct.hpp>
+#include "Lumora/Core/Defines.h"
 
 namespace Lumora::Rune::Reflect
 {
@@ -19,3 +20,6 @@ namespace Lumora::Rune::Reflect
 		visit_struct::for_each(obj, std::forward<V>(visitor));
 	}
 }
+
+#define LM_REFLECTABLE(...) \
+	EXPAND_MACRO(VISITABLE_STRUCT(__VA_ARGS__))
