@@ -52,13 +52,12 @@ namespace Lumora::Atlas
 		const T* TryGet() const { return Entity.TryGet<T>(); }
 		T* TryGet() { return Entity.TryGetMut<T>(); }
 
-		template<Predicate<T> F>
-		bool operator&&(F&& predicate);
+		template<typename F>
+		void operator &&(F&& predicate);
 
 		bool IsValid() const { return Id.IsValid() && Entity.IsValid(); }
 		bool IsLoaded() const { return IsValid() && Entity.Has<T>(); }
 
-		explicit operator bool() const { return IsValid(); }
 		constexpr bool operator==(const AssetHandle& other) const = default;
 	};
 
@@ -85,18 +84,18 @@ namespace Lumora::Atlas
 namespace Lumora::Atlas
 {
 	template<typename T>
-	template<Predicate<T> F>
-	bool AssetHandle<T>::operator&&(F&& predicate)
+	template<typename F>
+	void AssetHandle<T>::operator&&(F&& predicate)
 	{
 		if (!IsValid())
-			return false;
+			return;
 		
-		T* ptr = TryGetMut();
+		T* ptr = Entity.TryGetMut<T>();
 		if (!ptr)
-			return false;
+			return;
 
 		std::forward<F>(predicate)(Get());
-		return true;
+		return;
 	}
 }
 

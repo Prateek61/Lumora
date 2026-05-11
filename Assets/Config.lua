@@ -12,6 +12,7 @@ return {
         DockSpaceOverMainViewport = true,
         IniFilename = "ImGui.local.ini",
     },
-    UseGlimmer = true,
-    GlimmerImGui = true
+    UseGlimmer = false,
+    GlimmerImGui = true,
+    DiagnosticPlugin = true,
 }

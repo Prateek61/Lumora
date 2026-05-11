@@ -24,6 +24,8 @@ namespace Lumora::Aether
 		// Modifiers
 		template <typename T, typename... Args>
 		Entity& Set(Args&&... args) { m_Entity.set<T>(std::forward<Args>(args)...); return *this; }
+		template <typename T>
+		Entity& Set(T&& val) { m_Entity.set(val); return *this; }
 		template <typename T, typename... Args>
 		Entity& Emplace(Args&&... args) { m_Entity.emplace<T>(std::forward<Args>(args)...); return *this; }
 		template <typename T>

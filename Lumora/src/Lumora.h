@@ -42,5 +42,12 @@
 #include "Lumora/Rune/LuaSerializer.h"
 #include "Lumora/Rune/LuaSerializerPlugin.h"
 
+// Asset (Atlas)
+#include "Lumora/Atlas/AssetCommon.h"
+#include "Lumora/Atlas/AssetLoader.h"
+#include "Lumora/Atlas/AssetServer.h"
+#include "Lumora/Atlas/AssetWatcher.h"
+#include "Lumora/Atlas/AssetPlugin.h"
+
 // Utils
 #include "Lumora/Utilities/TypeMeta.h"

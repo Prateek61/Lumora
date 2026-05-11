@@ -1,6 +1,7 @@
 #include "Lumora.h"
 #include "Glimmer.h"
 #include "Spark.h"
+#include "Text.h"
 
 using namespace Lumora;
 
@@ -10,8 +11,9 @@ struct Config
 	Glyph::ImGuiSettings ImGuiSettings;
 	bool UseGlimmer = true;
 	bool GlimmerImGui = true;
+	bool DiagnosticPlugin = false;
 };
-VISITABLE_STRUCT(Config, WindowSettings, ImGuiSettings, UseGlimmer, GlimmerImGui);
+LM_REFLECTABLE(Config, WindowSettings, ImGuiSettings, UseGlimmer, GlimmerImGui, DiagnosticPlugin);
 
 int main()
 {
@@ -32,13 +34,15 @@ int main()
 	app.AddPlugin<Glyph::ImGuiPlugin>(config.ImGuiSettings);
 	app.AddPlugin<Lumen::Renderer2DPlugin>();
 	app.AddPlugin<Rune::LuaSerializerPlugin>();
+	app.AddPlugin<Atlas::AssetPlugin>(Atlas::AssetSettings{.AssetRoot = "../Assets/", .HotReload = true});
 
 	if (config.UseGlimmer)
 		app.AddPlugin<Glimmer>(config.GlimmerImGui);
 	else
 		app.AddPlugin<Spark>();
 
-	app.AddPlugin<Aether::FlecsDiagnosticPlugin>();
+	if (config.DiagnosticPlugin)
+		app.AddPlugin<Aether::FlecsDiagnosticPlugin>();
 
 	app.Run();
 }

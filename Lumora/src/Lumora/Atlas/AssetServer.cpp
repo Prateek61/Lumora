@@ -145,7 +145,7 @@ namespace Lumora::Atlas
 				auto lock = ReadLock(m_TypeRegistryMutex);
 				if (!m_TypeNameByExtension.contains(ext))
 				{
-					LM_CORE_WARN("No loader registered for extension '{}'; skipping asset '{}'", ext, p.string());
+					LM_CORE_DEBUG("No loader registered for extension '{}'; skipping asset '{}'", ext, p.string());
 					continue;
 				}
 
@@ -232,6 +232,17 @@ namespace Lumora::Atlas
 			
 			RunLoad(it->second);
 		}
+	}
+
+	std::vector<AssetId> AssetServer::LookupByPath(const std::filesystem::path& canonicalPath) const
+	{
+		LM_PROFILE_FUNCTION();
+		
+		auto lock = ReadLock(m_AssetRegistryMutex);
+		auto it = m_PathSubscribers.find(canonicalPath.string());
+		if (it == m_PathSubscribers.end())
+			return {};
+		return it->second;
 	}
 
 	Aether::Entity AssetServer::CreateAssetEntity(const AssetMeta& meta)

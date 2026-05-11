@@ -50,5 +50,11 @@ namespace Lumora
 		{
 			return Resource.get();
 		}
+
+		// Override the * operator
+		T& operator*()
+		{
+			return *Resource; 
+		}
 	};
 }
