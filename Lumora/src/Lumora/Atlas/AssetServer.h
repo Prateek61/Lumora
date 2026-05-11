@@ -181,7 +181,7 @@ namespace Lumora::Atlas
 		}
 
 		auto entity = CreateAssetEntity(meta);
-		entity.Raw().set(std::forward<T>(value));
+		entity.Set(std::forward<T>(value));
 
 		AssetEntry entry;
 		entry.Id = id;
@@ -227,7 +227,7 @@ namespace Lumora::Atlas
 		m_DefaultAssets[typeid(T)] = handle.Id;
 
 		Aether::Entity e = handle.Entity;
-		if (auto* meta = e.Raw().try_get_mut<AssetMeta>())
+		if (auto* meta = e.TryGetMut<AssetMeta>())
 			meta->IsDefault = true;
 	}
 

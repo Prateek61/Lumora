@@ -78,7 +78,7 @@ namespace Lumora::Atlas
 				if (!finalized)
 					return false;
 
-				entity.Raw().set(std::move(*finalized));
+				entity.Set(std::move(*finalized));
 				return true;
 			};
 

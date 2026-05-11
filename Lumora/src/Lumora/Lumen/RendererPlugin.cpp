@@ -7,8 +7,6 @@
 #include "Lumora/Core/Events.h"
 #include "Lumora/Flux/Events.h"
 
-#include <GLFW/glfw3.h>
-
 namespace
 {
 	void BeginFrame(const Lumora::Aether::QueryRes& res)

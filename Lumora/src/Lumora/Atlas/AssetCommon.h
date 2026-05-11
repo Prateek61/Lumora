@@ -7,9 +7,13 @@
 #include <cstdint>
 #include <string_view>
 #include <typeindex>
+#include <type_traits>
 
 namespace Lumora::Atlas
 {
+	template <typename T, typename F>
+	concept Predicate = std::is_invocable_v<F, T&>;
+
 	struct AssetMetaFile
 	{
 		std::string Name;
@@ -43,8 +47,18 @@ namespace Lumora::Atlas
 		AssetId Id;
 		Aether::Entity Entity;
 
-		constexpr bool IsValid() const { return Id.IsValid(); }
-		constexpr explicit operator bool() const { return IsValid(); }
+		const T& Get() const { return Entity.Get<T>(); }
+		T& Get() { return Entity.GetMut<T>(); }
+		const T* TryGet() const { return Entity.TryGet<T>(); }
+		T* TryGet() { return Entity.TryGetMut<T>(); }
+
+		template<Predicate<T> F>
+		bool operator&&(F&& predicate);
+
+		bool IsValid() const { return Id.IsValid() && Entity.IsValid(); }
+		bool IsLoaded() const { return IsValid() && Entity.Has<T>(); }
+
+		explicit operator bool() const { return IsValid(); }
 		constexpr bool operator==(const AssetHandle& other) const = default;
 	};
 
@@ -66,6 +80,24 @@ namespace Lumora::Atlas
 	};
 
 	struct AssetTag{};
+}
+
+namespace Lumora::Atlas
+{
+	template<typename T>
+	template<Predicate<T> F>
+	bool AssetHandle<T>::operator&&(F&& predicate)
+	{
+		if (!IsValid())
+			return false;
+		
+		T* ptr = TryGetMut();
+		if (!ptr)
+			return false;
+
+		std::forward<F>(predicate)(Get());
+		return true;
+	}
 }
 
 namespace std

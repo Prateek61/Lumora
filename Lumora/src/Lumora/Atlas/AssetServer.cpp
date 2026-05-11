@@ -15,9 +15,9 @@ namespace Lumora::Atlas
 	{
 		LM_PROFILE_FUNCTION();
 
-		if (m_AssetsRootEntity.Raw().is_valid())
+		if (m_AssetsRootEntity.IsValid())
 		{
-			m_AssetsRootEntity.Raw().destruct();
+			m_AssetsRootEntity.Destruct();
 		}
 	}
 
@@ -82,9 +82,9 @@ namespace Lumora::Atlas
 			return false;
 
 		auto entity = it->second.Entity;
-		if (entity.Raw().is_valid())
+		if (entity.IsValid())
 		{
-			entity.Raw().destruct();
+			entity.Destruct();
 		}
 
 		// Remove name -> id mapping
@@ -224,7 +224,7 @@ namespace Lumora::Atlas
 				continue;
 			}
 
-			if (!it->second.Entity.Raw().is_valid())
+			if (!it->second.Entity.IsValid())
 			{
 				LM_CORE_ERROR("Asset with id {} has invalid entity; cannot reload", id.Id);
 				continue;
@@ -238,9 +238,10 @@ namespace Lumora::Atlas
 	{
 		LM_PROFILE_FUNCTION();
 
-		Aether::Entity entity = m_World.CreateEntity();
-		auto _ = entity.Raw().child_of(m_AssetsRootEntity.Raw())
-		               .add<AssetTag>().set<AssetMeta>(meta);
+		Aether::Entity entity = m_World.CreateEntity()
+									   .ChildOf(m_AssetsRootEntity)
+									   .Add<AssetTag>()
+			                           .Set<AssetMeta>(meta);
 
 		return entity;
 	}
@@ -475,7 +476,7 @@ namespace Lumora::Atlas
 		ctx.PrimaryPath = entry.PrimaryPath;
 		ctx.MetaPath = entry.MetaPath;
 		ctx.Props = entry.PropsBlob;
-		if (auto meta = entry.Entity.Raw().try_get<AssetMeta>())
+		if (auto meta = entry.Entity.TryGet<AssetMeta>())
 		{
 			ctx.Meta = *meta;
 		}

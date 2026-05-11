@@ -1,12 +1,6 @@
 #include "LMPCH.h"
 #include "Phase.h"
 
-namespace
-{
-	template <typename Phase>
-	void AnchorPhase(flecs::world& world, flecs::entity_t after, flecs::entity_t before) {}
-}
-
 namespace Lumora::Aether
 {
 	PhaseBuilder::PhaseBuilder(World& world, Entity phase)
