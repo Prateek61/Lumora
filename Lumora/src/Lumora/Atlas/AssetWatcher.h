@@ -24,7 +24,7 @@ namespace Lumora::Atlas
 		AssetWatcher(const AssetWatcher&) = delete;
 		AssetWatcher& operator=(const AssetWatcher&) = delete;
 
-		void Drain(const std::function<void(std::filesystem::path)>& onChangedCallback);
+		void Drain(const std::function<void(const std::filesystem::path&)>& onChangedCallback);
 
 		const std::filesystem::path& GetRoot() const { return m_Root; }
 

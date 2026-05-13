@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Lumora.h"
+#include "Text.h"
 
 using namespace Lumora;
 
@@ -28,4 +29,5 @@ public:
 
 private:
 	Data m_Data;
+	Atlas::AssetHandle<Text> m_Text;
 };

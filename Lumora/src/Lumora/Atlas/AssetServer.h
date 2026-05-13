@@ -317,10 +317,10 @@ namespace Lumora::Atlas
 			RegisterSingleFile(canonical);
 		}
 
-		// Run loader
-		AssetEntry entry;
+		// Run Loader
+		AssetEntry snapshot;
 		{
-			auto lock = WriteLock(m_AssetRegistryMutex);
+			auto lock = ReadLock(m_AssetRegistryMutex);
 			auto path_it = m_PrimaryByPath.find(canonical.string());
 			if (path_it == m_PrimaryByPath.end())
 			{
@@ -335,10 +335,18 @@ namespace Lumora::Atlas
 				              path_it->second.Id);
 				return {};
 			}
-			entry = entry_it->second;
+			snapshot = entry_it->second;
 		}
 
-		RunLoad(entry);
-		return {entry.Id, entry.Entity};
+		RunLoad(snapshot);
+
+		{
+			auto lock = WriteLock(m_AssetRegistryMutex);
+			auto it = m_AssetsById.find(snapshot.Id);
+			if (it != m_AssetsById.end())
+				it->second.PropsBlob = snapshot.PropsBlob;
+		}
+
+		return AssetHandle<T>{snapshot.Id, snapshot.Entity};
 	}
 }

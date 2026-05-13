@@ -13,10 +13,10 @@ namespace Lumora::Atlas
 		LM_PROFILE_FUNCTION();
 
 		std::error_code ec;
-		m_Root = std::filesystem::canonical(root, ec);
+		m_Root = std::filesystem::weakly_canonical(root, ec);
 		if (ec)
 		{
-			LM_CORE_ERROR("AssetWatcher: failed to canonicalise '{}': {}", m_Root.string(), ec.message());
+			LM_CORE_ERROR("AssetWatcher: failed to canonicalise '{}': {}", root.string(), ec.message());
 			m_Root = root;
 		}
 
@@ -45,7 +45,7 @@ namespace Lumora::Atlas
 
 		m_Watcher.reset();
 	}
-	void AssetWatcher::Drain(const std::function<void(std::filesystem::path)>& onChangedCallback)
+	void AssetWatcher::Drain(const std::function<void(const std::filesystem::path&)>& onChangedCallback)
 	{
 		LM_PROFILE_FUNCTION();
 
@@ -69,7 +69,7 @@ namespace Lumora::Atlas
 			if (!seen.insert(std::move(key)).second)
 				continue;
 
-			onChangedCallback(std::move(p));
+			onChangedCallback(p);
 		}
 	}
 	void AssetWatcher::OnEvent(const std::filesystem::path& relPath, filewatch::Event event)

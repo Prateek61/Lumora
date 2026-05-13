@@ -64,13 +64,13 @@ namespace Lumora::Atlas
 			world.SetResource<AssetWatcherResource>(
 				{CreateScope<AssetWatcher>(m_Settings.AssetRoot)});
 
-			auto drain = world.System("Atlas::WatcherDrain")
+			m_WatcherDrainSystem = world.System("Atlas::WatcherDrain")
 			                  .SetPhase<Aether::Phases::FrameStart>()
 			                  .Run(WatcherDrain);
 		}
 
 		// Pump asset server reloads at the end of the frame, after all changes have been collected.
-		auto pump = world.System("Atlas::AssetServerPump")
+		m_PumpSystem = world.System("Atlas::AssetServerPump")
 		                 .SetPhase<Aether::Phases::PreUpdate>()
 		                 .Run(AssetServerPump);
 	}
@@ -89,6 +89,10 @@ namespace Lumora::Atlas
 		LM_PROFILE_FUNCTION();
 
 		auto& world = app.GetWorld();
+
+		if (m_Settings.HotReload)
+			m_WatcherDrainSystem.Disable();
+		m_PumpSystem.Disable();
 
 		if (auto* w = world.TryGetResourceMut<AssetWatcherResource>())
 		{

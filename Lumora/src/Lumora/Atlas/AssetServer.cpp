@@ -75,26 +75,52 @@ namespace Lumora::Atlas
 	{
 		LM_PROFILE_FUNCTION();
 
-		auto lock = WriteLock(m_AssetRegistryMutex);
+		Aether::Entity entity;
+		{
+			auto lock = ReadLock(m_AssetRegistryMutex);
+			auto it = m_AssetsById.find(id);
+			if (it == m_AssetsById.end())
+				return false;
+			entity = it->second.Entity;
+		}
 
-		auto it = m_AssetsById.find(id);
-		if (it == m_AssetsById.end())
-			return false;
-
-		auto entity = it->second.Entity;
 		if (entity.IsValid())
 		{
 			entity.Destruct();
 		}
 
+		auto lock = WriteLock(m_AssetRegistryMutex);
+
+		auto it = m_AssetsById.find(id);
+		if (it == m_AssetsById.end())
+			return true;
+
 		// Remove name -> id mapping
-		auto name_it = m_AssetIdsByName.find(it->second.MetaFile.Name);
-		if (name_it != m_AssetIdsByName.end())
+		for (auto nit = m_AssetIdsByName.begin(); nit != m_AssetIdsByName.end();)
 		{
-			m_AssetIdsByName.erase(name_it);
+			if (nit->second == id) nit = m_AssetIdsByName.erase(nit);
+			else                   ++nit;
 		}
 
-		// TODO: Handle default asset case
+		for (auto pit = m_PrimaryByPath.begin(); pit != m_PrimaryByPath.end();)
+		{
+			if (pit->second == id) pit = m_PrimaryByPath.erase(pit);
+			else                   ++pit;
+		}
+
+		for (auto pit = m_PathSubscribers.begin(); pit != m_PathSubscribers.end();)
+		{
+			auto& vec = pit->second;
+			vec.erase(std::remove(vec.begin(), vec.end(), id), vec.end());
+			if (vec.empty()) pit = m_PathSubscribers.erase(pit);
+			else             ++pit;
+		}
+
+		for (auto dit = m_DefaultAssets.begin(); dit != m_DefaultAssets.end();)
+		{
+			if (dit->second == id) dit = m_DefaultAssets.erase(dit);
+			else                   ++dit;
+		}
 
 		m_AssetsById.erase(it);
 		return true;
@@ -104,7 +130,14 @@ namespace Lumora::Atlas
 	{
 		LM_PROFILE_FUNCTION();
 
-		m_AssetRoot = assetRoot;
+		std::error_code ec;
+		m_AssetRoot = std::filesystem::canonical(assetRoot, ec);
+		if (ec)
+		{
+			LM_CORE_WARN("AssetServer::Scan: failed to canonicalise '{}': {}; falling back to raw path", assetRoot.string(), ec.message());
+			m_AssetRoot = assetRoot;
+		}
+
 		if (!std::filesystem::exists(m_AssetRoot) || !std::filesystem::is_directory(m_AssetRoot))
 		{
 			LM_CORE_ERROR("AssetServer::Scan: asset root '{}' does not exist or is not a directory", m_AssetRoot.string());
@@ -141,16 +174,20 @@ namespace Lumora::Atlas
 				continue;
 
 			auto ext = p.extension().string();
+
+			bool has_loader;
 			{
 				auto lock = ReadLock(m_TypeRegistryMutex);
-				if (!m_TypeNameByExtension.contains(ext))
-				{
-					LM_CORE_DEBUG("No loader registered for extension '{}'; skipping asset '{}'", ext, p.string());
-					continue;
-				}
-
-				RegisterSingleFile(p);
+				has_loader = m_TypeNameByExtension.contains(ext);
 			}
+
+			if (!has_loader)
+			{
+				LM_CORE_DEBUG("No loader registered for extension '{}'; skipping asset '{}'", ext, p.string());
+				continue;
+			}
+
+			RegisterSingleFile(p);
 		}
 
 		// Pass 3: Eager load
@@ -169,8 +206,7 @@ namespace Lumora::Atlas
 
 		for (auto id : to_load)
 		{
-			AssetEntry entry;
-			Aether::Entity entity;
+			AssetEntry snapshot;
 			{
 				auto lock = ReadLock(m_AssetRegistryMutex);
 				auto it = m_AssetsById.find(id);
@@ -179,10 +215,17 @@ namespace Lumora::Atlas
 					LM_CORE_ERROR("Asset with id {} disappeared between scan and load; skipping", id.Id);
 					continue;
 				}
-				entry = it->second;
+				snapshot = it->second;
 			}
 
-			RunLoad(entry);
+			RunLoad(snapshot);
+
+			{
+				auto lock = WriteLock(m_AssetRegistryMutex);
+				auto it = m_AssetsById.find(id);
+				if (it != m_AssetsById.end())
+					it->second.PropsBlob = std::move(snapshot.PropsBlob);
+			}
 		}
 
 		LM_CORE_INFO("AssetServer: scan complete - {} assets loaded", to_load.size());
@@ -208,29 +251,38 @@ namespace Lumora::Atlas
 		if (queued.empty())
 			return;
 
-		for (auto id: queued)
+		for (auto id : queued)
 		{
-			auto lock = WriteLock(m_AssetRegistryMutex);
+			AssetEntry snapshot;
+			{
+				auto lock = ReadLock(m_AssetRegistryMutex);
+				auto it = m_AssetsById.find(id);
+				if (it == m_AssetsById.end())
+				{
+					LM_CORE_ERROR("Asset with id {} disappeared before reload; skipping", id.Id);
+					continue;
+				}
+				if (!it->second.Loader)
+				{
+					LM_CORE_WARN("Asset with id {} has no loader; cannot reload", id.Id);
+					continue;
+				}
+				if (!it->second.Entity.IsValid())
+				{
+					LM_CORE_ERROR("Asset with id {} has invalid entity; cannot reload", id.Id);
+					continue;
+				}
+				snapshot = it->second;
+			}
 
-			auto it = m_AssetsById.find(id);
-			if (it == m_AssetsById.end())
-			{
-				LM_CORE_ERROR("Asset with id {} disappeared before reload; skipping", id.Id);
-				continue;
-			}
-			if (!it->second.Loader)
-			{
-				LM_CORE_WARN("Asset with id {} has no loader; cannot reload", id.Id);
-				continue;
-			}
+			RunLoad(snapshot);
 
-			if (!it->second.Entity.IsValid())
 			{
-				LM_CORE_ERROR("Asset with id {} has invalid entity; cannot reload", id.Id);
-				continue;
+				auto lock = WriteLock(m_AssetRegistryMutex);
+				auto it = m_AssetsById.find(id);
+				if (it != m_AssetsById.end())
+					it->second.PropsBlob = std::move(snapshot.PropsBlob);
 			}
-			
-			RunLoad(it->second);
 		}
 	}
 
@@ -257,9 +309,13 @@ namespace Lumora::Atlas
 		return entity;
 	}
 
-	void AssetServer::RegisterSingleFile(const std::filesystem::path& assetFile)
+	void AssetServer::RegisterSingleFile(const std::filesystem::path& assetFile_in)
 	{
 		LM_PROFILE_FUNCTION();
+
+		std::error_code ec;
+		auto assetFile = std::filesystem::weakly_canonical(assetFile_in, ec);
+		if (ec) assetFile = assetFile_in;
 
 		// Find a loader claiming this file's extension
 		auto ext = assetFile.extension().string();
@@ -307,24 +363,10 @@ namespace Lumora::Atlas
 			LM_CORE_WARN("AssetServer: '{}' meta says type='{}' but loader for '{}' is '{}'.", assetFile.string(),
 			             meta_file.Type, ext, loader->TypeName);
 		}
-
-		// Generate AssetId and check for name/path collisions before proceeding with registration
+		
+		// Generate AssetId
 		AssetId id = AssetId::Generate(name);
-		{
-			auto lock = WriteLock(m_AssetRegistryMutex);
-			if (m_AssetIdsByName.contains(name))
-			{
-				LM_CORE_WARN("AssetServer: asset name '{}' already registered; skipping '{}'", name, assetFile.string());
-				return;
-			}
-			if (m_PrimaryByPath.contains(assetFile.string()))
-			{
-				LM_CORE_WARN("AssetServer: asset path '{}' already registered as primary; skipping", assetFile.string());
-				return;
-			}
-		}
 
-		// Build AssetMeta + entity
 		AssetMeta meta;
 		meta.Id = id;
 		meta.Name = name;
@@ -351,6 +393,21 @@ namespace Lumora::Atlas
 		entry.PropsBlob = std::move(props_blob);
 
 		{
+			auto lock = WriteLock(m_AssetRegistryMutex);
+
+			if (m_AssetIdsByName.contains(name))
+			{
+				LM_CORE_WARN("AssetServer: asset name '{}' already registered; skipping '{}'", name, assetFile.string());
+				entity.Destruct();
+				return;
+			}
+			if (m_PrimaryByPath.contains(assetFile.string()))
+			{
+				LM_CORE_WARN("AssetServer: asset path '{}' already registered as primary; skipping", assetFile.string());
+				entity.Destruct();
+				return;
+			}
+
 			m_PrimaryByPath[assetFile.string()] = id;
 			m_PathSubscribers[assetFile.string()].push_back(id);
 			if (sidecar_exists)
@@ -363,9 +420,13 @@ namespace Lumora::Atlas
 		}
 	}
 
-	void AssetServer::RegisterFromMeta(const std::filesystem::path& metaFile)
+	void AssetServer::RegisterFromMeta(const std::filesystem::path& metaFile_in)
 	{
 		LM_PROFILE_FUNCTION();
+
+		std::error_code ec;
+		auto metaFile = std::filesystem::weakly_canonical(metaFile_in, ec);
+		if (ec) metaFile = metaFile_in;
 
 		AssetMetaFile meta_file{};
 		if (auto parsed = m_Serializer.DeserializeFromFile<AssetMetaFile>(metaFile))
@@ -401,22 +462,12 @@ namespace Lumora::Atlas
 		std::string name = meta_file.Name;
 		if (name.empty())
 		{
-			auto base = StripAssetLuaSuffix(metaFile.stem());
+			auto base = StripAssetLuaSuffix(metaFile);
 			auto rel = std::filesystem::relative(base, m_AssetRoot);
 			name = rel.generic_string();
 		}
 
 		AssetId id = AssetId::Generate(name);
-
-		{
-			auto lock = ReadLock(m_AssetRegistryMutex);
-			if (m_AssetsById.contains(id))
-			{
-				LM_CORE_ERROR("AssetServer: name '{}' already registered (file: {})", name, metaFile.string());
-				return;
-			}
-		}
-
 
 		AssetMeta meta;
 		meta.Id = id;
@@ -452,20 +503,40 @@ namespace Lumora::Atlas
 
 			std::vector<std::filesystem::path> source_paths;
 			loader->CollectSourcePaths(ctx, source_paths);
-			entry.AdditionalPaths = std::move(source_paths);
+
+			entry.AdditionalPaths.reserve(source_paths.size());
+			for (auto& src : source_paths)
+			{
+				std::error_code src_ec;
+				auto canonical_src = std::filesystem::weakly_canonical(src, src_ec);
+				entry.AdditionalPaths.push_back(src_ec ? src : canonical_src);
+			}
 		}
 
-		auto lock = WriteLock(m_AssetRegistryMutex);
-
-		m_PrimaryByPath[metaFile.string()] = id;
-		m_PathSubscribers[metaFile.string()].push_back(id);
-		for (const auto& additional : entry.AdditionalPaths)
 		{
-			m_PathSubscribers[additional.string()].push_back(id);
-		}
+			auto lock = WriteLock(m_AssetRegistryMutex);
 
-		m_AssetIdsByName[name] = id;
-		m_AssetsById[id] = std::move(entry);
+			if (m_AssetsById.contains(id))
+			{
+				LM_CORE_ERROR("AssetServer: name '{}' already registered (file: {})", name, metaFile.string());
+				entity.Destruct();
+				return;
+			}
+			if (m_PrimaryByPath.contains(metaFile.string()))
+			{
+				LM_CORE_ERROR("AssetServer: meta path '{}' already registered as primary", metaFile.string());
+				entity.Destruct();
+				return;
+			}
+
+			m_PrimaryByPath[metaFile.string()] = id;
+			m_PathSubscribers[metaFile.string()].push_back(id);
+			for (const auto& additional : entry.AdditionalPaths)
+				m_PathSubscribers[additional.string()].push_back(id);
+
+			m_AssetIdsByName[name] = id;
+			m_AssetsById[id] = std::move(entry);
+		}
 	}
 	void AssetServer::RunLoad(AssetEntry& entry)
 	{

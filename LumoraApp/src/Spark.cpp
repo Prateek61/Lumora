@@ -1,4 +1,5 @@
 #include "Spark.h"
+#include "Text.h"
 #include <GLM/gtc/matrix_transform.hpp>
 #include <imgui.h>
 
@@ -111,12 +112,9 @@ void Spark::Build(Core::Application& app)
 
 	auto& world = app.GetWorld();
 
-	// Read data
-	auto& serializer_res = world.GetResourceMut<Rune::LuaSerializerResource>();
-	if (auto data_opt = serializer_res.Resource->DeserializeFromFile<Data>("../Assets/Data.local.lua"); data_opt)
-	{
-		m_Data = std::move(data_opt.value());
-	}
+	// Register Text Asset
+	auto& asset_server = world.GetResourceMut<Atlas::AssetServerResource>();
+	asset_server->RegisterLoader<Text>(MakeTextLoader());
 
 	auto update_system_builder = world.System("Spark::Update");
 	update_system_builder.SetPhase<Aether::Phases::OnUpdate>().Read<Flux::KeyboardState>().Read<Flux::MouseState>().Read<
@@ -130,27 +128,29 @@ void Spark::Build(Core::Application& app)
 		Render(res);
 	});
 
-	auto reload_data_system_builder = world.System("Spark::ReloadData");
-	reload_data_system_builder.SetPhase<Aether::Phases::OnUpdate>().Read<Rune::LuaSerializerResource>();
-	reload_data_system_builder.Run([this](Aether::QueryRes& res)
-	{
-		auto& serializer_res = res.World().GetResourceMut<Rune::LuaSerializerResource>();
-		
-		// Update the data
-		if (auto data_opt = serializer_res.Resource->DeserializeFromFile<Data>("../Assets/Data.local.lua"); data_opt)
-		{
-			if (data_opt.value().Message != m_Data.Message)
-			{
-				m_Data = std::move(data_opt.value());
-				LM_LOG_INFO("Data reloaded: {}", m_Data.Message);
-			}
-		}
-	});
-
-
 	auto ui_system_builder = world.System("Spark::UI");
 	ui_system_builder.SetPhase<Aether::Phases::OnUI>().Read<Lumen::Renderer2D::Stats>();
 	ui_system_builder.Run(UI);
+
+	auto asset_reload_check = world.System("Spark::AssetReloadCheck");
+	asset_reload_check.SetPhase<Aether::Phases::OnUpdate>();
+	asset_reload_check.Run([this](Aether::QueryRes& res)
+	{ 
+		if (!m_Text.IsValid())
+		{
+			m_Text = res.World().GetResource<Atlas::AssetServerResource>()->Get<Text>("Content/Hello.local");
+			
+			LM_LOG_INFO("Loaded Text asset: {}", m_Text.IsValid() ? m_Text.Get().Content : "Failed to load");
+			return;
+		}
+
+		static std::string last_content = m_Text.Get().Content;
+	    if (m_Text.Get().Content != last_content)
+	    {
+		    last_content = m_Text.Get().Content;
+		    LM_LOG_INFO("Text asset content changed: {}", last_content);
+	    }
+	});
 }
 
 void Spark::Finish(Core::Application& app)

@@ -11,9 +11,6 @@
 
 namespace Lumora::Atlas
 {
-	template <typename T, typename F>
-	concept Predicate = std::is_invocable_v<F, T&>;
-
 	struct AssetMetaFile
 	{
 		std::string Name;

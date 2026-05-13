@@ -2,6 +2,7 @@
 
 #include "Lumora/Core/Plugin.h"
 #include "Lumora/Aether/World.h"
+#include "Lumora/Aether/System.h"
 #include "Lumora/Atlas/AssetServer.h"
 #include "Lumora/Atlas/AssetWatcher.h"
 
@@ -30,5 +31,8 @@ namespace Lumora::Atlas
 
 	private:
 		AssetSettings m_Settings;
+
+		Aether::System m_WatcherDrainSystem;
+		Aether::System m_PumpSystem;
 	};
 }
