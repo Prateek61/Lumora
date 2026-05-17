@@ -1,4 +1,6 @@
--- Lumora Dependencies
+local LumoraDir = _SCRIPT_DIR
+
+-- Vulkan SDK (required by the renderer).
 vk_sdk = os.getenv("VULKAN_SDK")
 if (vk_sdk == nil) then
     print("VULKAN_SDK environment variable not set. Please install the Vulkan SDK and set the VULKAN_SDK environment variable.")
@@ -7,44 +9,63 @@ end
 VULKAN_LIB_DIR = vk_sdk .. "/Lib"
 
 IncludeDir = {}
-IncludeDir["VULKAN"] = vk_sdk .. "/Include"
-IncludeDir["GLAD"] = "%{wks.location}/External/glad/include"
+-- The engine's own public headers — for consumers compiling against Lumora.
+IncludeDir["LUMORA"]      = LumoraDir .. "/Lumora/src"
+-- Vulkan
+IncludeDir["VULKAN"]      = vk_sdk .. "/Include"
+-- OpenGL loader
+IncludeDir["GLAD"]        = LumoraDir .. "/External/glad/include"
 -- Windowing
-IncludeDir["GLFW"] = "%{wks.location}/External/glfw/glfw/include"
+IncludeDir["GLFW"]        = LumoraDir .. "/External/glfw/glfw/include"
 -- Lua
-IncludeDir["LUA"] = "%{wks.location}/External/lua/lua/"
-IncludeDir["SOL"] = "%{wks.location}/External/sol/include/"
+IncludeDir["LUA"]         = LumoraDir .. "/External/lua/lua/"
+IncludeDir["SOL"]         = LumoraDir .. "/External/sol/include/"
 -- Maths
-IncludeDir["GLM"] = "%{wks.location}/External/glm/"
+IncludeDir["GLM"]         = LumoraDir .. "/External/glm/"
 -- Logging
-IncludeDir["SPDLOG"] = "%{wks.location}/External/spdlog/include"
+IncludeDir["SPDLOG"]      = LumoraDir .. "/External/spdlog/include"
 -- ImGui
-IncludeDir["IMGUI"] = "%{wks.location}/External/imgui/imgui/"
+IncludeDir["IMGUI"]       = LumoraDir .. "/External/imgui/imgui/"
 -- Flecs
-IncludeDir["FLECS"] = "%{wks.location}/External/flecs/flecs/include"
--- Visit Struct
-IncludeDir["VISITSTRUCT"] = "%{wks.location}/External/visit_struct/include"
-IncludeDir["FILEWATCH"] = "%{wks.location}/External/filewatch/"
+IncludeDir["FLECS"]       = LumoraDir .. "/External/flecs/flecs/include"
+-- Misc
+IncludeDir["VISITSTRUCT"] = LumoraDir .. "/External/visit_struct/include"
+IncludeDir["FILEWATCH"]   = LumoraDir .. "/External/filewatch/"
 
+LumoraIncludeDirs =
+{
+    IncludeDir.LUMORA,
+    IncludeDir.VULKAN,
+    IncludeDir.GLAD,
+    IncludeDir.GLFW,
+    IncludeDir.LUA,
+    IncludeDir.SOL,
+    IncludeDir.GLM,
+    IncludeDir.SPDLOG,
+    IncludeDir.IMGUI,
+    IncludeDir.FLECS,
+    IncludeDir.VISITSTRUCT,
+    IncludeDir.FILEWATCH,
+}
 
 -- Libraries
 Library = {}
 Library["VULKAN"] = "vulkan-1"
 -- Windows
 Library["Win"] = {}
-Library["Win"]["GDI32"] = "gdi32"
+Library["Win"]["GDI32"]    = "gdi32"
 Library["Win"]["KERNEL32"] = "kernel32"
-Library["Win"]["PSAPI"] = "psapi"
+Library["Win"]["PSAPI"]    = "psapi"
 -- Linux
 Library["Linux"] = {}
-Library["Linux"]["DL"] = "dl"
-Library["Linux"]["GL"] = "GL"
-Library["Linux"]["X11"] = "X11"
+Library["Linux"]["DL"]      = "dl"
+Library["Linux"]["GL"]      = "GL"
+Library["Linux"]["X11"]     = "X11"
 Library["Linux"]["PTHREAD"] = "pthread"
 -- MacOS
 Library["MacOS"] = {}
-Library["MacOS"]["QUARTZ"] = "QuartzCore.framework"
-Library["MacOS"]["COCOA"] = "Cocoa.framework"
-Library["MacOS"]["IOKIT"] = "IOKit.framework"
-Library["MacOS"]["METAL"] = "Metal.framework"
+Library["MacOS"]["QUARTZ"]    = "QuartzCore.framework"
+Library["MacOS"]["COCOA"]     = "Cocoa.framework"
+Library["MacOS"]["IOKIT"]     = "IOKit.framework"
+Library["MacOS"]["METAL"]     = "Metal.framework"
 Library["MacOS"]["COREVIDEO"] = "CoreVideo.framework"

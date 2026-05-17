@@ -46,4 +46,4 @@ namespace Lumora::Glyph
 	};
 }
 
-LM_REFLECTABLE(Lumora::Glyph::ImGuiSettings, DockingEnabled, ViewportsEnabled, ShowDemoWindow, DockSpaceOverMainViewport);
+LM_REFLECTABLE(Lumora::Glyph::ImGuiSettings, DockingEnabled, ViewportsEnabled, ShowDemoWindow, DockSpaceOverMainViewport, IniFilename);

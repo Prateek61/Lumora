@@ -59,6 +59,35 @@ project "Lumora"
         "flecs"
     }
 
+    filter "system:windows"
+        links
+        {
+            "%{Library.Win.GDI32}",
+            "%{Library.Win.KERNEL32}",
+            "%{Library.Win.PSAPI}"
+        }
+
+    filter "system:linux"
+        links
+        {
+            "%{Library.Linux.DL}",
+            "%{Library.Linux.GL}",
+            "%{Library.Linux.X11}",
+            "%{Library.Linux.PTHREAD}"
+        }
+
+    filter "system:macosx"
+        links
+        {
+            "%{Library.MacOS.QUARTZ}",
+            "%{Library.MacOS.COCOA}",
+            "%{Library.MacOS.IOKIT}",
+            "%{Library.MacOS.METAL}",
+            "%{Library.MacOS.COREVIDEO}"
+        }
+
+    filter {}
+
     -- If VS
     filter "action:vs*"
         -- Enable /utf-8 flag for Visual Studio
