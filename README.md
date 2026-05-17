@@ -1,53 +1,93 @@
 # Lumora
 
-Lumora is a simple C++ rendering engine built on top of BGFX, designed for quick iteration and ease of use, mostly for my personal projects.
-> **Note:** Only developed and tested on Windows so far. Mac and Linux support may require minor tweaks.
+Lumora is a C++20 game engine built around a plugin architecture and an
+entity-component-system core. It's a personal project, focused on quick
+iteration and a clean, modular design.
+
+> **Note:** Developed and tested on Windows. Linux/macOS paths exist in the
+> build scripts but are not regularly verified.
 
 ## Features
-- **Asset Management System**
-    - Hot-reloadable assets with change detection
-    - Type-safe asset handles and registries
-    - Lua-based asset definitions and props serialization
-- **Rendering**
-    - BGFX integration for cross-API rendering (OpenGL, DirectX, Vulkan, etc.)
-    - Optional ImGui integration for in-app UI
-- **Application Framework**
-    - Layered architecture for modular logic
-    - Event system for input and window events
-    - Window/context management
-- **Scripting**
-    - Lua support via sol2
-    - Seamless C++ <-> Lua data exchange
-- **Utilities**
-    - Logging (spdlog), profiling
+
+The engine is organised into layers, each a plugin you opt into:
+
+- **Core** — application loop, plugin system, smart pointers, threading.
+- **Aether** — entity-component-system, built on [flecs](https://github.com/SanderMertens/flecs).
+  Worlds, entities, systems, queries, and ordered execution phases.
+- **Flux** — windowing and input, via GLFW.
+- **Lumen** — rendering. A `RenderDevice` abstraction with an OpenGL backend
+  (Vulkan port planned) and a batched 2D renderer (`Renderer2D`) for
+  coloured and textured quads.
+- **Glyph** — Dear ImGui integration, with docking and multi-viewport support.
+- **Rune** — Lua scripting and serialization. Typed C++ ↔ Lua conversion
+  backed by `visit_struct` reflection and [sol2](https://github.com/ThePhD/sol2).
+- **Atlas** — asset management. Name-based asset handles, per-type loaders,
+  and hot reloading driven by a filesystem watcher.
+
+Plus logging (spdlog) and lightweight profiling.
+
+### Demos
+
+`LumoraApp` is the engine's dev harness. It ships two demo plugins:
+
+- **Glimmer** — an animated grid / particle playground.
+- **Sandbox** — a falling-sand simulation with sand, water, oil, lava, fire,
+  acid, ice, gunpowder, plant growth, and preset scenarios.
 
 ## Prerequisites
-- C++20 compatible compiler
-- Premake5
-- Dependencies in `External/` (handled via git submodules)
+
+- A C++20 compiler (MSVC / VS 2022 on Windows).
+- [Premake5](https://premake.github.io/).
+- The [Vulkan SDK](https://vulkan.lunarg.com/) — the `VULKAN_SDK` environment
+  variable must be set.
+- Python 3 (only for the convenience build script).
 
 ## Getting Started
-1. Clone the repository
-    ```shell
-    git clone https://github.com/Prateek61/Lumora.git --recurse-submodules
-    ```
 
-2. Build the project using premake
-    ```shell
-    premake5 gmake # Or any other supported generator
-    # Or (Windows only):
-    python Scripts/build_run.py --build --generator gmake
-    ```
-3. Compile
-    ```shell
-    # Windows only:
-    python Scripts/build_run.py --compile --generator gmake --config Release
-    ```
+1. Clone with submodules:
+   ```shell
+   git clone https://github.com/Prateek61/Lumora.git --recurse-submodules
+   ```
 
-4. Run
-    ```shell
-    # Windows only:
-    python Scripts/build_run.py --run --generator gmake
-    ```
+2. Generate the project files:
+   ```shell
+   premake5 vs2022        # or gmake, xcode4, etc.
+   ```
 
-> Try `python Scripts/build_run.py --help` for more options (Windows only).
+3. Build and run. On Windows the helper script wraps generate + compile + run:
+   ```shell
+   python Scripts/build_run.py --build --compile --run --config Debug
+   ```
+   Otherwise build the generated solution/makefiles directly with your
+   toolchain. `LumoraApp` is the startup project.
+
+> Run `python Scripts/build_run.py --help` for all options.
+
+## Using Lumora in your own project
+
+Lumora is designed to be consumed as a git submodule. From your game's
+premake workspace:
+
+```lua
+workspace "MyGame"
+    architecture "x64"
+    startproject "MyGame"
+    configurations { "Debug", "Release", "Dist" }
+
+include "Lumora/LumoraProjects.lua"   -- the submodule: engine + all deps
+include "MyGame"
+```
+
+In your project, call `LinkLumora()` to wire up include directories and
+links (see `LumoraApp/premake5.lua` as the reference template):
+
+```lua
+project "MyGame"
+    kind "ConsoleApp"
+    language "C++"
+    cppdialect "C++20"
+    files { "src/**.h", "src/**.cpp" }
+    includedirs { "src" }
+
+    LinkLumora()
+```
