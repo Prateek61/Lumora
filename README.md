@@ -31,8 +31,6 @@ Plus logging (spdlog) and lightweight profiling.
 `LumoraApp` is the engine's dev harness. It ships two demo plugins:
 
 - **Glimmer** — an animated grid / particle playground.
-- **Sandbox** — a falling-sand simulation with sand, water, oil, lava, fire,
-  acid, ice, gunpowder, plant growth, and preset scenarios.
 
 ## Prerequisites
 
