@@ -19,8 +19,8 @@ Intermediates/
 # Profile files
 **.profile.json
 
-# MakeFile
-**/MakeFile
+# Makefile
+**/Makefile
 **.make
 
 # Asset files
@@ -30,6 +30,7 @@ Assets/**.local.*
 
 # Local Files
 **.local.*
+*_local/**
 
 # Temporary files
 .tmp_flecs/

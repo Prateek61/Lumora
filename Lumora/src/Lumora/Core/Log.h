@@ -43,7 +43,7 @@ namespace Lumora
 }
 
 /// Logging Macros
-/// Log levels: 0 = Off, 1 = Fatal, 2 = Error, 3 = Warn, 4 = Info, 5 = Trace, 6 = Debug
+/// Log levels: 0 = Off, 1 = Fatal, 2 = Error, 3 = Warn, 4 = Info, 5 = Debug, 6 = Trace
 
 #define LM_IMPL_SPDLOG_SOURCE_LOC() spdlog::source_loc(__FILE__, __LINE__, Lumora::InstrumentorUtils::CleanupOutputString(LM_FUNC_SIG, "__cdecl ").Data)
 

@@ -25,7 +25,7 @@ namespace
 		return default_logger;
 	}
 
-	// Pads the string with spaces in the front to reach the total length
+	// Pads the string with spaces at the back to reach the total length
 	std::string PadString(const std::string& str, size_t totalLength)
 	{
 		if (str.length() >= totalLength)

@@ -16,7 +16,7 @@
 #include "Lumora/Aether/Query.h"
 #include "Lumora/Aether/QueryRes.h"
 #include "Lumora/Aether/Phase.h"
-#include "Lumora/Aether/FlecsDiagonisticPlugin.h"
+#include "Lumora/Aether/FlecsDiagnosticPlugin.h"
 
 // Flux (Windowing, Input, etc.)
 #include "Lumora/Flux/WindowPlugin.h"

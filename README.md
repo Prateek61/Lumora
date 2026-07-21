@@ -28,13 +28,18 @@ Plus logging (spdlog) and lightweight profiling.
 
 ### Demos
 
-`LumoraApp` is the engine's dev harness. It ships two demo plugins:
+`LumoraApp` is the engine's dev harness. It ships two demo plugins, selected by
+`UseGlimmer` in `Assets/Config.lua`:
 
-- **Glimmer** — an animated grid / particle playground.
+- **Glimmer** — a particle / attractor / trail playground, with an optional ImGui
+  control panel (`UseGlimmer = true`).
+- **Spark** — an animated ripple grid plus an Atlas hot-reload demo
+  (`UseGlimmer = false`, the shipped default).
 
 ## Prerequisites
 
-- A C++20 compiler (MSVC / VS 2022 on Windows).
+- A C++20 compiler (MSVC / Visual Studio 2026 on Windows — that's what the helper
+  script's `vs2026` generator and its hardcoded `VsDevCmd.bat` path assume).
 - [Premake5](https://premake.github.io/).
 - The [Vulkan SDK](https://vulkan.lunarg.com/) — the `VULKAN_SDK` environment
   variable must be set.
@@ -49,13 +54,14 @@ Plus logging (spdlog) and lightweight profiling.
 
 2. Generate the project files:
    ```shell
-   premake5 vs2022        # or gmake, xcode4, etc.
+   premake5 vs2026        # or gmake2, xcode4, etc.
    ```
 
 3. Build and run. On Windows the helper script wraps generate + compile + run:
    ```shell
-   python Scripts/build_run.py --build --compile --run --config Debug
+   python Scripts/build_run.py --build --compile --run --config Debug --generator vs2026
    ```
+   `--generator` accepts `gmake2` (the default) or `vs2026`.
    Otherwise build the generated solution/makefiles directly with your
    toolchain. `LumoraApp` is the startup project.
 

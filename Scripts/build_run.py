@@ -64,9 +64,9 @@ def run_command(command: str, cwd: str = None) -> bool:
         return False
     
 def build_project(project_dir: str, generator: str) -> bool:
-    """Generate build files using CMake."""
-    cmake_command = f"premake5 {generator}"
-    return run_command(cmake_command, cwd=project_dir)
+    """Generate build files using premake5."""
+    premake_command = f"premake5 {generator}"
+    return run_command(premake_command, cwd=project_dir)
 
 def compile_project(project_dir: str, config: str, generator: str, system_type: Literal["Windows", "Linux"]) -> bool:
     """Compile the project using the appropriate build tool."""

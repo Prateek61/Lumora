@@ -69,7 +69,7 @@ namespace Lumora::Atlas
 			                  .Run(WatcherDrain);
 		}
 
-		// Pump asset server reloads at the end of the frame, after all changes have been collected.
+		// Pump asset server reloads early in the frame, so anything the watcher queued lands before Update runs.
 		m_PumpSystem = world.System("Atlas::AssetServerPump")
 		                 .SetPhase<Aether::Phases::PreUpdate>()
 		                 .Run(AssetServerPump);
