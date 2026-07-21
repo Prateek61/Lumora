@@ -51,6 +51,8 @@ namespace Lumora::Aether
 		template <typename Func>
 			requires std::is_invocable_v<Func, Entity, Components&...>
 		System Each(Func&& func);
+		/// `row` is the entity's slot in its archetype table. It restarts at 0 for every table
+		/// the query matches.
 		template <typename Func>
 			requires std::is_invocable_v<Func, size_t, Components&...>
 		System Each(Func&& func);
@@ -175,9 +177,9 @@ namespace Lumora::Aether
 		requires std::is_invocable_v<Func, size_t, Components&...>
 	System SystemBuilder<Components...>::Each(Func&& func)
 	{
-		return System{m_SystemBuilder.each([fn = std::forward<Func>(func)](size_t index, Components&... components)
+		return System{m_SystemBuilder.each([fn = std::forward<Func>(func)](flecs::iter&, size_t row, Components&... components)
 		{
-			fn(index, components...);
+			fn(row, components...);
 		})};
 	}
 
@@ -186,9 +188,9 @@ namespace Lumora::Aether
 		requires std::is_invocable_v<Func, size_t, Entity, Components&...>
 	System SystemBuilder<Components...>::Each(Func&& func)
 	{
-		return System{m_SystemBuilder.each([fn = std::forward<Func>(func)](size_t index, flecs::entity entity, Components&... components)
+		return System{m_SystemBuilder.each([fn = std::forward<Func>(func)](flecs::iter& it, size_t row, Components&... components)
 		{
-			fn(index, Entity{entity}, components...);
+			fn(row, Entity{it.entity(row)}, components...);
 		})};
 	}
 }
