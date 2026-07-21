@@ -49,8 +49,9 @@ namespace Lumora::Atlas
 		const T* TryGet() const { return Entity.TryGet<T>(); }
 		T* TryGet() { return Entity.TryGetMut<T>(); }
 
+		/// Runs `fn(T&)` if the asset is loaded, does nothing if it isn't.
 		template<typename F>
-		void operator &&(F&& predicate);
+		void operator &&(F&& fn);
 
 		bool IsValid() const { return Id.IsValid() && Entity.IsValid(); }
 		bool IsLoaded() const { return IsValid() && Entity.Has<T>(); }
@@ -82,17 +83,16 @@ namespace Lumora::Atlas
 {
 	template<typename T>
 	template<typename F>
-	void AssetHandle<T>::operator&&(F&& predicate)
+	void AssetHandle<T>::operator&&(F&& fn)
 	{
 		if (!IsValid())
 			return;
 		
 		T* ptr = Entity.TryGetMut<T>();
-		if (!ptr)
-			return;
-
-		std::forward<F>(predicate)(Get());
-		return;
+		if (ptr)
+		{
+			std::forward<F>(fn)(*ptr);
+		}
 	}
 }
 

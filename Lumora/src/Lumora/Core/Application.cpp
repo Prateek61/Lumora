@@ -119,8 +119,9 @@ namespace Lumora::Core
 			// Run the ECS world for one frame.
 			running = m_World.Progress(delta_seconds);
 
-			// Update the application state
-			m_World.GetResourceMut<ApplicationState>().Running = running;
+			auto& state = m_World.GetResourceMut<ApplicationState>();
+			running = running && state.Running;
+			state.Running = running;
 		}
 	}
 }

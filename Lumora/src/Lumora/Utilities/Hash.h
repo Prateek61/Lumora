@@ -12,7 +12,8 @@ namespace Lumora::Hash
 		uint64_t h = 14695981039346656037ULL; // FNV offset basis
 		for (size_t i = 0; i < length; ++i)
 		{
-			h ^= static_cast<uint64_t>(str[i]);
+			// FNV-1a hashes octets. Plain char would sign-extend anything above 0x7F.
+			h ^= static_cast<uint64_t>(static_cast<unsigned char>(str[i]));
 			h *= 1099511628211ULL; // FNV prime
 		}
 
@@ -27,7 +28,8 @@ namespace Lumora::Hash
 		uint64_t h = 14695981039346656037ULL; // FNV offset basis
 		for (size_t i = 0; i < N - 1; ++i) // Exclude null terminator
 		{
-			h ^= static_cast<uint64_t>(str[i]);
+			// FNV-1a hashes octets. Plain char would sign-extend anything above 0x7F.
+			h ^= static_cast<uint64_t>(static_cast<unsigned char>(str[i]));
 			h *= 1099511628211ULL; // FNV prime
 		}
 

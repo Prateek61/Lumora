@@ -1,6 +1,6 @@
 #include "Spark.h"
 #include "Text.h"
-#include <GLM/gtc/matrix_transform.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <imgui.h>
 
 #include <cinttypes>
@@ -155,6 +155,16 @@ void Spark::Build(Core::Application& app)
 
 void Spark::Finish(Core::Application& app)
 {
+	auto& world = app.GetWorld();
+	
+	const auto data_path = world.GetResource<Atlas::AssetServerResource>()->GetAssetRoot() / "Data.lua";
+
+	auto& serializer = world.GetResourceMut<Rune::LuaSerializerResource>();
+	if (auto data = serializer->DeserializeFromFile<Data>(data_path))
+		m_Data = std::move(*data);
+	else
+		LM_LOG_WARN("Spark: could not read '{}'", data_path.string());
+
 	LM_LOG_INFO("Message from Data.lua: {}", m_Data.Message);
 }
 
@@ -168,4 +178,6 @@ void Spark::AddDependencies(Core::DependencyList& dependencies)
 	dependencies.Require<Lumen::RendererPlugin>();
 	dependencies.Require<Lumen::Renderer2DPlugin>();
 	dependencies.Require<Glyph::ImGuiPlugin>();
+	dependencies.Require<Rune::LuaSerializerPlugin>();
+	dependencies.Require<Atlas::AssetPlugin>();
 }

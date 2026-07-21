@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <functional>
 
 #include "Lumora/Flux/WindowProps.h"
 #include "Lumora/Flux/RawEvents.h"
@@ -46,5 +47,6 @@ namespace Lumora::Flux
 
 		void Init(const WindowProps& props);
 		void Shutdown();
+		void AdoptUserPointer();
 	};
 }

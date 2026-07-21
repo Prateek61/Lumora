@@ -74,8 +74,6 @@ namespace Lumora::Lumen
 		LM_GL_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA))
 		LM_GL_CALL(glEnable(GL_DEPTH_TEST))
 		LM_GL_CALL(glEnable(GL_LINE_SMOOTH))
-
-		glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
 	}
 
 	void GLRenderDevice::Shutdown()
@@ -375,7 +373,6 @@ namespace Lumora::Lumen
 			return;
 		}
 		LM_GL_CALL(glUseProgram(it->second))
-		m_BoundShader = it->second;
 	}
 
 	void GLRenderDevice::BindUniformBuffer(BufferHandle buffer, uint32_t slot)
@@ -410,6 +407,10 @@ namespace Lumora::Lumen
 		LM_GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR))
 		LM_GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE))
 		LM_GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE))
+
+		// RGB rows are only 4-byte aligned when width is a multiple of 4. GL's default assumes
+		// they always are, and reads padding that isn't in the source.
+		LM_GL_CALL(glPixelStorei(GL_UNPACK_ALIGNMENT, (channels == 4) ? 4 : 1))
 
 		LM_GL_CALL(
 			glTexImage2D(GL_TEXTURE_2D, 0, static_cast<GLint>(internalFormat), static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0,
@@ -456,6 +457,11 @@ namespace Lumora::Lumen
 		if (vbIt == m_VertexBuffers.end())
 		{
 			LM_CORE_ERROR("Invalid Vertex Buffer Handle: {}", vertexBuffer.Id);
+			return;
+		}
+		if (ibIt == m_IndexBuffers.end())
+		{
+			LM_CORE_ERROR("Invalid Index Buffer Handle: {}", indexBuffer.Id);
 			return;
 		}
 

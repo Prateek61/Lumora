@@ -2,9 +2,11 @@
 
 #include "UUID.h"
 
+#include <atomic>
+
 namespace
 {
-	uint64_t s_CurrentUUID = 0;
+	std::atomic<uint64_t> s_CurrentUUID = 0;
 }
 
 namespace Lumora

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+
 namespace Lumora::Utils
 {
 	template <typename T, template <typename...> typename S, typename Enable = void>

@@ -7,9 +7,35 @@ from clean_build_files import delete_files_and_dirs
 
 from typing import Literal
 
-VS_DEV_CMD = r'"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\VsDevCmd.bat"'
 EXECUTABLE_PATH = "bin/LumoraApp"
 SOLUTION_CANDIDATES = ("Lumora.slnx", "Lumora.sln")
+
+# Last resort if vswhere can't be reached: VS 18 (the 2026 line), Community edition.
+VS_DEV_CMD_FALLBACK = r"C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\VsDevCmd.bat"
+
+
+def find_vs_dev_cmd() -> str:
+    """Locate VsDevCmd.bat for the newest installed VS, whatever its edition or drive."""
+    vswhere = os.path.join(
+        os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)"),
+        "Microsoft Visual Studio", "Installer", "vswhere.exe",
+    )
+    if os.path.isfile(vswhere):
+        try:
+            result = subprocess.run(
+                [vswhere, "-latest", "-prerelease", "-products", "*",
+                 "-property", "installationPath"],
+                capture_output=True, text=True, check=True,
+            )
+            install_path = result.stdout.strip().splitlines()
+            if install_path:
+                candidate = os.path.join(install_path[0], "Common7", "Tools", "VsDevCmd.bat")
+                if os.path.isfile(candidate):
+                    return candidate
+        except (subprocess.SubprocessError, OSError) as e:
+            print(f"vswhere lookup failed ({e}); falling back to the default install path.")
+
+    return VS_DEV_CMD_FALLBACK
 
 
 def get_solution_file(project_dir: str) -> str | None:
@@ -41,14 +67,12 @@ def run_command(command: str, cwd: str = None) -> bool:
         print(f"Running command: {command}")
         env = get_sanitized_env()
         
-        # Start the subprocess with Popen to capture stdout/stderr live
-        with subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, cwd=cwd, env=env) as process:
+        # stderr folded into stdout: draining two pipes in sequence deadlocks once the child
+        # fills the one we aren't reading yet.
+        with subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, cwd=cwd, env=env) as process:
             # Read the output line by line as it is produced
             for line in process.stdout:
-                print(line, end='')  # Print standard output
-            # Also print stderr (errors, if any)
-            for line in process.stderr:
-                print(line, end='', file=sys.stderr)  # Print error output
+                print(line, end='')
 
             # Wait for the process to finish and get the return code
             return_code = process.wait()
@@ -82,7 +106,7 @@ def compile_project(project_dir: str, config: str, generator: str, system_type: 
         if not solution_file:
             print(f"No solution file found. Expected one of: {', '.join(SOLUTION_CANDIDATES)}")
             return False
-        compile_command = f'cmd /c "call {VS_DEV_CMD} & msbuild {solution_file} /p:Configuration={config}"'
+        compile_command = f'cmd /c "call "{find_vs_dev_cmd()}" & msbuild {solution_file} /p:Configuration={config}"'
     elif system_type == "Linux" and generator == "gmake2":
         compile_command = f"make config={config.lower()}"
 
@@ -96,7 +120,8 @@ def run_project(project_dir: str, system_type: Literal["Windows", "Linux", "Unsu
     """Run the compiled project."""
     exe_path = os.path.join(project_dir, EXECUTABLE_PATH + ('' if system_type == "Linux" else '.exe'))
     command = f"{exe_path}"
-    return run_command(command, project_dir)
+    # From bin/, so the exe's own "../Assets/" paths land on the repo's Assets directory.
+    return run_command(command, os.path.dirname(exe_path))
 
 def display_details(args, project_dir: str, generator: str, config: str, system_type: Literal["Windows", "Linux", "Unsupported"]):
     print("Build and Run Configuration:")

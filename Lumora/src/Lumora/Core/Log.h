@@ -2,6 +2,7 @@
 
 #include "Lumora/Core/Defines.h"
 #include "Lumora/Core/SmartPointers.h"
+#include "Lumora/Core/Instrumentor.h"
 
 #include <filesystem>
 

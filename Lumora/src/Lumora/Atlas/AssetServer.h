@@ -66,6 +66,7 @@ namespace Lumora::Atlas
 		{
 			AssetId Id;
 			Aether::Entity Entity;
+			std::type_index AssetType{typeid(void)};
 			const ErasedLoader* Loader = nullptr;
 			std::filesystem::path PrimaryPath;
 			std::filesystem::path MetaPath;
@@ -186,6 +187,7 @@ namespace Lumora::Atlas
 		AssetEntry entry;
 		entry.Id = id;
 		entry.Entity = entity;
+		entry.AssetType = typeid(T);
 
 		m_AssetsById[id] = std::move(entry);
 		m_AssetIdsByName[meta.Name] = id;
@@ -286,7 +288,10 @@ namespace Lumora::Atlas
 	{
 		LM_PROFILE_FUNCTION();
 
-		auto canonical = std::filesystem::weakly_canonical(path);
+		std::error_code ec;
+		auto canonical = std::filesystem::weakly_canonical(path, ec);
+		if (ec)
+			canonical = path;
 
 		// Already registered? Return existing handle.
 		{

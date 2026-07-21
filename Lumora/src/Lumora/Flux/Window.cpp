@@ -30,8 +30,9 @@ namespace Lumora::Flux
 	Window::Window(Window&& other) noexcept
 		: m_GLFWWindow(other.m_GLFWWindow), m_NativeWindow(other.m_NativeWindow), m_Props(other.m_Props), m_EventCallback(std::move(other.m_EventCallback))
 	{
-		m_GLFWWindow = nullptr;
-		m_NativeWindow = nullptr;
+		other.m_GLFWWindow = nullptr;
+		other.m_NativeWindow = nullptr;
+		AdoptUserPointer();
 	}
 
 	Window& Window::operator=(Window&& other) noexcept
@@ -45,8 +46,16 @@ namespace Lumora::Flux
 			m_Props = other.m_Props;
 			other.m_GLFWWindow = nullptr;
 			other.m_NativeWindow = nullptr;
+			AdoptUserPointer();
 		}
 		return *this;
+	}
+
+	void Window::AdoptUserPointer()
+	{
+		// The GLFW callbacks find their owner through this pointer, so it has to follow the move.
+		if (m_GLFWWindow)
+			glfwSetWindowUserPointer(m_GLFWWindow, this);
 	}
 
 	void Window::PollEvents()
@@ -161,6 +170,16 @@ namespace Lumora::Flux
 			glfwWindowHint(GLFW_CLIENT_API, props.API == Lumen::RenderAPI::OpenGL ? GLFW_OPENGL_API : GLFW_NO_API);
 			m_GLFWWindow = glfwCreateWindow(static_cast<int>(props.Width), static_cast<int>(props.Height),
 			                                props.Title.c_str(), nullptr, nullptr);
+
+			if (!m_GLFWWindow)
+			{
+				// The count stays put, so a later Shutdown still terminates GLFW.
+				LM_CORE_ERROR("Failed to create window: {0} ({1}x{2})", props.Title, props.Width, props.Height);
+				LM_CORE_ASSERT(false, "glfwCreateWindow failed");
+				if (s_GLFWWindowCount == 0)
+					glfwTerminate();
+				return;
+			}
 
 			++s_GLFWWindowCount;
 		}

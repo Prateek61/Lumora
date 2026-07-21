@@ -17,6 +17,13 @@ namespace Lumora::Atlas
 		bool HotReload = false;
 	};
 
+	/// Paces how often the watcher queue is drained. One per world.
+	struct AssetWatcherThrottle
+	{
+		float Interval = 0.25f;
+		float Accumulator = 0.0f;
+	};
+
 	class AssetPlugin : public Core::Plugin
 	{
 	public:

@@ -38,7 +38,7 @@ namespace Lumora::Atlas
 		UntypedAssetHandle handle;
 		handle.Id = entry.Id;
 		handle.Entity = entry.Entity;
-		handle.Type = entry.Loader ? entry.Loader->AssetType : std::type_index(typeid(void));
+		handle.Type = entry.AssetType;
 		return handle;
 	}
 
@@ -386,6 +386,7 @@ namespace Lumora::Atlas
 		AssetEntry entry;
 		entry.Id = id;
 		entry.Entity = entity;
+		entry.AssetType = loader->AssetType;
 		entry.Loader = loader;
 		entry.PrimaryPath = assetFile;
 		entry.MetaPath = sidecar_exists ? sidecar_path : std::filesystem::path();
@@ -487,6 +488,7 @@ namespace Lumora::Atlas
 		AssetEntry entry;
 		entry.Id = id;
 		entry.Entity = entity;
+		entry.AssetType = loader->AssetType;
 		entry.Loader = loader;
 		entry.PrimaryPath = std::filesystem::path{};
 		entry.MetaPath = metaFile;

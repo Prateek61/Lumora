@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Lumora/Core/Threading.h"
+#include <optional>
 #include <queue>
 
 namespace Lumora
@@ -14,8 +15,8 @@ namespace Lumora
 
 		std::size_t Size();
 		bool Empty();
+		/// By value, so it takes lvalues and rvalues alike and moves either one in.
 		void Push(T item);
-		void Push(T&& item);
 		std::optional<T> TryPop();
 		std::optional<T> PopBlocking();
 		void Shutdown();
@@ -46,14 +47,6 @@ namespace Lumora
 
 	template <typename T>
 	void TSQueue<T>::Push(T item)
-	{
-		auto lock = WriteLock(m_Mutex);
-		m_Queue.push(std::move(item));
-		m_CV.notify_one();
-	}
-
-	template <typename T>
-	void TSQueue<T>::Push(T&& item)
 	{
 		auto lock = WriteLock(m_Mutex);
 		m_Queue.push(std::move(item));

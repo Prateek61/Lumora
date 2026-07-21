@@ -1,6 +1,6 @@
 #include "Glimmer.h"
 
-#include <GLM/gtc/matrix_transform.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <imgui.h>
 
 #include <algorithm>
@@ -313,8 +313,8 @@ namespace
 				attractors.Items.clear();
 		}
 
-		// Mouse — only if ImGui isn't capturing it
-		if (!io || !io->WantsCaptureMouse && rt.CursorInWindow)
+		// Mouse: only if ImGui isn't capturing it
+		if ((!io || !io->WantsCaptureMouse) && rt.CursorInWindow)
 		{
 			if (input.Mouse.Pressed(Flux::Mouse::ButtonLeft))
 			{

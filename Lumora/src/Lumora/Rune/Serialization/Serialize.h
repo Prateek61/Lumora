@@ -158,8 +158,8 @@ namespace Lumora::Rune::Serialization
 		{
 			if constexpr (std::is_floating_point_v<T>)
 			{
-				// Lua has no literal for either. Arithmetic, not math.huge: the script must load in a
-				// state with no math library (LuaSerializer opens only base/string/table).
+				// Lua has no literal for inf or nan. These arithmetic forms load in a state with
+				// no math library, which is what LuaSerializer gives them.
 				if (std::isnan(value))
 				{
 					stream << "(0/0)";
@@ -235,7 +235,7 @@ namespace Lumora::Rune::Serialization
 			Stream << "}";
 		}
 
-		/// Numeric keys must be bracketed — `1 = v` is a syntax error, `[1] = v` is the table constructor form.
+		/// Numeric keys have to be bracketed. `1 = v` is a syntax error, `[1] = v` is the table form.
 		template <Arithmetic K>
 		void WriteKey(const K& key)
 		{

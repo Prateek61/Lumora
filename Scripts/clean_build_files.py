@@ -18,7 +18,9 @@ build_dirs = [
     "bin",
 ]
 
-UNSAFE_EXTERNAL_PATH = re.compile(r"[\\/]External[\\/].*?[\\/]")
+# Matches External and everything under it. Dependency roots like External/glad can hold a
+# tracked bin/, so they need covering too.
+UNSAFE_EXTERNAL_PATH = re.compile(r"[\\/]External([\\/]|$)")
 
 def delete_files_and_dirs(root_dir):
     # Traverse the directory and delete the specified build files

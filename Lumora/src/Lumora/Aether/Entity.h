@@ -15,7 +15,7 @@ namespace Lumora::Aether
 		template <typename T>
 		const T& Get() const { return m_Entity.get<T>(); }
 		template <typename T>
-		T& GetMut() const { return m_Entity.get_mut<T>(); }
+		T& GetMut() { return m_Entity.get_mut<T>(); }
 		template <typename T>
 		const T* TryGet() const { return m_Entity.try_get<T>(); }
 		template <typename T>

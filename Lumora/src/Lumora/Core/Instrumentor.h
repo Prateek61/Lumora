@@ -4,6 +4,7 @@
 
 #include "Lumora/Core/Defines.h"
 
+#include <atomic>
 #include <chrono>
 #include <fstream>
 #include <string>
@@ -55,7 +56,7 @@ namespace Lumora
 		std::mutex m_Mutex;
 		InstrumentationSession* m_CurrentSession;
 		std::ofstream m_OutputStream;
-		bool m_ProfilingEnabled = true;
+		std::atomic<bool> m_ProfilingEnabled = true;
 	};
 
 

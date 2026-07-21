@@ -5,10 +5,7 @@ namespace Lumora::Aether
 {
 	World::World() = default;
 	World::World(flecs::world flecsWorld)
-		: m_World(std::move(flecsWorld))
-	{
-		Phases::Register(*this);
-	}
+		: m_World(std::move(flecsWorld)) {}
 	World::~World() = default;
 
 	Entity World::CreateEntity(const char* name)

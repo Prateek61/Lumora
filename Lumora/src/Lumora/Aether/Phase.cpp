@@ -35,31 +35,18 @@ namespace Lumora::Aether
 		auto f_pre_frame = Entity(f_world.entity(flecs::PreFrame));
 		auto f_post_frame = Entity(f_world.entity(flecs::PostFrame));
 
-		auto frame_start = world.AddPhase<FrameStart>().DependsOn(f_pre_frame);
-		auto input = world.AddPhase<Input>().DependsOn<FrameStart>();
-		auto pre_update = world.AddPhase<PreUpdate>().DependsOn<Input>();
-		auto update = world.AddPhase<OnUpdate>().DependsOn<PreUpdate>();
-		auto on_validate = world.AddPhase<OnValidate>().DependsOn<OnUpdate>();
-		auto post_update = world.AddPhase<PostUpdate>().DependsOn<OnValidate>();
-		auto pre_render = world.AddPhase<PreRender>().DependsOn<PostUpdate>();
-		auto render = world.AddPhase<OnRender>().DependsOn<PreRender>();
-		auto post_render = world.AddPhase<PostRender>().DependsOn<OnRender>();
-		auto on_ui = world.AddPhase<OnUI>().DependsOn<PostRender>();
-		auto post_ui = world.AddPhase<PostUI>().DependsOn<OnUI>();
-		auto present = world.AddPhase<Present>().DependsOn<PostUI>();
-		auto frame_end = world.AddPhase<FrameEnd>().DependsOn<Present>().Before(f_post_frame);
-
-		frame_start.Before<Input>();
-		input.Before<PreUpdate>();
-		pre_update.Before<OnUpdate>();
-		update.Before<OnValidate>();
-		on_validate.Before<PostUpdate>();
-		post_update.Before<PreRender>();
-		pre_render.Before<OnRender>();
-		render.Before<PostRender>();
-		post_render.Before<OnUI>();
-		on_ui.Before<PostUI>();
-		post_ui.Before<Present>();
-		present.Before<FrameEnd>();
+		world.AddPhase<FrameStart>().DependsOn(f_pre_frame);
+		world.AddPhase<Input>().DependsOn<FrameStart>();
+		world.AddPhase<PreUpdate>().DependsOn<Input>();
+		world.AddPhase<OnUpdate>().DependsOn<PreUpdate>();
+		world.AddPhase<OnValidate>().DependsOn<OnUpdate>();
+		world.AddPhase<PostUpdate>().DependsOn<OnValidate>();
+		world.AddPhase<PreRender>().DependsOn<PostUpdate>();
+		world.AddPhase<OnRender>().DependsOn<PreRender>();
+		world.AddPhase<PostRender>().DependsOn<OnRender>();
+		world.AddPhase<OnUI>().DependsOn<PostRender>();
+		world.AddPhase<PostUI>().DependsOn<OnUI>();
+		world.AddPhase<Present>().DependsOn<PostUI>();
+		world.AddPhase<FrameEnd>().DependsOn<Present>().Before(f_post_frame);
 	}
 }

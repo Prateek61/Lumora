@@ -19,12 +19,6 @@ namespace
 		return spdlog::level::info; // Default level
 	}
 
-	Lumora::Ref<spdlog::logger>& GetDefaultLogger()
-	{
-		static Lumora::Ref<spdlog::logger> default_logger = spdlog::default_logger();
-		return default_logger;
-	}
-
 	// Pads the string with spaces at the back to reach the total length
 	std::string PadString(const std::string& str, size_t totalLength)
 	{

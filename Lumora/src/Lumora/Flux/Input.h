@@ -43,6 +43,9 @@ namespace Lumora::Flux
 		float ScrollX = 0.0f;
 		float ScrollY = 0.0f;
 
+		// False until the cursor first reports in. There is nothing to measure a delta against yet.
+		bool HasPosition = false;
+
 		// Button states
 		std::array<bool, Mouse::MaxButtonCode> Buttons{};
 		std::array<bool, Mouse::MaxButtonCode> JustPressed{};

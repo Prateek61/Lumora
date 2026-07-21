@@ -2,7 +2,7 @@
 
 #include "Lumora/Lumen/RenderDevice.h"
 #include "Lumora/Lumen/RenderTypes.h"
-#include <GLM/glm.hpp>
+#include <glm/glm.hpp>
 
 namespace Lumora::Lumen
 {

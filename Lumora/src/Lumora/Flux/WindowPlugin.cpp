@@ -51,8 +51,12 @@ namespace
 
 	void ProcessEvent(const Raw::MouseMove& event, KeyboardState&, MouseState& mouseState, Aether::World&)
 	{
-		mouseState.DeltaX += event.X - mouseState.X;
-		mouseState.DeltaY += event.Y - mouseState.Y;
+		if (mouseState.HasPosition)
+		{
+			mouseState.DeltaX += event.X - mouseState.X;
+			mouseState.DeltaY += event.Y - mouseState.Y;
+		}
+		mouseState.HasPosition = true;
 		mouseState.X = event.X;
 		mouseState.Y = event.Y;
 	}
@@ -134,7 +138,9 @@ namespace Lumora::Flux
 		// Add a system that polls events and processes the event buffer
 		auto poll_system_builder = world.System("Flux::PollAndProcessEvents");
 		poll_system_builder.SetPhase<Aether::Phases::Input>();
-		poll_system_builder.Write<WindowResource>().Write<KeyboardState>().Write<MouseState>();
+		poll_system_builder.Write<WindowResource>().Write<KeyboardState>().Write<MouseState>()
+		                   .Write<Core::Events<WindowResize>>().Write<Core::Events<WindowClose>>()
+		                   .Write<Core::Events<WindowFocus>>();
 		m_WindowEventPollingSystem = poll_system_builder.Run([this](Aether::QueryRes& res)
 		{
 			auto world = res.World();

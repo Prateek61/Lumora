@@ -13,14 +13,16 @@ namespace
 	{
 		LM_PROFILE_FUNCTION();
 
-		static float time_accumulator = 0.0f;
-		time_accumulator += res.DeltaTime().GetSeconds();
-		if (time_accumulator < 0.25f)
-			return;
-		time_accumulator = 0.0f;
+		auto world = res.World();
 
-		auto& watcher_res = res.World().GetResourceMut<Atlas::AssetWatcherResource>();
-		auto& server_res = res.World().GetResourceMut<Atlas::AssetServerResource>();
+		auto& throttle = world.GetResourceMut<Atlas::AssetWatcherThrottle>();
+		throttle.Accumulator += res.DeltaTime().GetSeconds();
+		if (throttle.Accumulator < throttle.Interval)
+			return;
+		throttle.Accumulator = 0.0f;
+
+		auto& watcher_res = world.GetResourceMut<Atlas::AssetWatcherResource>();
+		auto& server_res = world.GetResourceMut<Atlas::AssetServerResource>();
 
 		watcher_res->Drain([&](const std::filesystem::path& path)
 		{
@@ -63,6 +65,7 @@ namespace Lumora::Atlas
 		{
 			world.SetResource<AssetWatcherResource>(
 				{CreateScope<AssetWatcher>(m_Settings.AssetRoot)});
+			world.SetResource(AssetWatcherThrottle{});
 
 			m_WatcherDrainSystem = world.System("Atlas::WatcherDrain")
 			                  .SetPhase<Aether::Phases::FrameStart>()

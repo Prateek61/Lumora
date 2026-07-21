@@ -83,8 +83,6 @@ namespace Lumora::Lumen
 		std::unordered_map<uint32_t, uint32_t> m_Textures; // TextureHandle.Id -> GL Texture ID
 		std::unordered_map<uint32_t, GLUniformBuffer> m_UniformBuffers; // BufferHandle.Id -> GL Uniform Buffer
 
-		uint32_t m_BoundShader = 0;
-
 		uint32_t AllocHandle() { return m_NextHandleId++; }
 
 		// Helpers
