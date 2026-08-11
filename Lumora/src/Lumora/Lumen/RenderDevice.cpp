@@ -2,14 +2,15 @@
 #include "RenderDevice.h"
 
 #include "Lumora/Lumen/OpenGL/GLRenderDevice.h"
+#include "Lumora/Lumen/Vulkan/VKRenderDevice.h"
 
 namespace Lumora::Lumen
 {
-	Scope<RenderDevice> Lumora::Lumen::RenderDevice::Create(const RendererProps& props)
+	Scope<RenderDevice> Lumora::Lumen::RenderDevice::Create(RenderAPI api, const RendererProps& props)
 	{
 		LM_PROFILE_FUNCTION();
 
-		switch (props.API)
+		switch (api)
 		{
 			case RenderAPI::None:
 				LM_CORE_ASSERT(false, "RenderAPI::None is not supported");
@@ -17,8 +18,7 @@ namespace Lumora::Lumen
 			case RenderAPI::OpenGL:
 				return CreateScope<GLRenderDevice>();
 			case RenderAPI::Vulkan:
-				LM_CORE_ASSERT(false, "RenderAPI::Vulkan is not supported yet");
-				return nullptr;
+				return CreateScope<VKRenderDevice>();
 		}
 		LM_CORE_ASSERT(false, "Unknown RenderAPI");
 		return nullptr;

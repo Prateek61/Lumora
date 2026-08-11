@@ -6,6 +6,15 @@
 
 namespace Lumora::Lumen
 {
+	namespace Bindings
+	{
+		constexpr uint32_t MaxTextureSlots = 16;
+		constexpr uint32_t MaxUniformSlots = 4;
+
+		constexpr uint32_t Texture0 = 0;
+		constexpr uint32_t Uniform0 = Texture0 + MaxTextureSlots;
+	}
+
 	struct BufferHandle
 	{
 		uint32_t Id = 0;

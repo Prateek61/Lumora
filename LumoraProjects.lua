@@ -5,7 +5,7 @@ outdir = outdir or "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 function LinkLumora()
     includedirs { LumoraIncludeDirs }
     defines     { "flecs_STATIC" }
-    links       { "Lumora" }
+    links       { "Lumora", "%{Library.VULKAN}", "%{Library.SHADERC}" }
     libdirs     { VULKAN_LIB_DIR }
 end
 

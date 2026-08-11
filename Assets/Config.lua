@@ -3,7 +3,7 @@ return {
         Title = "Silly Linguine Cat Simulator Deluxe Online",
         Width = 1280,
         Height = 720,
-        Vsync = true,
+        VSync = true,
     },
     ImGuiSettings = {
         DockingEnabled = true,
@@ -12,7 +12,8 @@ return {
         DockSpaceOverMainViewport = true,
         IniFilename = "ImGui.local.ini",
     },
-    UseGlimmer = false,
-    GlimmerImGui = true,
+    RenderAPI = "Vulkan", -- Vulkan, OpenGL
+    UseGlimmer = true,
+    GlimmerImGui = false,
     DiagnosticPlugin = true,
 }

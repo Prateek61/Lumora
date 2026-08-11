@@ -12,7 +12,7 @@ namespace Lumora::Lumen
 		static constexpr uint32_t MaxQuads = 10000;
 		static constexpr uint32_t MaxVertices = MaxQuads * 4;
 		static constexpr uint32_t MaxIndices = MaxQuads * 6;
-		static constexpr uint32_t MaxTextureSlots = 16; // Typical GPU minimum
+		static constexpr uint32_t MaxTextureSlots = Bindings::MaxTextureSlots;
 
 		// Call Once
 		void Init(RenderDevice& device);

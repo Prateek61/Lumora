@@ -60,7 +60,11 @@ project "LumoraApp"
     filter {}
 
     -- Post build commands
+    -- shaderc_shared.dll rides next to the exe: the Vulkan backend compiles GLSL at runtime through it.
+    -- Copied to both the build target dir (VS runs from there) and bin/ (build_run.py runs from there).
     postbuildcommands
     {
-        '{COPYFILE} "%{cfg.buildtarget.relpath}" "%{wks.location}/bin/"'
+        '{COPYFILE} "%{cfg.buildtarget.relpath}" "%{wks.location}/bin/"',
+        '{COPYFILE} "' .. VULKAN_BIN_DIR .. '/shaderc_shared.dll" "%{cfg.buildtarget.directory}"',
+        '{COPYFILE} "' .. VULKAN_BIN_DIR .. '/shaderc_shared.dll" "%{wks.location}/bin/"'
     }

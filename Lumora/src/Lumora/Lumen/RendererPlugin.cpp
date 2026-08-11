@@ -48,11 +48,13 @@ namespace Lumora::Lumen
 	{
 		LM_PROFILE_FUNCTION();
 
-		// Create the RenderAPI and insert it as a resource
-		auto device = RenderDevice::Create(m_Props);
+		// The window already committed to an API when GLFW created it, so it is the one that decides.
+		auto& window_res = app.GetWorld().GetResourceMut<Flux::WindowResource>();
+		auto device = RenderDevice::Create(window_res.Resource->GetProps().API, m_Props);
+		LM_CORE_ASSERT(device != nullptr, "Failed to create a RenderDevice for the window's API");
+
 		// Initialize
-		auto& windowRes = app.GetWorld().GetResourceMut<Flux::WindowResource>();
-		device->Init(windowRes.Resource->GetGLFWHandle(), windowRes.Resource->GetNativeHandle());
+		device->Init(window_res.Resource->GetGLFWHandle(), window_res.Resource->GetNativeHandle());
 		device->SetClearColor({0.1f, 0.1f, 0.1f, 1.0f});
 
 		// Insert the RenderDevice as a resource for systems to use

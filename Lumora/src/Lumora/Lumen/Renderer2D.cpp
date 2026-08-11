@@ -5,6 +5,9 @@ namespace Lumora::Lumen
 {
 	namespace DefaultShaders
 	{
+		static_assert(Bindings::Texture0 == 0 && Bindings::MaxTextureSlots == 16, "Quad shader hardcodes its samplers bindings 0..15");
+		static_assert(Bindings::Uniform0 == 16, "Quad shader hardcodes CameraBuffer at binding 16");
+
 		const char* GetQuadVertexShader()
 		{
 			return R"(
@@ -14,14 +17,14 @@ namespace Lumora::Lumen
 				layout(location = 2) in vec4 a_Color;
 				layout(location = 3) in int a_TexIndex;
 
-				layout(std140, binding = 0) uniform CameraBuffer
+				layout(std140, binding = 16) uniform CameraBuffer
 				{
 					mat4 u_ViewProj;
 				};
 
-				out vec2 v_TexCoord;
-				out vec4 v_Color;
-				flat out int v_TexIndex;
+				layout(location = 0) out vec2 v_TexCoord;
+				layout(location = 1) out vec4 v_Color;
+				layout(location = 2) flat out int v_TexIndex;
 
 				void main()
 				{
@@ -38,9 +41,9 @@ namespace Lumora::Lumen
 			return R"(
 				#version 450 core
 
-				in vec2 v_TexCoord;
-				in vec4 v_Color;
-				flat in int v_TexIndex;
+				layout(location = 0) in vec2 v_TexCoord;
+				layout(location = 1) in vec4 v_Color;
+				layout(location = 2) flat in int v_TexIndex;
 
 				layout(location = 0) out vec4 FragColor;
 
@@ -155,8 +158,10 @@ namespace Lumora::Lumen
 	{
 		LM_PROFILE_FUNCTION();
 
-		m_Device->BindUniformBuffer(m_UniformBuffer, 0);
-		m_Device->UpdateUniformBuffer(m_UniformBuffer, &viewProjMatrix, sizeof(glm::mat4), 0);
+		const glm::mat4 view_proj = m_Device->GetClipCorrection() * viewProjMatrix;
+
+		m_Device->BindUniformBuffer(m_UniformBuffer, Bindings::Uniform0);
+		m_Device->UpdateUniformBuffer(m_UniformBuffer, &view_proj, sizeof(glm::mat4), 0);
 
 		m_QuadVertexData.clear();
 		m_QuadCount = 0;
@@ -255,7 +260,7 @@ namespace Lumora::Lumen
 		uint32_t index_count = m_QuadCount * 6;
 
 		m_Device->BindShader(m_Shader);
-		m_Device->BindUniformBuffer(m_UniformBuffer, 0);
+		m_Device->BindUniformBuffer(m_UniformBuffer, Bindings::Uniform0);
 
 		// Bind all active texture slots
 		for (uint32_t i = 0; i < m_TextureSlotIndex; i++)

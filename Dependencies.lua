@@ -7,6 +7,7 @@ if (vk_sdk == nil) then
     os.exit(1)
 end
 VULKAN_LIB_DIR = vk_sdk .. "/Lib"
+VULKAN_BIN_DIR = vk_sdk .. "/Bin"
 
 IncludeDir = {}
 -- The engine's own public headers — for consumers compiling against Lumora.
@@ -51,6 +52,9 @@ LumoraIncludeDirs =
 -- Libraries
 Library = {}
 Library["VULKAN"] = "vulkan-1"
+-- GLSL to SPIR-V at runtime (Vulkan backend). Shared, not shaderc_combined: the SDK ships shaderc
+-- release-CRT only, so a static link is an LNK2038 mismatch against the /MDd Debug build.
+Library["SHADERC"] = "shaderc_shared"
 -- Windows
 Library["Win"] = {}
 Library["Win"]["GDI32"]    = "gdi32"

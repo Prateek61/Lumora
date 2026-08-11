@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Lumora/Lumen/Props.h"
+#include "Lumora/Lumen/RenderAPI.h"
 #include "Lumora/Lumen/RenderTypes.h"
 #include "glm/glm.hpp"
 
@@ -23,7 +24,7 @@ namespace Lumora::Lumen
 		// State
 		virtual void SetClearColor(glm::vec4 color) = 0;
 		virtual void Clear() = 0;
-		virtual void SetViewport(glm::vec<2, uint32_t> pos, glm::vec<2, uint32_t> size) = 0;
+		virtual void SetViewport(glm::uvec2 pos, glm::uvec2 size) = 0;
 
 		// Vertex/Index Buffers
 		virtual BufferHandle CreateVertexBuffer(const void* data, uint32_t size, const VertexLayout& layout, bool dynamic = false) = 0;
@@ -55,7 +56,10 @@ namespace Lumora::Lumen
 		// Info
 		virtual RenderAPI GetAPI() const = 0;
 
+		// Backend specific clip space to match OpenGL's clip space (Y inverted, half Z)
+		virtual glm::mat4 GetClipCorrection() const { return {1.0f}; }
+
 		// Factory
-		static Scope<RenderDevice> Create(const RendererProps& props);
+		static Scope<RenderDevice> Create(RenderAPI api, const RendererProps& props);
 	};
 }

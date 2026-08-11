@@ -52,6 +52,7 @@ project "Lumora"
     links
     {
         "%{Library.VULKAN}",
+        "%{Library.SHADERC}",
         "glfw",
         "Lua",
         "glad",
