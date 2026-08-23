@@ -18,7 +18,7 @@ namespace Lumora::Lumen
 		// Once, and never again: pipelines are built against this render pass and a resize must not invalidate them.
 		CreateRenderPass();
 
-		CreateSwapchain(width, height);
+		CreateSwapchain(width, height, VK_NULL_HANDLE);
 		CreateImageViews();
 		CreateDepthResources();
 		CreateFramebuffers();
@@ -99,7 +99,7 @@ namespace Lumora::Lumen
 		return VK_PRESENT_MODE_FIFO_KHR;
 	}
 
-	void VKSwapchain::CreateSwapchain(uint32_t width, uint32_t height)
+	void VKSwapchain::CreateSwapchain(uint32_t width, uint32_t height, VkSwapchainKHR oldSwapchain)
 	{
 		LM_PROFILE_FUNCTION();
 
@@ -134,7 +134,7 @@ namespace Lumora::Lumen
 		create_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 		create_info.presentMode = PickPresentMode();
 		create_info.clipped = VK_TRUE;
-		create_info.oldSwapchain = VK_NULL_HANDLE;
+		create_info.oldSwapchain = oldSwapchain;
 
 		const uint32_t families[] = {m_Context->GetGraphicsFamily(), m_Context->GetPresentFamily()};
 		if (families[0] != families[1])
@@ -306,18 +306,22 @@ namespace Lumora::Lumen
 	{
 		LM_PROFILE_FUNCTION();
 
-		// Caller is responsible for having waited on device
-		DestroySizedObjects();
+		// Caller is responsible for having waited on device.
+		DestroyImageResources();
 
-		CreateSwapchain(width, height);
+		VkSwapchainKHR retired = m_Swapchain;
+		CreateSwapchain(width, height, retired);
 		CreateImageViews();
 		CreateDepthResources();
 		CreateFramebuffers();
 
+		if (retired != VK_NULL_HANDLE)
+			vkDestroySwapchainKHR(m_Context->GetDevice(), retired, nullptr);
+
 		LM_CORE_TRACE("Vulkan swapchain rebuilt: {}x{}, {} images", m_Extent.width, m_Extent.height, GetImageCount());
 	}
 
-	void VKSwapchain::DestroySizedObjects()
+	void VKSwapchain::DestroyImageResources()
 	{
 		LM_PROFILE_FUNCTION();
 
@@ -341,10 +345,6 @@ namespace Lumora::Lumen
 			vkDestroyImageView(device, view, nullptr);
 		m_ImageViews.clear();
 		m_Images.clear();
-
-		if (m_Swapchain != VK_NULL_HANDLE)
-			vkDestroySwapchainKHR(device, m_Swapchain, nullptr);
-		m_Swapchain = VK_NULL_HANDLE;
 	}
 
 	void VKSwapchain::Shutdown()
@@ -354,7 +354,13 @@ namespace Lumora::Lumen
 		if (!m_Context || !m_Context->IsValid())
 			return;
 
-		DestroySizedObjects();
+		DestroyImageResources();
+
+		if (m_Swapchain != VK_NULL_HANDLE)
+		{
+			vkDestroySwapchainKHR(m_Context->GetDevice(), m_Swapchain, nullptr);
+			m_Swapchain = VK_NULL_HANDLE;
+		}
 
 		if (m_RenderPass != VK_NULL_HANDLE)
 		{

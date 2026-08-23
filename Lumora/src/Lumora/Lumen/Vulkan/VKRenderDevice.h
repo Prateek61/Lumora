@@ -64,6 +64,13 @@ namespace Lumora::Lumen
 		static constexpr VkDeviceSize RingBlockSize = 4ull * 1024 * 1024; // 4 MB
 		static constexpr VkDeviceSize DummyUniformSize = 256;
 
+		enum class FrameState : uint8_t
+		{
+			Closed, // BeginFrame has not run this tick
+			Skipped, // BeginFrame ran and declined the frame
+			Recording // The Frame is open and recording commands
+		};
+
 		struct FrameData
 		{
 			VkCommandPool CommandPool = VK_NULL_HANDLE;
@@ -141,6 +148,10 @@ namespace Lumora::Lumen
 		void CreateDefaults();
 		void DestroyDefaults();
 
+		// Frame contract and failure latch
+		bool RequireOpenFrame(const char* call) const;
+		bool NoteFatalResult(VkResult result);
+
 		// Per frame and per draw
 		void UploadUniform(VKUniformBuffer& uniform);
 		void RefreshUniformBuffers();
@@ -165,8 +176,11 @@ namespace Lumora::Lumen
 
 		uint32_t m_FrameIndex = 0;
 		uint32_t m_ImageIndex = 0;
-		bool m_FrameActive = false;
+		FrameState m_FrameState = FrameState::Closed;
 		bool m_SwapchainDirty = false;
+
+		// So that only the first run produce an error after the device is gone.
+		bool m_DeviceLost = false;
 
 		glm::vec4 m_ClearColor{0.0f, 0.0f, 0.0f, 1.0f};
 

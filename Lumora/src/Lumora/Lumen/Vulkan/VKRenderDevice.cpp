@@ -154,13 +154,23 @@ namespace Lumora::Lumen
 		if (width == 0 || height == 0)
 			return false; // Minimized. Skip frames until there is something to draw into.
 
-		vkDeviceWaitIdle(m_Context.GetDevice());
+		if (NoteFatalResult(vkDeviceWaitIdle(m_Context.GetDevice())))
+			return false;
 
+		const auto previous_image_count = static_cast<uint32_t>(m_RenderFinished.size());
 		m_Swapchain.Recreate(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
 
-		// The image count can change with the surface, and these are sized by it.
-		DestroyPresentSemaphores();
-		CreatePresentSemaphores();
+		// The image count can change with the surface.
+		if (m_Swapchain.GetImageCount() != previous_image_count)
+		{
+			DestroyPresentSemaphores();
+			CreatePresentSemaphores();
+		}
+		else
+		{
+			// Same shape, but the fences they were paired with belong to a swapchain that is gone.
+			std::fill(m_ImagesInFlight.begin(), m_ImagesInFlight.end(), VK_NULL_HANDLE);
+		}
 
 		m_SwapchainDirty = false;
 		return true;
@@ -170,25 +180,35 @@ namespace Lumora::Lumen
 	{
 		LM_PROFILE_FUNCTION();
 
-		if (!m_Context.IsValid())
+		m_FrameState = FrameState::Skipped;
+
+		if (!m_Context.IsValid() || m_DeviceLost)
 			return;
 
 		if (m_SwapchainDirty && !RecreateSwapchain())
 			return;
 
 		FrameData& frame = m_Frames[m_FrameIndex];
-		LM_VK_CHECK(vkWaitForFences(m_Context.GetDevice(), 1, &frame.InFlight, VK_TRUE, UINT64_MAX));
+		const VkResult waited = vkWaitForFences(m_Context.GetDevice(), 1, &frame.InFlight, VK_TRUE, UINT64_MAX);
+		if (waited != VK_SUCCESS)
+		{
+			LM_CORE_ERROR("vkWaitForFences failed: {0}", VkResultToString(waited));
+			NoteFatalResult(waited);
+			return;
+		}
 
 		VkResult acquired = vkAcquireNextImageKHR(m_Context.GetDevice(), m_Swapchain.GetHandle(), UINT64_MAX, frame.ImageAvailable,
 		                                          VK_NULL_HANDLE, &m_ImageIndex);
 		if (acquired == VK_ERROR_OUT_OF_DATE_KHR)
 		{
 			m_SwapchainDirty = true;
-			return; // No frame this tick. EndFrame sees m_FrameActive == false and does nothing.
+			return; // No frame this tick. EndFrame sees a non-recording state and does nothing.
 		}
 		if (acquired != VK_SUCCESS && acquired != VK_SUBOPTIMAL_KHR)
 		{
 			LM_CORE_ERROR("vkAcquireNextImageKHR failed: {0}", VkResultToString(acquired));
+			if (!NoteFatalResult(acquired))
+				m_SwapchainDirty = true;
 			return;
 		}
 
@@ -228,7 +248,7 @@ namespace Lumora::Lumen
 
 		vkCmdBeginRenderPass(frame.CommandBuffer, &pass_info, VK_SUBPASS_CONTENTS_INLINE);
 
-		m_FrameActive = true;
+		m_FrameState = FrameState::Recording;
 
 		const VkExtent2D extent = m_Swapchain.GetExtent();
 		SetViewport({0u, 0u}, {extent.width, extent.height});
@@ -238,8 +258,12 @@ namespace Lumora::Lumen
 	{
 		LM_PROFILE_FUNCTION();
 
-		if (!m_FrameActive)
-			return; // BeginFrame bailed out; nothing was recorded.
+		if (m_FrameState != FrameState::Recording)
+		{
+			// BeginFrame bailed out; nothing was recorded. The tick is over either way.
+			m_FrameState = FrameState::Closed;
+			return;
+		}
 
 		FrameData& frame = m_Frames[m_FrameIndex];
 
@@ -274,9 +298,13 @@ namespace Lumora::Lumen
 		if (presented == VK_ERROR_OUT_OF_DATE_KHR || presented == VK_SUBOPTIMAL_KHR)
 			m_SwapchainDirty = true;
 		else if (presented != VK_SUCCESS)
+		{
 			LM_CORE_ERROR("vkQueuePresentKHR failed: {0}", VkResultToString(presented));
+			if (!NoteFatalResult(presented))
+				m_SwapchainDirty = true;
+		}
 
-		m_FrameActive = false;
+		m_FrameState = FrameState::Closed;
 		m_FrameIndex = (m_FrameIndex + 1) % MaxFramesInFlight;
 	}
 
@@ -302,7 +330,7 @@ namespace Lumora::Lumen
 		LM_PROFILE_FUNCTION();
 
 		// BeginFrame already cleared through the load op. This is only for an explicit mid-frame clear.
-		if (!m_FrameActive)
+		if (!RequireOpenFrame("Clear"))
 			return;
 
 		VkClearAttachment attachments[2]{};
@@ -325,7 +353,7 @@ namespace Lumora::Lumen
 	{
 		LM_PROFILE_FUNCTION();
 
-		if (!m_FrameActive)
+		if (!RequireOpenFrame("SetViewport"))
 			return;
 
 		// Positive height. The Y flip lives in GetClipCorrection so that Y and depth are handled by
@@ -540,8 +568,9 @@ namespace Lumora::Lumen
 			LM_CORE_ERROR("Vertex buffer update out of bounds. Handle: {}, Size: {}, Capacity: {}", buffer.Id, size, vb.Size);
 			return;
 		}
-		if (!m_FrameActive)
-			return; // No ring to write into, and nothing will draw this tick either.
+		// No ring to write into, and nothing will draw this tick either.
+		if (!RequireOpenFrame("UpdateVertexBuffer"))
+			return;
 
 		// 16 clears every attribute format's alignment requirements, since the GPU sees (bufferOffset attributeOffset) and the
 		// layout's own offsets are already aligned.
@@ -622,7 +651,7 @@ namespace Lumora::Lumen
 		std::memcpy(ubo.Shadow.data() + offset, data, size);
 
 		// Outside a frame there is no ring to land in, and the next BeginFrame re-uploads the shadow.
-		if (m_FrameActive)
+		if (m_FrameState == FrameState::Recording)
 			UploadUniform(ubo);
 	}
 
@@ -1049,6 +1078,36 @@ namespace Lumora::Lumen
 		m_Sampler = VK_NULL_HANDLE;
 	}
 
+	bool VKRenderDevice::NoteFatalResult(VkResult result)
+	{
+		// Log device loss once 
+
+		if (result != VK_ERROR_DEVICE_LOST && result != VK_ERROR_SURFACE_LOST_KHR)
+			return false;
+
+		if (!m_DeviceLost)
+		{
+			m_DeviceLost = true;
+			LM_CORE_ERROR("Vulkan device is unusable ({}). Rendering stops for the rest of this run.", VkResultToString(result));
+		}
+		return true;
+	}
+
+	bool VKRenderDevice::RequireOpenFrame(const char* call) const
+	{
+		if (m_FrameState == FrameState::Recording)
+			return true;
+
+		if (m_FrameState == FrameState::Closed)
+		{
+			LM_CORE_ERROR(
+			    "{} was recorded outside a frame. Its system has to run after Renderer::BeginFrame, which sits in the PreRender phase.",
+			    call);
+			LM_CORE_ASSERT(false, "Render call recorded outside a frame");
+		}
+		return false;
+	}
+
 	VkDescriptorSet VKRenderDevice::AcquireDescriptorSet()
 	{
 		LM_PROFILE_FUNCTION();
@@ -1129,7 +1188,9 @@ namespace Lumora::Lumen
 	{
 		LM_PROFILE_FUNCTION();
 
-		if (!m_FrameActive || indexCount == 0)
+		if (indexCount == 0)
+			return;
+		if (!RequireOpenFrame("DrawIndexed"))
 			return;
 
 		auto vb_it = m_VertexBuffers.find(vertexBuffer.Id);
@@ -1210,7 +1271,21 @@ namespace Lumora::Lumen
 		if (!m_Context.IsValid())
 			return;
 
+		// The app can quit between BeginFrame and Present. 
+		if (m_FrameState == FrameState::Recording)
+		{
+			vkCmdEndRenderPass(CurrentCommandBuffer());
+			LM_VK_CHECK(vkEndCommandBuffer(CurrentCommandBuffer()));
+			m_FrameState = FrameState::Closed;
+		}
+
 		vkDeviceWaitIdle(m_Context.GetDevice());
+
+		for (const FrameData& frame : m_Frames)
+		{
+			LM_CORE_TRACE("Vulkan ring: peak {} KB used of {} KB reserved", frame.Ring.GetHighWater() / 1024,
+			              frame.Ring.GetCapacity() / 1024);
+		}
 
 		for (auto& [handle, vb] : m_VertexBuffers)
 		{
@@ -1256,6 +1331,6 @@ namespace Lumora::Lumen
 		m_Context.Shutdown();
 
 		m_Window = nullptr;
-		m_FrameActive = false;
+		m_FrameState = FrameState::Closed;
 	}
 }

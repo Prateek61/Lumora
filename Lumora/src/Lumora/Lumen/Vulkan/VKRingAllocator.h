@@ -23,6 +23,8 @@ namespace Lumora::Lumen
 		Allocation Allocate(VkDeviceSize size, VkDeviceSize alignment);
 
 		VkDeviceSize GetCapacity() const;
+		// The most any single frame has asked for.
+		VkDeviceSize GetHighWater() const { return m_HighWater; }
 
 	private:
 		struct Block
@@ -41,5 +43,7 @@ namespace Lumora::Lumen
 
 		std::vector<Block> m_Blocks;
 		size_t m_CurrentBlock = 0;
+		VkDeviceSize m_Used = 0;
+		VkDeviceSize m_HighWater = 0;
 	};
 }

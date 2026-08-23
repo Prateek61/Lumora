@@ -65,6 +65,8 @@ namespace Lumora::Lumen
 				continue;
 
 			block.Used = offset + size;
+			m_Used += size;
+			m_HighWater = std::max(m_HighWater, m_Used);
 			return Allocation{block.Buffer, offset, static_cast<uint8_t*>(block.Mapped) + offset};
 		}
 
@@ -79,6 +81,8 @@ namespace Lumora::Lumen
 		m_CurrentBlock = m_Blocks.size() - 1;
 		Block& block = m_Blocks[m_CurrentBlock];
 		block.Used = size; // A block starts at offset 0, which satisfies any alignment.
+		m_Used += size;
+		m_HighWater = std::max(m_HighWater, m_Used);
 		return Allocation{block.Buffer, 0, block.Mapped};
 	}
 
@@ -87,6 +91,7 @@ namespace Lumora::Lumen
 		for (Block& block : m_Blocks)
 			block.Used = 0;
 		m_CurrentBlock = 0;
+		m_Used = 0;
 	}
 
 	VkDeviceSize VKRingAllocator::GetCapacity() const

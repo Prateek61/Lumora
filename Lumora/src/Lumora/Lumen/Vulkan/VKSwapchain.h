@@ -20,12 +20,12 @@ namespace Lumora::Lumen
 		uint32_t GetImageCount() const { return static_cast<uint32_t>(m_Images.size()); }
 
 	private:
-		void CreateSwapchain(uint32_t width, uint32_t height);
+		void CreateSwapchain(uint32_t width, uint32_t height, VkSwapchainKHR oldSwapchain);
 		void CreateImageViews();
 		void CreateDepthResources();
 		void CreateRenderPass();
 		void CreateFramebuffers();
-		void DestroySizedObjects();
+		void DestroyImageResources();
 
 		VkSurfaceFormatKHR PickColorFormat() const;
 		VkFormat PickDepthFormat() const;
