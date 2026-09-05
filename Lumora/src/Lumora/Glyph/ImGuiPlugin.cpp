@@ -65,7 +65,7 @@ namespace Lumora::Glyph
 		const auto& render_device_res = world.GetResource<Lumen::RenderDeviceResource>();
 
 		m_ImGuiBackend = ImGuiBackend::Create(render_device_res.Resource->GetAPI());
-		m_ImGuiBackend->Init(*window_res.Resource);
+		m_ImGuiBackend->Init(*window_res.Resource, *render_device_res.Resource);
 
 		/// 5. WantCapture mirror
 		auto input_system = world.System("ImGui::InputCaptureSystem");

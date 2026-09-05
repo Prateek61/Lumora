@@ -16,7 +16,7 @@ namespace Lumora::Lumen
 		m_DepthFormat = PickDepthFormat();
 
 		// Once, and never again: pipelines are built against this render pass and a resize must not invalidate them.
-		CreateRenderPass();
+		CreateRenderPasses();
 
 		CreateSwapchain(width, height, VK_NULL_HANDLE);
 		CreateImageViews();
@@ -120,6 +120,7 @@ namespace Lumora::Lumen
 		uint32_t image_count = capabilities.minImageCount + 1;
 		if (capabilities.maxImageCount > 0 && image_count > capabilities.maxImageCount)
 			image_count = capabilities.maxImageCount;
+		m_MinImageCount = image_count;
 
 		VkSwapchainCreateInfoKHR create_info{};
 		create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -219,28 +220,36 @@ namespace Lumora::Lumen
 		LM_VK_CHECK(vkCreateImageView(m_Context->GetDevice(), &view_info, nullptr, &m_DepthView));
 	}
 
-	void VKSwapchain::CreateRenderPass()
+	void VKSwapchain::CreateRenderPasses()
+	{
+		LM_PROFILE_FUNCTION();
+
+		m_RenderPass = BuildRenderPass(false);
+		m_ResumeRenderPass = BuildRenderPass(true);
+	}
+
+	VkRenderPass VKSwapchain::BuildRenderPass(bool load) const
 	{
 		LM_PROFILE_FUNCTION();
 
 		VkAttachmentDescription color{};
 		color.format = m_ColorFormat;
 		color.samples = VK_SAMPLE_COUNT_1_BIT;
-		color.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // This is where the clear colour is applied.
+		color.loadOp = load ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_CLEAR; // Where the clear colour is applied
 		color.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		color.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		color.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		color.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		color.initialLayout = load ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR : VK_IMAGE_LAYOUT_UNDEFINED;
 		color.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 		VkAttachmentDescription depth{};
 		depth.format = m_DepthFormat;
 		depth.samples = VK_SAMPLE_COUNT_1_BIT;
-		depth.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		depth.loadOp = load ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_CLEAR;
 		depth.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE; // Nothing reads depth after the frame
 		depth.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		depth.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		depth.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		depth.initialLayout = load ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_UNDEFINED;
 		depth.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
 		VkAttachmentReference color_ref{};
@@ -260,10 +269,13 @@ namespace Lumora::Lumen
 		VkSubpassDependency dependency{};
 		dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
 		dependency.dstSubpass = 0;
-		dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-		dependency.srcAccessMask = 0;
-		dependency.dstStageMask = dependency.srcStageMask;
-		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+		dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
+		                          VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+		dependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+		                           VK_ACCESS_SHADER_WRITE_BIT;
+		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+		                           VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
 		const VkAttachmentDescription attachments[] = {color, depth};
 
@@ -276,7 +288,9 @@ namespace Lumora::Lumen
 		info.dependencyCount = 1;
 		info.pDependencies = &dependency;
 
-		LM_VK_CHECK(vkCreateRenderPass(m_Context->GetDevice(), &info, nullptr, &m_RenderPass));
+		VkRenderPass pass = VK_NULL_HANDLE;
+		LM_VK_CHECK(vkCreateRenderPass(m_Context->GetDevice(), &info, nullptr, &pass));
+		return pass;
 	}
 
 	void VKSwapchain::CreateFramebuffers()
@@ -366,6 +380,11 @@ namespace Lumora::Lumen
 		{
 			vkDestroyRenderPass(m_Context->GetDevice(), m_RenderPass, nullptr);
 			m_RenderPass = VK_NULL_HANDLE;
+		}
+
+		if (m_ResumeRenderPass != VK_NULL_HANDLE)
+		{
+			vkDestroyRenderPass(m_Context->GetDevice(), m_ResumeRenderPass, nullptr);
 		}
 
 		m_Context = nullptr;

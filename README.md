@@ -11,17 +11,17 @@ iteration and a clean, modular design.
 
 The engine is organised into layers, each a plugin you opt into:
 
-- **Core** — application loop, plugin system, smart pointers, threading.
-- **Aether** — entity-component-system, built on [flecs](https://github.com/SanderMertens/flecs).
+- **Core** : application loop, plugin system, smart pointers, threading.
+- **Aether** : entity-component-system, built on [flecs](https://github.com/SanderMertens/flecs).
   Worlds, entities, systems, queries, and ordered execution phases.
-- **Flux** — windowing and input, via GLFW.
-- **Lumen** — rendering. A `RenderDevice` abstraction with an OpenGL backend
-  (Vulkan port planned) and a batched 2D renderer (`Renderer2D`) for
-  coloured and textured quads.
-- **Glyph** — Dear ImGui integration, with docking and multi-viewport support.
-- **Rune** — Lua scripting and serialization. Typed C++ ↔ Lua conversion
+- **Flux** : windowing and input, via GLFW.
+- **Lumen** : rendering. A `RenderDevice` abstraction with OpenGL and Vulkan
+  backends, and a batched 2D renderer (`Renderer2D`) for coloured and
+  textured quads.
+- **Glyph** : Dear ImGui integration, with docking and multi-viewport support.
+- **Rune** : Lua scripting and serialization. Typed C++ ↔ Lua conversion
   backed by `visit_struct` reflection and [sol2](https://github.com/ThePhD/sol2).
-- **Atlas** — asset management. Name-based asset handles, per-type loaders,
+- **Atlas** : asset management. Name-based asset handles, per-type loaders,
   and hot reloading driven by a filesystem watcher.
 
 Plus logging (spdlog) and lightweight profiling.
@@ -31,10 +31,9 @@ Plus logging (spdlog) and lightweight profiling.
 `LumoraApp` is the engine's dev harness. It ships two demo plugins, selected by
 `UseGlimmer` in `Assets/Config.lua`:
 
-- **Glimmer** — a particle / attractor / trail playground, with an optional ImGui
-  control panel (`UseGlimmer = true`).
-- **Spark** — an animated ripple grid plus an Atlas hot-reload demo
-  (`UseGlimmer = false`, the shipped default).
+- **Glimmer** : a particle / attractor / trail playground, with an optional ImGui
+  control panel
+- **Spark** : an animated ripple grid plus an Atlas hot-reload demo
 
 ## Prerequisites
 

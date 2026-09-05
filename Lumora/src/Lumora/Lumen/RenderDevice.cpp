@@ -16,9 +16,9 @@ namespace Lumora::Lumen
 				LM_CORE_ASSERT(false, "RenderAPI::None is not supported");
 				return nullptr;
 			case RenderAPI::OpenGL:
-				return CreateScope<GLRenderDevice>();
+				return CreateScope<GLRenderDevice>(props);
 			case RenderAPI::Vulkan:
-				return CreateScope<VKRenderDevice>();
+				return CreateScope<VKRenderDevice>(props);
 		}
 		LM_CORE_ASSERT(false, "Unknown RenderAPI");
 		return nullptr;

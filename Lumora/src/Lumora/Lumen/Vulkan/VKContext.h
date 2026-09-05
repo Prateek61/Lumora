@@ -9,6 +9,8 @@ namespace Lumora::Lumen
 	class VKContext
 	{
 	public:
+		static constexpr uint32_t ApiVersion = VK_API_VERSION_1_3;
+
 		void Init(GLFWwindow* window);
 		void Shutdown();
 

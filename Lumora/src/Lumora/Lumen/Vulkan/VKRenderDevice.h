@@ -10,10 +10,25 @@ struct GLFWwindow;
 
 namespace Lumora::Lumen
 {
+	// Everything ImGui's Vulkan backend needs
+	struct VKImGuiHandoff
+	{
+		uint32_t ApiVersion = 0;
+		VkInstance Instance = VK_NULL_HANDLE;
+		VkPhysicalDevice PhysicalDevice = VK_NULL_HANDLE;
+		VkDevice Device = VK_NULL_HANDLE;
+		uint32_t QueueFamily = 0;
+		uint32_t PresentQueueFamily = 0;
+		VkQueue Queue = VK_NULL_HANDLE;
+		VkRenderPass RenderPass = VK_NULL_HANDLE;
+		uint32_t MinImageCount = 0;
+		uint32_t ImageCount = 0;
+	};
+
 	class VKRenderDevice final : public RenderDevice
 	{
 	public:
-		VKRenderDevice() = default;
+		explicit VKRenderDevice(const RendererProps& props = {}) : m_Props(props) {}
 		~VKRenderDevice() override;
 
 		// Lifecycle
@@ -58,6 +73,12 @@ namespace Lumora::Lumen
 		RenderAPI GetAPI() const override { return RenderAPI::Vulkan; }
 		glm::mat4 GetClipCorrection() const override;
 
+		// The ImGui seam.
+		VKImGuiHandoff GetImGuiHandoff() const;
+		VkCommandBuffer GetOpenCommandBuffer() const;
+		void RestoreFullViewport();
+		void WaitIdle() const;
+
 	private:
 		static constexpr uint32_t MaxFramesInFlight = 2;
 		static constexpr uint32_t MaxDescriptorSetsPerFrame = 64;
@@ -66,8 +87,8 @@ namespace Lumora::Lumen
 
 		enum class FrameState : uint8_t
 		{
-			Closed, // BeginFrame has not run this tick
-			Skipped, // BeginFrame ran and declined the frame
+			Closed,   // BeginFrame has not run this tick
+			Skipped,  // BeginFrame ran and declined the frame
 			Recording // The Frame is open and recording commands
 		};
 
@@ -116,6 +137,7 @@ namespace Lumora::Lumen
 		{
 			VkShaderModule Vertex = VK_NULL_HANDLE;
 			VkShaderModule Fragment = VK_NULL_HANDLE;
+			VkShaderModule Compute = VK_NULL_HANDLE;
 		};
 
 		struct VKTexture
@@ -124,7 +146,7 @@ namespace Lumora::Lumen
 			VkDeviceMemory Memory = VK_NULL_HANDLE;
 			VkImageView View = VK_NULL_HANDLE;
 		};
-		
+
 		//Frame plumbing
 		void CreateFrameData();
 		void DestroyFrameData();
@@ -157,10 +179,14 @@ namespace Lumora::Lumen
 		void RefreshUniformBuffers();
 		VkDescriptorSet AcquireDescriptorSet();
 		void WriteDescriptorSet(VkDescriptorSet set);
+		bool EnsureDescriptorSet();
+		void BindDescriptorSet(VkCommandBuffer commandBuffer, VkPipelineBindPoint bindPoint) const;
+		void BeginResumePass() const;
 
 		VkCommandBuffer CurrentCommandBuffer() const { return m_Frames[m_FrameIndex].CommandBuffer; }
 		VKRingAllocator& CurrentRing() { return m_Frames[m_FrameIndex].Ring; }
 
+		RendererProps m_Props;
 		GLFWwindow* m_Window = nullptr;
 		VKContext m_Context;
 		VKSwapchain m_Swapchain;

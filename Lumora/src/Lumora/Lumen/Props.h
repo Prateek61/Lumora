@@ -6,6 +6,7 @@ namespace Lumora::Lumen
 {
 	struct RendererProps
 	{
+		bool VSync = true;
 	};
 
 	struct Renderer2DProps

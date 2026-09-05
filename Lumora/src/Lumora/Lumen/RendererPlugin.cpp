@@ -50,6 +50,7 @@ namespace Lumora::Lumen
 
 		// The window already committed to an API when GLFW created it, so it is the one that decides.
 		auto& window_res = app.GetWorld().GetResourceMut<Flux::WindowResource>();
+		m_Props.VSync = window_res.Resource->GetProps().VSync;
 		auto device = RenderDevice::Create(window_res.Resource->GetProps().API, m_Props);
 		LM_CORE_ASSERT(device != nullptr, "Failed to create a RenderDevice for the window's API");
 

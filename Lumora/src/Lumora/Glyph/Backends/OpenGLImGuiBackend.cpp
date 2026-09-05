@@ -9,7 +9,7 @@
 
 namespace Lumora::Glyph
 {
-	void OpenGLImGuiBackend::Init(Flux::Window& window)
+	void OpenGLImGuiBackend::Init(Flux::Window& window, Lumen::RenderDevice&)
 	{
 		LM_PROFILE_FUNCTION();
 		IMGUI_CHECKVERSION();

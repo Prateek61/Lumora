@@ -15,13 +15,17 @@ project "ImGui"
         "imgui/backends/imgui_impl_opengl3.cpp",
 
         "imgui/backends/imgui_impl_glfw.h",
-        "imgui/backends/imgui_impl_glfw.cpp"
+        "imgui/backends/imgui_impl_glfw.cpp",
+
+        "imgui/backends/imgui_impl_vulkan.h",
+        "imgui/backends/imgui_impl_vulkan.cpp"
     }
 
     includedirs
     {
         "imgui/",
         "%{IncludeDir.GLFW}",
+        "%{IncludeDir.VULKAN}",
     }
 
     filter "configurations:Debug"

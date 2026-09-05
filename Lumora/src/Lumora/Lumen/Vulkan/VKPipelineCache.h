@@ -15,6 +15,7 @@ namespace Lumora::Lumen
 		VkPipelineLayout GetPipelineLayout() const { return m_PipelineLayout; }
 		
 		VkPipeline GetOrCreate(uint32_t shaderId, VkShaderModule vertex, VkShaderModule fragment, const VertexLayout& layout);
+		VkPipeline GetOrCreateCompute(uint32_t shaderId, VkShaderModule compute);
 		void DestroyShaderPipeline(uint32_t shaderId);
 
 	private:
@@ -42,6 +43,7 @@ namespace Lumora::Lumen
 		VkPipelineLayout m_PipelineLayout = VK_NULL_HANDLE;
 
 		std::unordered_map<Key, VkPipeline, KeyHash> m_Pipelines;
+		std::unordered_map<uint32_t, VkPipeline> m_ComputePipelines;
 	};
 
 	VkFormat ToVkFormat(AttributeType type);

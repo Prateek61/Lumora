@@ -27,8 +27,7 @@ namespace Lumora::Lumen
 		int height = 0;
 		glfwGetFramebufferSize(m_Window, &width, &height);
 
-		// TODO: read vsync from WindowProps once the device is handed more than two window handle.
-		m_Swapchain.Init(m_Context, static_cast<uint32_t>(width), static_cast<uint32_t>(height), true);
+		m_Swapchain.Init(m_Context, static_cast<uint32_t>(width), static_cast<uint32_t>(height), m_Props.VSync);
 
 		CreateFrameData();
 		CreatePresentSemaphores();
@@ -736,9 +735,12 @@ namespace Lumora::Lumen
 			vkDestroyShaderModule(m_Context.GetDevice(), shader.Vertex, nullptr);
 		if (shader.Fragment != VK_NULL_HANDLE)
 			vkDestroyShaderModule(m_Context.GetDevice(), shader.Fragment, nullptr);
+		if (shader.Compute != VK_NULL_HANDLE)
+			vkDestroyShaderModule(m_Context.GetDevice(), shader.Compute, nullptr);
 
 		shader.Vertex = VK_NULL_HANDLE;
 		shader.Fragment = VK_NULL_HANDLE;
+		shader.Compute = VK_NULL_HANDLE;
 	}
 
 	ShaderHandle VKRenderDevice::CreateShader(const char* vertexSource, const char* fragmentSource)
@@ -766,9 +768,22 @@ namespace Lumora::Lumen
 
 	ShaderHandle VKRenderDevice::CreateComputeShader(const char* computeSource)
 	{
-		LM_CORE_ERROR("VKRenderDevice::CreateComputeShader is not implemented");
-		return {0};
-	}
+		LM_PROFILE_FUNCTION();
+
+		const std::vector<uint32_t> spirv = CompileGLSLToSPIRV(ShaderStage::Compute, computeSource);
+		if (spirv.empty())
+			return {0};
+
+		VKShader shader;
+		shader.Compute = CreateShaderModule(spirv);
+		if (shader.Compute == VK_NULL_HANDLE)
+			return {};
+
+		// The pipeline waits for the first dispatch
+		const uint32_t id = AllocHandle();
+		m_Shaders[id] = shader;
+		return {id};
+	} 
 
 	void VKRenderDevice::DestroyShader(ShaderHandle shader)
 	{
@@ -1180,6 +1195,38 @@ namespace Lumora::Lumen
 		vkUpdateDescriptorSets(m_Context.GetDevice(), static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
 	}
 
+	bool VKRenderDevice::EnsureDescriptorSet()
+	{ 
+		LM_PROFILE_FUNCTION();
+
+		if (m_BindingsDirty)
+		{
+			m_CurrentSet = AcquireDescriptorSet();
+			if (m_CurrentSet == VK_NULL_HANDLE)
+				return false;
+			WriteDescriptorSet(m_CurrentSet);
+			m_BindingsDirty = false;
+		}
+		return m_CurrentSet != VK_NULL_HANDLE;
+	}
+
+	void VKRenderDevice::BindDescriptorSet(VkCommandBuffer commandBuffer, VkPipelineBindPoint bindPoint) const
+	{
+		LM_PROFILE_FUNCTION();
+
+		// One per UNIFORM_BUFFER_DYNAMIC binding, in the binding order.
+		uint32_t dynamic_offsets[Bindings::MaxUniformSlots]{};
+		for (uint32_t i = 0; i < Bindings::MaxUniformSlots; ++i)
+		{
+			auto ubo_it = m_UniformBuffers.find(m_BoundUniforms[i].Id);
+			if (ubo_it != m_UniformBuffers.end() && ubo_it->second.RingBuffer != VK_NULL_HANDLE)
+				dynamic_offsets[i] = static_cast<uint32_t>(ubo_it->second.RingOffset);
+		}
+
+		vkCmdBindDescriptorSets(commandBuffer, bindPoint, m_Pipelines.GetPipelineLayout(), 0, 1, &m_CurrentSet, Bindings::MaxUniformSlots,
+		                        dynamic_offsets);
+	}
+
 	// --------------------------------------------------------------------------------------------------------------------
 	// Drawing
 	// --------------------------------------------------------------------------------------------------------------------
@@ -1211,6 +1258,11 @@ namespace Lumora::Lumen
 			LM_CORE_ERROR("DrawIndexed with no shadow bound");
 			return;
 		}
+		if (shader_it->second.Vertex == VK_NULL_HANDLE)
+		{
+			LM_CORE_ERROR("DrawIndexed with shader {}, which is a compute shader", m_BoundShader.Id);
+			return;
+		}
 
 		const VKVertexBuffer& vb = vb_it->second;
 		const VkBuffer vertex_handle = vb.Dynamic ? vb.RingBuffer : vb.Buffer;
@@ -1225,39 +1277,114 @@ namespace Lumora::Lumen
 		if (pipeline == VK_NULL_HANDLE)
 			return;
 
-		if (m_BindingsDirty)
-		{
-			m_CurrentSet = AcquireDescriptorSet();
-			if (m_CurrentSet == VK_NULL_HANDLE)
-				return;
-			WriteDescriptorSet(m_CurrentSet);
-			m_BindingsDirty = false;
-		}
-		if (m_CurrentSet == VK_NULL_HANDLE)
+		if (!EnsureDescriptorSet())
 			return;
-
-		// One per UNIFORM_BUFFER_DYNAMIC binding, in the binding order.
-		uint32_t dynamic_offsets[Bindings::MaxUniformSlots]{};
-		for (uint32_t i = 0; i < Bindings::MaxUniformSlots; ++i)
-		{
-			auto ubo_it = m_UniformBuffers.find(m_BoundUniforms[i].Id);
-			if (ubo_it != m_UniformBuffers.end() && ubo_it->second.RingBuffer != VK_NULL_HANDLE)
-				dynamic_offsets[i] = static_cast<uint32_t>(ubo_it->second.RingOffset);
-		}
 
 		VkCommandBuffer command_buffer = CurrentCommandBuffer();
 		const VkDeviceSize vertex_offset = vb.Dynamic ? vb.RingOffset : 0;
 
 		vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-		vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipelines.GetPipelineLayout(), 0, 1, &m_CurrentSet,
-		                        Bindings::MaxUniformSlots, dynamic_offsets);
+		BindDescriptorSet(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS);
 		vkCmdBindVertexBuffers(command_buffer, 0, 1, &vertex_handle, &vertex_offset);
 		vkCmdBindIndexBuffer(command_buffer, ib_it->second.Buffer, 0, VK_INDEX_TYPE_UINT32);
 		vkCmdDrawIndexed(command_buffer, indexCount, 1, 0, 0, 0);
 	}
 
+	void VKRenderDevice::BeginResumePass() const
+	{
+		VkRenderPassBeginInfo pass_info{};
+		pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		pass_info.renderPass = m_Swapchain.GetResumeRenderPass();
+		pass_info.framebuffer = m_Swapchain.GetFramebuffer(m_ImageIndex);
+		pass_info.renderArea.extent = m_Swapchain.GetExtent();
+
+		vkCmdBeginRenderPass(CurrentCommandBuffer(), &pass_info, VK_SUBPASS_CONTENTS_INLINE);
+	}
+
 	void VKRenderDevice::DispatchCompute(ShaderHandle computeShader, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
-	{ LM_CORE_ERROR("VKRenderDevice::DispatchCompute not implemented");
+	{ 
+		LM_PROFILE_FUNCTION();
+
+		if (groupCountX == 0 || groupCountY == 0 || groupCountZ == 0)
+			return;
+		if (!RequireOpenFrame("DispatchCompute"))
+			return;
+
+		auto shader_it = m_Shaders.find(computeShader.Id);
+		if (shader_it == m_Shaders.end() || shader_it->second.Compute == VK_NULL_HANDLE)
+		{
+			LM_CORE_ERROR("DispatchCompute was handed {}, which is not a compute shader", computeShader.Id);
+			return;
+		}
+
+		VkPipeline pipeline = m_Pipelines.GetOrCreateCompute(computeShader.Id, shader_it->second.Compute);
+		if (pipeline == VK_NULL_HANDLE)
+			return;
+
+		if (!EnsureDescriptorSet())
+			return;
+
+		VkCommandBuffer command_buffer = CurrentCommandBuffer();
+		vkCmdEndRenderPass(command_buffer);
+
+		vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
+		BindDescriptorSet(command_buffer, VK_PIPELINE_BIND_POINT_COMPUTE);
+		vkCmdDispatch(command_buffer, groupCountX, groupCountY, groupCountZ);
+
+		// Memory Barrier
+		VkMemoryBarrier barrier{};
+		barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+		barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_UNIFORM_READ_BIT | VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT |
+		                        VK_ACCESS_INDEX_READ_BIT;
+		vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+		                     VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &barrier, 0, nullptr, 0,
+		                     nullptr);
+		BeginResumePass();
+
+		// glDispatchCompute leaves its program current and the GL backend copies that. So does this.
+		m_BoundShader = computeShader;
+	}
+
+	// --------------------------------------------------------------------------------------------------------------------
+	// ImGui seam
+	// --------------------------------------------------------------------------------------------------------------------
+
+	VKImGuiHandoff VKRenderDevice::GetImGuiHandoff() const
+	{
+		if (!m_Context.IsValid())
+			return {};
+
+		VKImGuiHandoff handoff;
+		handoff.ApiVersion = VKContext::ApiVersion;
+		handoff.Instance = m_Context.GetInstance();
+		handoff.PhysicalDevice = m_Context.GetPhysicalDevice();
+		handoff.Device = m_Context.GetDevice();
+		handoff.QueueFamily = m_Context.GetGraphicsFamily();
+		handoff.PresentQueueFamily = m_Context.GetPresentFamily();
+		handoff.Queue = m_Context.GetGraphicsQueue();
+		handoff.RenderPass = m_Swapchain.GetRenderPass();
+		handoff.MinImageCount = m_Swapchain.GetMinImageCount();
+		handoff.ImageCount = m_Swapchain.GetImageCount();
+		return handoff;
+	}
+
+	VkCommandBuffer VKRenderDevice::GetOpenCommandBuffer() const
+	{
+		// Null unless there is a frame to record into
+		return m_FrameState == FrameState::Recording ? CurrentCommandBuffer() : VK_NULL_HANDLE;
+	}
+
+	void VKRenderDevice::RestoreFullViewport()
+	{
+		const VkExtent2D extent = m_Swapchain.GetExtent();
+		SetViewport({0u, 0u}, {extent.width, extent.height});
+	}
+
+	void VKRenderDevice::WaitIdle() const
+	{
+		if (m_Context.IsValid())
+			vkDeviceWaitIdle(m_Context.GetDevice());
 	}
 
 	// --------------------------------------------------------------------------------------------------------------------

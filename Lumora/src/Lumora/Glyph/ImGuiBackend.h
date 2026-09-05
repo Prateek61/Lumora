@@ -12,6 +12,11 @@ namespace Lumora
 	{
 		class Window;
 	}
+
+	namespace Lumen
+	{
+		class RenderDevice;
+	}
 }
 
 namespace Lumora::Glyph
@@ -21,7 +26,7 @@ namespace Lumora::Glyph
 	public:
 		virtual ~ImGuiBackend() = default;
 
-		virtual void Init(Flux::Window& window) = 0;
+		virtual void Init(Flux::Window& window, Lumen::RenderDevice& device) = 0;
 		virtual void Shutdown() = 0;
 		virtual void NewFrame() = 0;
 		virtual void RenderDrawData(ImDrawData* draw_data) = 0;

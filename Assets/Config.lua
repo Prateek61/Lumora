@@ -14,6 +14,6 @@ return {
     },
     RenderAPI = "Vulkan", -- Vulkan, OpenGL
     UseGlimmer = true,
-    GlimmerImGui = false,
+    GlimmerImGui = true,
     DiagnosticPlugin = true,
 }

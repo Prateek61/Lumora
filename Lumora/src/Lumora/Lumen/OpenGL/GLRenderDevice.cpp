@@ -48,6 +48,7 @@ namespace Lumora::Lumen
 
 		m_GLFWWindowHandle = static_cast<GLFWwindow*>(glfwWindowHandle);
 		glfwMakeContextCurrent(m_GLFWWindowHandle);
+		glfwSwapInterval(m_Props.VSync ? 1 : 0);
 		int status = gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
 		LM_CORE_ASSERT(status, "Failed to initialize OpenGL Context")
 

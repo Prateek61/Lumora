@@ -56,7 +56,7 @@ namespace Lumora::Lumen
 			bindings[i].binding = Bindings::Texture0 + i;
 			bindings[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			bindings[i].descriptorCount = 1;
-			bindings[i].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+			bindings[i].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT;
 		}
 
 		for (uint32_t i = 0; i < Bindings::MaxUniformSlots; ++i)
@@ -66,7 +66,7 @@ namespace Lumora::Lumen
 			// DYNAMIC because the data lives in a per frame ring: the descriptor names the ring, the offset comers in at bind time.
 			bindings[index].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 			bindings[index].descriptorCount = 1;
-			bindings[index].stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+			bindings[index].stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT;
 		}
 
 		VkDescriptorSetLayoutCreateInfo set_info{};
@@ -98,6 +98,32 @@ namespace Lumora::Lumen
 
 		m_Pipelines[key] = pipeline;
 		LM_CORE_TRACE("Built Vulkan pipeline for shader {} ({} pipeline cached)", shaderId, m_Pipelines.size());
+		return pipeline;
+	}
+
+	VkPipeline VKPipelineCache::GetOrCreateCompute(uint32_t shaderId, VkShaderModule compute)
+	{
+		LM_PROFILE_FUNCTION();
+
+		auto it = m_ComputePipelines.find(shaderId);
+		if (it != m_ComputePipelines.end())
+			return it->second;
+
+		VkComputePipelineCreateInfo info{};
+		info.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+		info.stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		info.stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+		info.stage.module = compute;
+		info.stage.pName = "main";
+		info.layout = m_PipelineLayout;
+
+		VkPipeline pipeline = VK_NULL_HANDLE;
+		LM_VK_CHECK(vkCreateComputePipelines(m_Context->GetDevice(), VK_NULL_HANDLE, 1, &info, nullptr, &pipeline));
+		if (pipeline == VK_NULL_HANDLE)
+			return VK_NULL_HANDLE;
+
+		m_ComputePipelines[shaderId] = pipeline;
+		LM_CORE_TRACE("Built Vulkan compute pipeline for shader {}", shaderId);
 		return pipeline;
 	}
 
@@ -213,7 +239,8 @@ namespace Lumora::Lumen
 	}
 
 	void VKPipelineCache::DestroyShaderPipeline(uint32_t shaderId)
-	{ LM_PROFILE_FUNCTION();
+	{ 
+		LM_PROFILE_FUNCTION();
 
 		for (auto it = m_Pipelines.begin(); it != m_Pipelines.end();)
 		{
@@ -225,6 +252,12 @@ namespace Lumora::Lumen
 
 			vkDestroyPipeline(m_Context->GetDevice(), it->second, nullptr);
 			it = m_Pipelines.erase(it);
+		}
+
+		if (auto compute = m_ComputePipelines.find(shaderId); compute != m_ComputePipelines.end())
+		{
+			vkDestroyPipeline(m_Context->GetDevice(), compute->second, nullptr);
+			m_ComputePipelines.erase(compute);
 		}
 	}
 
@@ -238,6 +271,10 @@ namespace Lumora::Lumen
 		for (auto& pipeline : m_Pipelines | std::views::values)
 			vkDestroyPipeline(m_Context->GetDevice(), pipeline, nullptr);
 		m_Pipelines.clear();
+
+		for (auto& pipeline : m_ComputePipelines | std::views::values)
+			vkDestroyPipeline(m_Context->GetDevice(), pipeline, nullptr);
+		m_ComputePipelines.clear();
 
 		if (m_PipelineLayout != VK_NULL_HANDLE)
 			vkDestroyPipelineLayout(m_Context->GetDevice(), m_PipelineLayout, nullptr);

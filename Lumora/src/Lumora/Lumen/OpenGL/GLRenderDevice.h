@@ -10,7 +10,8 @@ namespace Lumora::Lumen
 	class GLRenderDevice : public RenderDevice
 	{
 	public:
-		GLRenderDevice() = default;
+		explicit GLRenderDevice(const RendererProps& props = {})
+			: m_Props(props) {}
 		~GLRenderDevice() override;
 
 		// Lifecycle
@@ -56,6 +57,7 @@ namespace Lumora::Lumen
 
 	private:
 		GLFWwindow* m_GLFWWindowHandle = nullptr;
+		RendererProps m_Props;
 
 		// Internal Resource Pool
 		uint32_t m_NextHandleId = 1;
