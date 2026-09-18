@@ -6,3 +6,4 @@
 #include "Lumora/Core/Log.h"
 #include "Lumora/Core/SmartPointers.h"
 #include "Lumora/Core/Instrumentor.h"
+#include "Lumora/Core/Error.h"

@@ -1,7 +1,7 @@
 project "LumoraApp"
     kind "ConsoleApp"
     language "C++"
-    cppdialect "C++20"
+    cppdialect "C++23"
 
     targetdir ("%{wks.location}/bin/" .. outdir .. "/%{prj.name}")
     objdir ("%{wks.location}/bin/bin-int/" .. outdir .. "/%{prj.name}")
