@@ -21,22 +21,22 @@ namespace Lumora::Rune
 
 		// Deserialize
 		template <typename T>
-		std::optional<T> DeserializeFromFile(const std::filesystem::path& file);
+		Result<T> DeserializeFromFile(const std::filesystem::path& file);
 		template <typename T>
-		std::optional<T> DeserializeFromLuaScript(const std::string_view& script);
+		Result<T> DeserializeFromLuaScript(const std::string_view& script);
 
 		// Serialize
 		template <typename T>
-		std::optional<std::string> SerializeToScript(const T& data);
+		std::string SerializeToScript(const T& data);
 
 		// Type Registration
 		template <typename T>
 		void RegisterType(const std::string& name);
 
 		// Runtime Functions through name
-		Ref<void> DeserializeFromFile(const std::string& typeName, const std::filesystem::path& file);
-		Ref<void> DeserializeFromLuaScript(const std::string& typeName, const std::string_view& script);
-		std::optional<std::string> SerializeToScript(const std::string& typeName, const void* data);
+		Result<Ref<void>> DeserializeFromFile(const std::string& typeName, const std::filesystem::path& file);
+		Result<Ref<void>> DeserializeFromLuaScript(const std::string& typeName, const std::string_view& script);
+		Result<std::string> SerializeToScript(const std::string& typeName, const void* data);
 
 		WriteLock<RWMutex> LockLuaState();
 
@@ -47,9 +47,9 @@ namespace Lumora::Rune
 		struct TypeInfo
 		{
 			std::string Name;
-			std::function<std::optional<std::string>(const void* valuePtr)> ToLuaScriptFunc;
-			std::function<Ref<void>(const std::filesystem::path& file)> FromFileFunc;
-			std::function<Ref<void>(const std::string_view& script)> FromLuaScriptFunc;
+			std::function<std::string(const void* valuePtr)> ToLuaScriptFunc;
+			std::function<Result<Ref<void>>(const std::filesystem::path& file)> FromFileFunc;
+			std::function<Result<Ref<void>>(const std::string_view& script)> FromLuaScriptFunc;
 			size_t Size;
 		};
 
@@ -66,10 +66,9 @@ namespace Lumora::Rune
 namespace Lumora::Rune
 {
 	template <typename T>
-	std::optional<T> LuaSerializer::DeserializeFromFile(const std::filesystem::path& file)
+	Result<T> LuaSerializer::DeserializeFromFile(const std::filesystem::path& file)
 	{
 		LM_PROFILE_FUNCTION();
-
 		LM_CORE_TRACE("Deserializing type: {}, from file: {}", typeid(T).name(), file.string());
 
 		auto lock = WriteLock(LuaStateMutex);
@@ -78,35 +77,23 @@ namespace Lumora::Rune
 		if (!script.valid())
 		{
 			sol::error err = script;
-			LM_CORE_ERROR("Failed to load script from file: {}:\n{}", file.string(), err.what());
-			return std::nullopt;
+			return MakeError(std::filesystem::exists(file) ? ErrorCode::Parse : ErrorCode::NotFound, err.what());
 		}
 
 		sol::protected_function_result result = script();
 		if (!result.valid())
 		{
 			sol::error err = result;
-			LM_CORE_ERROR("Failed to execute script from file: {}:\n{}", file.string(), err.what());
-			return std::nullopt;
+			return MakeError(ErrorCode::Script, err.what());
 		}
 
-		sol::object obj = result;
-		try
-		{
-			return Serialization::FromLua<T>(obj);
-		}
-		catch (const Lua::LuaError& e)
-		{
-			LM_CORE_ERROR("Error Deserializing type({}) from file({}):\n{}", typeid(T).name(), file.string(), e.what());
-			return std::nullopt;
-		}
+		return WithContext(Serialization::FromLua<T>(sol::object(result)), "loading '{}'", file.string());
 	}
 
 	template <typename T>
-	std::optional<T> LuaSerializer::DeserializeFromLuaScript(const std::string_view& script)
+	Result<T> LuaSerializer::DeserializeFromLuaScript(const std::string_view& script)
 	{
 		LM_PROFILE_FUNCTION();
-
 		LM_CORE_TRACE("Deserializing type: {}, from script: {}", typeid(T).name(), script);
 
 		auto lock = WriteLock(LuaStateMutex);
@@ -115,46 +102,27 @@ namespace Lumora::Rune
 		if (!loaded_script.valid())
 		{
 			sol::error err = loaded_script;
-			LM_CORE_ERROR("Failed to load script:\n{}:\n{}", script, err.what());
-			return std::nullopt;
+			return MakeError(ErrorCode::Parse, err.what());
 		}
 
 		sol::protected_function_result result = loaded_script();
 		if (!result.valid())
 		{
 			sol::error err = result;
-			LM_CORE_ERROR("Failed to execute script:\n{}:\n{}", script, err.what());
-			return std::nullopt;
+			return MakeError(ErrorCode::Script, err.what());
 		}
 
 		sol::object obj = result;
-		try
-		{
-			return Serialization::FromLua<T>(obj);
-		}
-		catch (const Lua::LuaError& e)
-		{
-			LM_CORE_ERROR("Error Deserializing type({}) from script:\n{}", typeid(T).name(), e.what());
-			return std::nullopt;
-		}
+		return WithContext(Serialization::FromLua<T>(obj), "loading from script");
 	}
 
 	template <typename T>
-	std::optional<std::string> LuaSerializer::SerializeToScript(const T& data)
+	std::string LuaSerializer::SerializeToScript(const T& data)
 	{
 		LM_PROFILE_FUNCTION();
-
 		LM_CORE_TRACE("Serializing type: {}, to script", typeid(T).name());
 
-		try
-		{
-			return Serialization::ToLuaScript(data);
-		}
-		catch (const Lua::LuaError& e)
-		{
-			LM_CORE_ERROR("Error Serializing type({}) to script:\n{}", typeid(T).name(), e.what());
-			return std::nullopt;
-		}
+		return Serialization::ToLuaScript(data);
 	}
 
 	template <typename T>
@@ -164,29 +132,30 @@ namespace Lumora::Rune
 
 		auto lock = WriteLock(m_TypeRegistryMutex);
 
-		std::function<std::optional<std::string>(const void* valuePtr)> to_lua_script_func = [this
-			](const void* valuePtr) -> std::optional<std::string>
+		std::function<std::string(const void* valuePtr)> to_lua_script_func = [this
+			](const void* valuePtr) -> std::string
 		{
 			const T* typedPtr = static_cast<const T*>(valuePtr);
 			return SerializeToScript(*typedPtr);
 		};
 
-		std::function<Ref<void>(const std::filesystem::path& file)> from_file_func = [this](const std::filesystem::path& file) -> Ref<void>
+		std::function<Result<Ref<void>>(const std::filesystem::path& file)> from_file_func = [this](const std::filesystem::path& file) -> Result<Ref<void>>
 		{
+			// DeserializeFromFile<T> already names the file in the error; repeating it here would double the context.
 			auto result = DeserializeFromFile<T>(file);
-			if (!result.has_value())
+			if (!result)
 			{
-				return nullptr;
+				return std::unexpected(std::move(result.error()));
 			}
 			return StaticRefCast<void>(CreateRef<T>(std::move(result.value())));
 		};
 
-		std::function<Ref<void>(const std::string_view& script)> from_lua_script_func = [this](const std::string_view& script) -> Ref<void>
+		std::function<Result<Ref<void>>(const std::string_view& script)> from_lua_script_func = [this](const std::string_view& script) -> Result<Ref<void>>
 		{
 			auto result = DeserializeFromLuaScript<T>(script);
-			if (!result.has_value())
+			if (!result)
 			{
-				return nullptr;
+				return std::unexpected(std::move(result.error()));
 			}
 			return StaticRefCast<void>(CreateRef<T>(std::move(result.value())));
 		};
@@ -199,6 +168,9 @@ namespace Lumora::Rune
 			.FromLuaScriptFunc = from_lua_script_func,
 			.Size = sizeof(T)
 		};
-		m_TypeRegistry.emplace(name, std::move(info));
+		if (!m_TypeRegistry.emplace(name, std::move(info)).second)
+		{
+			LM_CORE_WARN("LuaSerializer: type name '{}' is already registered; keeping the first registration", name);
+		}
 	}
 }

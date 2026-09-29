@@ -348,10 +348,12 @@ namespace Lumora::Atlas
 		AssetMetaFile meta_file;
 		if (sidecar_exists)
 		{
-			if (auto parsed = m_Serializer.DeserializeFromFile<AssetMetaFile>(sidecar_path))
-			{
+			// The sidecar only overrides name and type here, so a broken one leaves both defaulted.
+			auto parsed = m_Serializer.DeserializeFromFile<AssetMetaFile>(sidecar_path);
+			if (parsed)
 				meta_file = std::move(*parsed);
-			}
+			else
+				LM_CORE_WARN("AssetServer: failed to parse '{}': {}", sidecar_path.string(), parsed.error());
 		}
 
 		// Resolve name
@@ -378,9 +380,9 @@ namespace Lumora::Atlas
 
 		// Type-specific props
 		Ref<void> props_blob;
-		if (sidecar_exists && !loader->PropsTypeName.empty())
+		if (sidecar_exists)
 		{
-			props_blob = m_Serializer.DeserializeFromFile(loader->PropsTypeName, sidecar_path);
+			props_blob = LoadProps(*loader, sidecar_path);
 		}
 
 		AssetEntry entry;
@@ -430,15 +432,13 @@ namespace Lumora::Atlas
 		if (ec) metaFile = metaFile_in;
 
 		AssetMetaFile meta_file{};
-		if (auto parsed = m_Serializer.DeserializeFromFile<AssetMetaFile>(metaFile))
+		auto parsed_res = m_Serializer.DeserializeFromFile<AssetMetaFile>(metaFile);
+		if (!parsed_res)
 		{
-			meta_file = std::move(*parsed);
+			LM_CORE_WARN("AssetServer: failed to parse '{}': {}; skipping", metaFile.string(), parsed_res.error());
+			return;	
 		}
-		else
-		{
-			LM_CORE_WARN("AssetServer: failed to parse '{}'", metaFile.string());
-			return;
-		}
+		meta_file = std::move(parsed_res.value());
 
 		if (meta_file.Type.empty())
 		{
@@ -479,11 +479,7 @@ namespace Lumora::Atlas
 
 		auto entity = CreateAssetEntity(meta);
 
-		Ref<void> props_blob;
-		if (!loader->PropsTypeName.empty())
-		{
-			props_blob = m_Serializer.DeserializeFromFile(loader->PropsTypeName, metaFile);
-		}
+		Ref<void> props_blob = LoadProps(*loader, metaFile);
 
 		AssetEntry entry;
 		entry.Id = id;
@@ -540,6 +536,31 @@ namespace Lumora::Atlas
 			m_AssetsById[id] = std::move(entry);
 		}
 	}
+
+	Ref<void> AssetServer::LoadProps(const ErasedLoader& loader, const std::filesystem::path& metaPath)
+	{
+		LM_PROFILE_FUNCTION();
+
+		if (loader.PropsTypeName.empty())
+			return nullptr;
+
+		auto props = m_Serializer.DeserializeFromFile(loader.PropsTypeName, metaPath);
+		if (props)
+			return std::move(*props);
+
+		if (props.error().Code == ErrorCode::NotRegistered)
+		{
+			LM_CORE_ERROR("AssetServer: props type '{}' declared by loader '{}' was never registered with the LuaSerializer; "
+			              "declare it with AssetLoader::SetPropsType<T>()", loader.PropsTypeName, loader.TypeName);
+		}
+		else
+		{
+			LM_CORE_WARN("AssetServer: failed to parse props from '{}': {}", metaPath.string(), props.error());
+		}
+
+		return nullptr;
+	}
+
 	void AssetServer::RunLoad(AssetEntry& entry)
 	{
 		LM_PROFILE_FUNCTION();
@@ -550,9 +571,9 @@ namespace Lumora::Atlas
 			return;
 		}
 
-		if (!entry.MetaPath.empty() && !entry.Loader->PropsTypeName.empty())
+		if (!entry.MetaPath.empty())
 		{
-			entry.PropsBlob = m_Serializer.DeserializeFromFile(entry.Loader->PropsTypeName, entry.MetaPath);
+			entry.PropsBlob = LoadProps(*entry.Loader, entry.MetaPath);
 		}
 
 		LoaderContext ctx;

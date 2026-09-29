@@ -18,57 +18,69 @@ namespace Lumora::Rune::Serialization
 
 
 	template <typename T>
-	T FromLua(const sol::object& obj)
+	Result<T> FromLua(const sol::object& obj)
 	{
 		static_assert(sizeof(T) == 0, "FromLua is not implemented for this type.");
-		return T{};
+		return MakeError(ErrorCode::NotRegistered, "FromLua is not implemented for this type.");
 	}
 
 	template <SolSupportedType T>
-	T FromLua(const sol::object& obj)
+	Result<T> FromLua(const sol::object& obj)
 	{
 		if (!obj.is<T>())
 		{
-			throw Lua::LuaError(
-				"Type mismatch: Expected " + std::string(typeid(T).name()) + ", got " + sol::type_name(obj.lua_state(), obj.get_type()));
+			return MakeError(ErrorCode::TypeMismatch,  fmt::format("expected {}, got {}", typeid(T).name(), sol::type_name(obj.lua_state(), obj.get_type())));
 		}
 
 		return obj.as<T>();
 	}
 
 	template <>
-	inline std::filesystem::path FromLua<std::filesystem::path>(const sol::object& obj)
+	inline Result<std::filesystem::path> FromLua<std::filesystem::path>(const sol::object& obj)
 	{
-		return {FromLua<std::string>(obj)};
+		return FromLua<std::string>(obj).transform([](std::string&& s) { return std::filesystem::path(std::move(s)); });
 	}
 
 	template <Reflect::Reflectable T>
-	T FromLua(const sol::object& obj)
+	Result<T> FromLua(const sol::object& obj)
 	{
 		if (!obj.is<sol::table>())
 		{
-			throw Lua::LuaError("Type mismatch: Expected table for reflectable type, got " +
-			                    sol::type_name(obj.lua_state(), obj.get_type()));
+			return MakeError(ErrorCode::TypeMismatch, fmt::format("Expected table for reflectable type, got {}", sol::type_name(obj.lua_state(), obj.get_type())));
 		}
 		auto tbl = obj.as<sol::table>();
 
 		T t{};
+		Result<void> status;
 		Reflect::ForEach(t, [&](const char* name, auto& field)
 		{
-			using FieldType = std::decay_t<decltype(field)>;
-			if (tbl[name].valid())
+			if (!status) 
 			{
-				try
-				{
-					field = FromLua<FieldType>(tbl[name]);
-				}
-				catch (const Lua::LuaError& e)
-				{
-					LM_CORE_ERROR("Error deserializing field '{}': {}", name, e.what());
-					throw;
-				}
+				return;
 			}
+			// Absence is not an error: the default from `T t{}` stands.
+			if (!tbl[name].valid())
+			{
+				return;
+			}
+
+			using FieldType = std::decay_t<decltype(field)>;
+			auto value = FromLua<FieldType>(tbl[name]);
+			if (!value)
+			{
+				status = std::unexpected(std::move(value.error()));
+				// Bare name, so nesting reads as a field path: "WindowSettings: Width: expected number"
+				status.error().AddContext(name);
+				return;
+			}
+
+			field = std::move(value.value());
 		});
+
+		if (!status)
+		{
+			return std::unexpected(std::move(status.error()));
+		}
 
 		return t;
 	}

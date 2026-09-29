@@ -1,6 +1,6 @@
 # Lumora
 
-Lumora is a C++20 game engine built around a plugin architecture and an
+Lumora is a C++23 game engine built around a plugin architecture and an
 entity-component-system core. It's a personal project, focused on quick
 iteration and a clean, modular design.
 
@@ -37,7 +37,7 @@ Plus logging (spdlog) and lightweight profiling.
 
 ## Prerequisites
 
-- A C++20 compiler (MSVC / Visual Studio 2026 on Windows — that's what the helper
+- A C++23 compiler (MSVC / Visual Studio 2026 on Windows - that's what the helper
   script's `vs2026` generator and its hardcoded `VsDevCmd.bat` path assume).
 - [Premake5](https://premake.github.io/).
 - The [Vulkan SDK](https://vulkan.lunarg.com/) — the `VULKAN_SDK` environment
@@ -88,7 +88,7 @@ links (see `LumoraApp/premake5.lua` as the reference template):
 project "MyGame"
     kind "ConsoleApp"
     language "C++"
-    cppdialect "C++20"
+    cppdialect "C++23"
     files { "src/**.h", "src/**.cpp" }
     includedirs { "src" }
 

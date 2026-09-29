@@ -160,10 +160,11 @@ void Spark::Finish(Core::Application& app)
 	const auto data_path = world.GetResource<Atlas::AssetServerResource>()->GetAssetRoot() / "Data.lua";
 
 	auto& serializer = world.GetResourceMut<Rune::LuaSerializerResource>();
-	if (auto data = serializer->DeserializeFromFile<Data>(data_path))
-		m_Data = std::move(*data);
+	auto data_res = serializer->DeserializeFromFile<Data>(data_path);
+	if (data_res)
+		m_Data = std::move(data_res.value());
 	else
-		LM_LOG_WARN("Spark: could not read '{}'", data_path.string());
+		LM_LOG_WARN("Spark: could not read '{}': {}", data_path.string(), data_res.error());
 
 	LM_LOG_INFO("Message from Data.lua: {}", m_Data.Message);
 }

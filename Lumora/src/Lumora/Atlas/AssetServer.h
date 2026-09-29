@@ -105,6 +105,8 @@ namespace Lumora::Atlas
 		Aether::Entity CreateAssetEntity(const AssetMeta& meta);
 
 		// Internal helpers
+		Ref<void> LoadProps(const ErasedLoader& loader, const std::filesystem::path& metaPath);
+
 		void RegisterSingleFile(const std::filesystem::path& assetFile);
 		void RegisterFromMeta(const std::filesystem::path& metaFile);
 		void RunLoad(AssetEntry& entry);
@@ -153,6 +155,11 @@ namespace Lumora::Atlas
 			}
 
 			m_TypeNameByExtension[ext] = erased.TypeName;
+		}
+
+		if (erased.RegisterPropsFunc)
+		{
+			erased.RegisterPropsFunc(m_Serializer);
 		}
 
 		m_LoadersByType[erased.TypeName] = std::move(erased);

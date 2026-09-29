@@ -26,7 +26,8 @@ std::optional<Text> DecodeText(const Atlas::LoaderContext& context)
 {
 	LM_PROFILE_FUNCTION();
 	
-	auto loaded = Text::FromFile(context.AssetRoot / context.PrimaryPath, {});
+	const auto* props = static_cast<const TextProps*>(context.Props.get());
+	auto loaded = Text::FromFile(context.AssetRoot / context.PrimaryPath, props ? *props : TextProps{});
 	if (!loaded)
 	{
 		LM_LOG_ERROR("DecodeText: Failed to load text from '{}'", context.PrimaryPath.string());
@@ -41,7 +42,7 @@ Atlas::AssetLoader<Text> MakeTextLoader()
 	
 	Atlas::AssetLoader<Text> loader;
 	loader.TypeName = "Text";
-	loader.PropsTypeName = "TextProps";
+	loader.SetPropsType<TextProps>("TextProps");
 	loader.FileExtensions = {".txt"};
 	loader.Decode = DecodeText;
 	return loader;

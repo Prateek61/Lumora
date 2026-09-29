@@ -76,15 +76,10 @@ namespace Lumora
 
     // On failure, puts a formatted context line in front of the message. On success, nothing is formatted.
     template <typename T, typename... Args>
-    [[nodiscard]] Result<T> WithContext(Result<T>&& result, fmt::format_string<Args...> format, Args&&... args)
-    {
-        if (!result)
-			result.error().AddContext(fmt::format(format, std::forward<Args>(args)...));
-
-		return std::move(result);
-    }
+	[[nodiscard]] Result<T> WithContext(Result<T>&& result, fmt::format_string<Args...> format, Args&&... args);
 }
 
+// Implementation
 template <>
 struct fmt::formatter<Lumora::ErrorCode> : fmt::formatter<std::string_view>
 {
@@ -104,3 +99,45 @@ struct fmt::formatter<Lumora::Error> : fmt::formatter<std::string_view>
 		return fmt::format_to(ctx.out(), "{} [{}]", error.Detail->Message, Lumora::ToString(error.Code));
     }
 };
+
+namespace Lumora
+{
+	inline Error::Error(ErrorCode code, std::string message, std::source_location location)
+	    : Code(code),
+	      Detail(CreateScope<ErrorDetail>(std::move(message), location))
+	{
+	}
+
+    inline Error::Error(const Error& other) : Code(other.Code), Detail(other.Detail ? CreateScope<ErrorDetail>(*other.Detail) : nullptr) {}
+
+	template <typename T, typename... Args>
+    Result<T> WithContext(Result<T>&& result, fmt::format_string<Args...> format, Args&&... args)
+    {
+		if (!result)
+			result.error().AddContext(fmt::format(format, std::forward<Args>(args)...));
+
+        return std::move(result);
+    }
+
+    inline Error& Error::operator=(const Error& other)
+	{
+		if (this != &other)
+			*this = Error(other);
+
+		return *this;
+	}
+
+    inline void Error::AddContext(std::string context)
+	{
+		if (!Detail)
+			Detail = CreateScope<ErrorDetail>();
+
+		if (Detail->Message.empty())
+			Detail->Message = std::move(context);
+		else
+			Detail->Message.insert(0, ": ").insert(0, context);
+	}
+
+    inline std::unexpected<Error> MakeError(ErrorCode code, std::string message, std::source_location location)
+	{ return std::unexpected<Error>(Error(code, std::move(message), location)); }
+}

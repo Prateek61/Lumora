@@ -3,6 +3,11 @@
 #include "Lumora/Atlas/AssetCommon.h"
 #include "Lumora/Core/SmartPointers.h"
 
+namespace Lumora::Rune
+{
+	class LuaSerializer;
+}
+
 namespace Lumora::Atlas
 {
 	struct LoaderContext
@@ -44,6 +49,17 @@ namespace Lumora::Atlas
 		std::function<std::optional<T>(const LoaderContext&, Decoded&&)> Finalize = Detail::DefaultFinalize<T, Decoded>();
 
 		std::function<void(const LoaderContext&, std::vector<std::filesystem::path>&)> CollectSourcePaths;
+		std::function<void(Rune::LuaSerializer&)> RegisterPropsFunc;
+
+		template <typename P>
+		void SetPropsType(std::string name)
+		{
+			PropsTypeName = name;
+			RegisterPropsFunc = [name = std::move(name)](auto& serializer)
+			{
+				serializer.template RegisterType<P>(name);
+			};
+		}
 	};
 
 	struct ErasedLoader
@@ -57,6 +73,7 @@ namespace Lumora::Atlas
 		std::function<bool(const LoaderContext&, Aether::Entity&)> LoadInto;
 		// Forwarded from AssetLoader<T>.CollectSourcePaths. May be empty.
 		std::function<void(const LoaderContext&, std::vector<std::filesystem::path>&)> CollectSourcePaths;
+		std::function<void(Rune::LuaSerializer&)> RegisterPropsFunc;
 
 		template <typename T, typename Decoded>
 		static ErasedLoader From(AssetLoader<T, Decoded> loader)
@@ -67,6 +84,7 @@ namespace Lumora::Atlas
 			erased.PropsTypeName = std::move(loader.PropsTypeName);
 			erased.FileExtensions = std::move(loader.FileExtensions);
 			erased.CollectSourcePaths = std::move(loader.CollectSourcePaths);
+			erased.RegisterPropsFunc = std::move(loader.RegisterPropsFunc);
 
 			erased.LoadInto = [l = std::move(loader)](const LoaderContext& ctx, Aether::Entity entity) -> bool
 			{

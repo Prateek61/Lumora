@@ -38,7 +38,7 @@ int main()
 	auto config_opt = serializer.DeserializeFromFile<Config>("../Assets/Config.lua");
 	if (!config_opt)
 	{
-		LM_CORE_ERROR("Failed to load config, using defaults");
+		LM_CORE_ERROR("Failed to load config: {}; using defaults", config_opt.error());
 		config_opt = Config{};
 	}
 	auto& config = config_opt.value();

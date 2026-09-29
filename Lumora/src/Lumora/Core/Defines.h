@@ -2,7 +2,12 @@
 
 #include "Lumora/Core/PlatformDetection.h"
 
+// 0 none, 1 fatal, 2 error, 3 warn, 4 info, 5 debug, 6 trace
+#ifdef LM_DIST
+#define LM_LOG_LEVEL 4
+#else
 #define LM_LOG_LEVEL 6
+#endif
 
 #define LM_ENABLE_ASSERTS
 //#define LM_ENABLE_PERFORMANCE_PROFILING
